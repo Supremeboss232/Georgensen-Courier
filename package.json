@@ -1,0 +1,15 @@
+{
+  "name": "georjensen-courier",
+  "version": "1.0.0",
+  "description": "Georjensen - Asset-light Courier Platform",
+  "main": "src/index.html",
+  "scripts": {
+    "start": "open src/index.html",
+    "serve": "npx http-server src -p 8000 -o",
+    "build": "echo 'Build system TBD - phase 2'",
+    "deploy": "echo 'Deploy to production'"
+  },
+  "keywords": ["courier", "logistics", "delivery"],
+  "author": "Georjensen Team",
+  "license": "Proprietary"
+}

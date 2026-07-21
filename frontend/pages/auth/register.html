@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - Georgensen Courier</title>
+    
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="/assets/lib/bootstrap/css/bootstrap.min.css">
+    
+    <!-- FontAwesome Icons for Logistics -->
+    <link rel="stylesheet" href="/assets/lib/fontawesome/css/all.min.css">
+    
+    <!-- Main Stylesheet -->
+    <link rel="stylesheet" href="/css/main.css">
+    
+    <!-- Guard Script: Prevent logged-in users from accessing this page -->
+    <script src="/js/core/guards.js"></script>
+    
+    <style>
+        /* Registration Page Specific Styles */
+        body.register-page {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .register-container {
+            flex-grow: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem 0;
+        }
+        
+        .register-card {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            max-width: 550px;
+            width: 100%;
+        }
+        
+        .register-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 10px 10px 0 0;
+            text-align: center;
+        }
+        
+        .register-header h1 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+        }
+        
+        .register-header p {
+            font-size: 0.95rem;
+            opacity: 0.95;
+            margin: 0;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-label {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .form-control, .form-select {
+            padding: 0.75rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 5px;
+            transition: border-color 0.3s;
+        }
+        
+        .form-control:focus, .form-select:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+        
+        .password-validation {
+            font-size: 0.85rem;
+            margin-top: 0.5rem;
+            padding: 0.5rem;
+            border-radius: 4px;
+            display: none;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .password-validation.show {
+            display: flex;
+        }
+        
+        .password-match {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .password-mismatch {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .btn-register {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            padding: 0.75rem;
+            font-weight: 600;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .btn-register:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .register-footer {
+            text-align: center;
+            padding: 1.5rem;
+            border-top: 1px solid #e0e0e0;
+        }
+        
+        .register-footer p {
+            margin: 0.5rem 0;
+            font-size: 0.95rem;
+        }
+        
+        .register-footer a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        
+        .register-footer a:hover {
+            text-decoration: underline;
+        }
+        
+        /* Partner Fields Section */
+        .partner-fields {
+            background-color: #f8f9fa;
+            border: 2px dashed #667eea;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            display: none;
+            transition: all 0.3s ease;
+        }
+        
+        .partner-fields.show {
+            display: block;
+        }
+        
+        .partner-header {
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 1rem;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .divider {
+            height: 2px;
+            background: linear-gradient(90deg, #667eea 0%, transparent 100%);
+            margin: 1.5rem 0;
+        }
+        
+        .error-message {
+            display: none;
+            background-color: #f8d7da;
+            color: #721c24;
+            padding: 1rem;
+            border-radius: 5px;
+            margin-bottom: 1rem;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .error-message.show {
+            display: block;
+        }
+        
+        .success-message {
+            display: none;
+            background-color: #d4edda;
+            color: #155724;
+            padding: 1rem;
+            border-radius: 5px;
+            margin-bottom: 1rem;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .success-message.show {
+            display: block;
+        }
+        
+        .loading-spinner {
+            display: none;
+            text-align: center;
+            padding: 1rem;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+        
+        @media (max-width: 576px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body class="bg-light register-page">
+    <!-- Public Navigation Bar -->
+    <nav id="navbar-container"></nav>
+    
+    <!-- Registration Container -->
+    <div class="register-container">
+        <div class="register-card">
+            <!-- Register Header with Branding -->
+            <div class="register-header">
+                <h1>🚚 Georgensen</h1>
+                <p>Join Our Logistics Network</p>
+            </div>
+            
+            <!-- Registration Form Body -->
+            <div class="card-body p-4">
+                <!-- Error Message Alert -->
+                <div id="errorMessage" class="error-message">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span id="errorText"></span>
+                </div>
+                
+                <!-- Success Message Alert -->
+                <div id="successMessage" class="success-message">
+                    <i class="fas fa-check-circle"></i>
+                    <span id="successText"></span>
+                </div>
+                
+                <!-- Registration Form -->
+                <form id="registerForm" novalidate>
+                    <!-- Basic Information Section -->
+                    <div class="form-group">
+                        <label for="fullName" class="form-label">
+                            <i class="fas fa-user"></i> Full Name
+                        </label>
+                        <input 
+                            type="text" 
+                            class="form-control" 
+                            id="fullName" 
+                            name="fullName" 
+                            placeholder="John Doe"
+                            required
+                            aria-label="Full name">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="email" class="form-label">
+                            <i class="fas fa-envelope"></i> Email Address
+                        </label>
+                        <input 
+                            type="email" 
+                            class="form-control" 
+                            id="email" 
+                            name="email" 
+                            placeholder="your.email@example.com"
+                            required
+                            aria-label="Email address">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="phone" class="form-label">
+                            <i class="fas fa-phone"></i> Phone Number
+                        </label>
+                        <input 
+                            type="tel" 
+                            class="form-control" 
+                            id="phone" 
+                            name="phone" 
+                            placeholder="+254 700 000 000"
+                            aria-label="Phone number">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="accountType" class="form-label">
+                            <i class="fas fa-briefcase"></i> Account Type
+                        </label>
+                        <select 
+                            class="form-select" 
+                            id="accountType" 
+                            name="accountType" 
+                            required
+                            aria-label="Account type">
+                            <option value="">-- Select Account Type --</option>
+                            <option value="customer">
+                                <i class="fas fa-user"></i> Customer (Ship Packages)
+                            </option>
+                            <option value="partner">
+                                <i class="fas fa-truck"></i> Delivery Partner (Driver)
+                            </option>
+                        </select>
+                    </div>
+                    
+                    <!-- Conditional Partner Fields -->
+                    <div id="partnerFieldsSection" class="partner-fields">
+                        <div class="partner-header">
+                            <i class="fas fa-truck"></i> Delivery Partner Information
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="licenseNumber" class="form-label">
+                                <i class="fas fa-id-card"></i> Driver's License Number
+                            </label>
+                            <input 
+                                type="text" 
+                                class="form-control" 
+                                id="licenseNumber" 
+                                name="licenseNumber" 
+                                placeholder="DL123456789"
+                                aria-label="Driver's license number">
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="licenseCategory" class="form-label">
+                                    <i class="fas fa-graduation-cap"></i> License Category
+                                </label>
+                                <select class="form-select" id="licenseCategory" name="licenseCategory">
+                                    <option value="">-- Select --</option>
+                                    <option value="A">A (Motorcycle)</option>
+                                    <option value="B">B (Car)</option>
+                                    <option value="C">C (Truck)</option>
+                                    <option value="D">D (Heavy Vehicle)</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="vehicleType" class="form-label">
+                                    <i class="fas fa-car"></i> Vehicle Type
+                                </label>
+                                <select class="form-select" id="vehicleType" name="vehicleType">
+                                    <option value="">-- Select --</option>
+                                    <option value="motorcycle">Motorcycle</option>
+                                    <option value="car">Car</option>
+                                    <option value="van">Van</option>
+                                    <option value="truck">Truck</option>
+                                    <option value="cargo">Cargo Vehicle</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="plateNumber" class="form-label">
+                                <i class="fas fa-tag"></i> Vehicle Plate Number
+                            </label>
+                            <input 
+                                type="text" 
+                                class="form-control" 
+                                id="plateNumber" 
+                                name="plateNumber" 
+                                placeholder="KCB 123K"
+                                aria-label="Vehicle plate number">
+                        </div>
+                    </div>
+                    
+                    <!-- Divider -->
+                    <div class="divider"></div>
+                    
+                    <!-- Password Section -->
+                    <div class="form-group">
+                        <label for="password" class="form-label">
+                            <i class="fas fa-lock"></i> Password
+                        </label>
+                        <input 
+                            type="password" 
+                            class="form-control" 
+                            id="password" 
+                            name="password" 
+                            placeholder="Minimum 8 characters"
+                            required
+                            minlength="8"
+                            aria-label="Password">
+                        <small class="form-text text-muted">
+                            Use at least 8 characters with uppercase, lowercase, and numbers
+                        </small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="confirmPassword" class="form-label">
+                            <i class="fas fa-lock"></i> Confirm Password
+                        </label>
+                        <input 
+                            type="password" 
+                            class="form-control" 
+                            id="confirmPassword" 
+                            name="confirmPassword" 
+                            placeholder="Re-enter password"
+                            required
+                            aria-label="Confirm password">
+                        
+                        <!-- Password Validation UI -->
+                        <div id="passwordValidation" class="password-validation">
+                            <i id="validationIcon" class="fas fa-times-circle"></i>
+                            <span id="validationText">Passwords do not match</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Submit Button with Loading State -->
+                    <button 
+                        type="submit" 
+                        class="btn btn-register btn-primary w-100"
+                        id="submitBtn">
+                        <span id="submitText">
+                            <i class="fas fa-user-plus"></i> Create Account
+                        </span>
+                        <span id="submitSpinner" class="loading-spinner" style="display: none;">
+                            <i class="fas fa-spinner fa-spin"></i> Creating account...
+                        </span>
+                    </button>
+                </form>
+                
+                <!-- Footer Links -->
+                <div class="register-footer">
+                    <p>Already have an account? <a href="/auth/login"><i class="fas fa-sign-in-alt"></i> Login here</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Footer Container -->
+    <footer id="footer-container"></footer>
+    
+    <!-- ======================== SCRIPTS ======================== -->
+    <!-- Main App Initialization (navbar, logout, etc.) -->
+    <script src="/js/main.js"></script>
+    
+    <!-- Core Authentication & Authorization -->
+    <script src="/js/core/api.js"></script>
+    <script src="/js/core/auth.js"></script>
+    
+    <!-- Registration Handler with Partner-Specific Logic -->
+    <script src="/js/auth/register.js"></script>
+    
+    <!-- Bootstrap JS for interactive components -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Additional Security: Load navbar-public component if not already loaded -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Load public navbar component
+            if (document.getElementById('navbar-container')) {
+                fetch('/components/navbar-public.html')
+                    .then(response => response.text())
+                    .then(html => {
+                        document.getElementById('navbar-container').innerHTML = html;
+                    })
+                    .catch(error => console.error('Error loading navbar:', error));
+            }
+            
+            // Load footer component
+            if (document.getElementById('footer-container')) {
+                fetch('/components/footer.html')
+                    .then(response => response.text())
+                    .then(html => {
+                        document.getElementById('footer-container').innerHTML = html;
+                    })
+                    .catch(error => console.error('Error loading footer:', error));
+            }
+            
+            // ============ PARTNER FIELDS TOGGLE ============
+            const accountTypeSelect = document.getElementById('accountType');
+            const partnerFieldsSection = document.getElementById('partnerFieldsSection');
+            
+            if (accountTypeSelect) {
+                accountTypeSelect.addEventListener('change', function() {
+                    if (this.value === 'partner') {
+                        // Show partner fields with smooth animation
+                        partnerFieldsSection.classList.add('show');
+                    } else {
+                        // Hide partner fields
+                        partnerFieldsSection.classList.remove('show');
+                    }
+                });
+            }
+            
+            // ============ PASSWORD VALIDATION ============
+            const passwordInput = document.getElementById('password');
+            const confirmPasswordInput = document.getElementById('confirmPassword');
+            const passwordValidation = document.getElementById('passwordValidation');
+            const validationIcon = document.getElementById('validationIcon');
+            const validationText = document.getElementById('validationText');
+            
+            function validatePasswords() {
+                const password = passwordInput.value;
+                const confirmPassword = confirmPasswordInput.value;
+                
+                if (confirmPassword === '') {
+                    passwordValidation.classList.remove('show');
+                    return;
+                }
+                
+                passwordValidation.classList.add('show');
+                
+                if (password === confirmPassword && password.length >= 8) {
+                    passwordValidation.classList.remove('password-mismatch');
+                    passwordValidation.classList.add('password-match');
+                    validationIcon.className = 'fas fa-check-circle';
+                    validationText.textContent = 'Passwords match ✓';
+                    document.getElementById('submitBtn').disabled = false;
+                } else if (password === confirmPassword) {
+                    passwordValidation.classList.remove('password-match');
+                    passwordValidation.classList.add('password-mismatch');
+                    validationIcon.className = 'fas fa-exclamation-circle';
+                    validationText.textContent = 'Password must be at least 8 characters';
+                    document.getElementById('submitBtn').disabled = true;
+                } else {
+                    passwordValidation.classList.remove('password-match');
+                    passwordValidation.classList.add('password-mismatch');
+                    validationIcon.className = 'fas fa-times-circle';
+                    validationText.textContent = 'Passwords do not match';
+                    document.getElementById('submitBtn').disabled = true;
+                }
+            }
+            
+            if (passwordInput && confirmPasswordInput) {
+                passwordInput.addEventListener('input', validatePasswords);
+                confirmPasswordInput.addEventListener('input', validatePasswords);
+            }
+        });
+    </script>
+</body>
+</html>

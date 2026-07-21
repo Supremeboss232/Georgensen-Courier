@@ -1,0 +1,1111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Partner Settings - Georgensen Global</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/main.css">
+  <style>
+    .header-controls {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .region-selector {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+    .region-btn {
+      padding: 8px 16px;
+      border: 2px solid var(--gray-300);
+      background: var(--white);
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      font-size: 0.9em;
+    }
+    .region-btn.active {
+      background: #4caf50;
+      color: var(--white);
+      border-color: #4caf50;
+    }
+    .region-btn:hover {
+      border-color: #4caf50;
+    }
+    .language-selector {
+      display: flex;
+      gap: 8px;
+      margin-left: auto;
+    }
+    .lang-btn {
+      padding: 6px 12px;
+      border: 1px solid var(--gray-300);
+      background: var(--white);
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.85em;
+      transition: all 0.3s ease;
+    }
+    .lang-btn.active {
+      background: #2196f3;
+      color: var(--white);
+      border-color: #2196f3;
+    }
+    .tabs {
+      display: flex;
+      gap: var(--spacing-lg);
+      border-bottom: 2px solid var(--gray-200);
+      margin-bottom: var(--spacing-xl);
+      overflow-x: auto;
+    }
+    .tab-button {
+      padding: var(--spacing-md) var(--spacing-lg);
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1em;
+      font-weight: 600;
+      color: var(--gray-600);
+      border-bottom: 3px solid transparent;
+      margin-bottom: -2px;
+      transition: all 0.3s ease;
+      white-space: nowrap;
+    }
+    .tab-button.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+    }
+    .tab-content {
+      display: none;
+    }
+    .tab-content.active {
+      display: block;
+    }
+    .document-item {
+      padding: var(--spacing-lg);
+      background: var(--white);
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius-lg);
+      margin-bottom: var(--spacing-md);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .doc-status {
+      display: inline-block;
+      padding: 0.5em 1em;
+      border-radius: 0.5em;
+      font-size: 0.9em;
+      font-weight: 600;
+    }
+    .doc-status.verified {
+      background: #4caf5033;
+      color: #4caf50;
+    }
+    .doc-status.pending {
+      background: #ff980033;
+      color: #ff9800;
+    }
+    .doc-status.rejected {
+      background: #f4433633;
+      color: #f44336;
+    }
+    .banking-account {
+      background: var(--gray-50);
+      padding: 16px;
+      border-radius: 8px;
+      margin-bottom: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .permission-badge {
+      display: inline-block;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 0.85em;
+      font-weight: 600;
+    }
+    .permission-badge.active {
+      background: #4caf5033;
+      color: #4caf50;
+    }
+    .permission-badge.inactive {
+      background: #f4433633;
+      color: #f44336;
+    }
+    .alert-info {
+      background: #2196f333;
+      color: #0d47a1;
+      padding: 12px;
+      border-radius: 6px;
+      margin-bottom: 12px;
+      font-size: 0.9em;
+    }
+    .row-2col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    @media (max-width: 768px) {
+      .row-2col {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <div class="container">
+      <div class="logo">Georgensen Partners</div>
+      
+      <button class="menu-toggle" id="menuToggle">☰</button>
+      
+      <ul id="navMenu">
+        <li><a href="partner-dashboard.html" data-i18n="nav_dashboard">Dashboard</a></li>
+        <li><a href="available-jobs.html" data-i18n="nav_jobs">Available Jobs</a></li>
+        <li><a href="active-deliveries.html" data-i18n="nav_deliveries">Active</a></li>
+        <li><a href="earnings.html" data-i18n="nav_earnings">Earnings</a></li>
+        <li><a href="partner-settings.html" style="color: var(--accent);" data-i18n="nav_settings">Settings</a></li>
+        <li class="auth-buttons">
+          <span id="partnerName" style="color: var(--white);"></span>
+          <button class="btn btn-sm btn-outline" onclick="logout()" data-i18n="btn_logout">Logout</button>
+        </li>
+      </ul>
+    </div>
+  </nav>
+  
+  <!-- PAGE HEADER -->
+  <section style="background: var(--gray-50); padding: var(--spacing-xl) var(--spacing-md); border-bottom: 1px solid var(--gray-200);">
+    <div class="container">
+      <h1 data-i18n="settings_title">Partner Settings</h1>
+      <p style="color: var(--gray-600); margin-top: var(--spacing-sm);" data-i18n="settings_subtitle">Manage your global profile, compliance, and regional settings</p>
+    </div>
+  </section>
+  
+  <!-- MAIN CONTENT -->
+  <main style="flex: 1; padding: var(--spacing-xl) var(--spacing-md);">
+    <div class="container">
+      <!-- CONTROLS HEADER -->
+      <div class="header-controls">
+        <div>
+          <h5 style="margin-bottom: 8px; color: var(--gray-600);">Primary Operating Region:</h5>
+          <div class="region-selector" id="regionSelector">
+            <!-- Generated by JS -->
+          </div>
+        </div>
+        <div class="language-selector" id="languageSelector">
+          <button class="lang-btn active" onclick="changeLanguage('en')">EN</button>
+          <button class="lang-btn" onclick="changeLanguage('es')">ES</button>
+          <button class="lang-btn" onclick="changeLanguage('fr')">FR</button>
+          <button class="lang-btn" onclick="changeLanguage('pt')">PT</button>
+        </div>
+      </div>
+      
+      <!-- TABS -->
+      <div class="tabs">
+        <button class="tab-button active" onclick="switchTab(event, 'profile')" data-i18n="tab_profile">👤 Profile</button>
+        <button class="tab-button" onclick="switchTab(event, 'documents')" data-i18n="tab_documents">📄 Documents</button>
+        <button class="tab-button" onclick="switchTab(event, 'vehicle')" data-i18n="tab_vehicle">🚗 Vehicle</button>
+        <button class="tab-button" onclick="switchTab(event, 'banking')" data-i18n="tab_banking">🏦 Banking</button>
+        <button class="tab-button" onclick="switchTab(event, 'compliance')" data-i18n="tab_compliance">🛡️ Compliance</button>
+        <button class="tab-button" onclick="switchTab(event, 'preferences')" data-i18n="tab_preferences">⚙️ Preferences</button>
+        <button class="tab-button" onclick="switchTab(event, 'global')" data-i18n="tab_global">🌐 Global</button>
+      </div>
+      
+      <!-- PROFILE TAB -->
+      <div id="profile" class="tab-content active">
+        <div class="card">
+          <h3 data-i18n="profile_info">Your Profile Information</h3>
+          
+          <div class="alert-info" data-i18n="profile_region_note">Your primary region is: <strong id="profileRegionDisplay">North America</strong></div>
+          
+          <form id="profileForm" style="display: flex; flex-direction: column; gap: var(--spacing-md); max-width: 600px;">
+            <div class="row-2col">
+              <div>
+                <label data-i18n="label_full_name">Full Name</label>
+                <input type="text" id="fullName" placeholder="Your full name" required>
+              </div>
+              <div>
+                <label data-i18n="label_email">Email Address</label>
+                <input type="email" id="email" placeholder="your@email.com" required>
+              </div>
+            </div>
+            
+            <div class="row-2col">
+              <div>
+                <label data-i18n="label_phone">Phone Number</label>
+                <input type="tel" id="phone" placeholder="+1 (555) 123 4567" required>
+              </div>
+              <div>
+                <label data-i18n="label_emergency">Emergency Contact</label>
+                <input type="tel" id="emergency" placeholder="Emergency contact number">
+              </div>
+            </div>
+            
+            <div>
+              <label data-i18n="label_address">Street Address</label>
+              <input type="text" id="address" placeholder="Street address">
+            </div>
+            
+            <div class="row-2col">
+              <div>
+                <label data-i18n="label_city">City</label>
+                <input type="text" id="city" placeholder="City">
+              </div>
+              <div>
+                <label data-i18n="label_state">State/Province</label>
+                <input type="text" id="state" placeholder="State/Province">
+              </div>
+            </div>
+            
+            <div class="row-2col">
+              <div>
+                <label data-i18n="label_country">Country</label>
+                <input type="text" id="country" placeholder="Country" readonly style="background: var(--gray-100);">
+              </div>
+              <div>
+                <label data-i18n="label_postal">Postal Code</label>
+                <input type="text" id="postal" placeholder="Postal Code">
+              </div>
+            </div>
+            
+            <button type="submit" class="btn btn-primary" data-i18n="btn_save">💾 Save Profile</button>
+            <div id="profileMessage"></div>
+          </form>
+        </div>
+      </div>
+      
+      <!-- DOCUMENTS TAB -->
+      <div id="documents" class="tab-content">
+        <div class="card">
+          <h3 data-i18n="documents_title" style="margin-bottom: var(--spacing-lg);">Verification Documents</h3>
+          <p style="color: var(--gray-600); margin-bottom: var(--spacing-lg);" data-i18n="documents_note">Upload required documents for verification. Requirements vary by region.</p>
+          
+          <div id="documentsContainer">
+            <!-- Generated by JS based on region -->
+          </div>
+        </div>
+      </div>
+      
+      <!-- VEHICLE TAB -->
+      <div id="vehicle" class="tab-content">
+        <div class="card">
+          <h3 data-i18n="vehicle_info">Vehicle Information</h3>
+          
+          <form id="vehicleForm" style="display: flex; flex-direction: column; gap: var(--spacing-md); max-width: 600px;">
+            <div class="row-2col">
+              <div>
+                <label data-i18n="label_vehicle_type">Vehicle Type</label>
+                <select id="vehicleType" required>
+                  <option value="">Select vehicle type</option>
+                  <option value="motorcycle" data-i18n="vehicle_motorcycle">Motorcycle/Bike</option>
+                  <option value="car" data-i18n="vehicle_car">Car</option>
+                  <option value="van" data-i18n="vehicle_van">Van</option>
+                  <option value="truck" data-i18n="vehicle_truck">Truck</option>
+                  <option value="bicycle" data-i18n="vehicle_bicycle">Bicycle</option>
+                </select>
+              </div>
+              <div>
+                <label data-i18n="label_reg_number">Registration Number</label>
+                <input type="text" id="regNumber" placeholder="REG-123-XY" required>
+              </div>
+            </div>
+            
+            <div class="row-2col">
+              <div>
+                <label data-i18n="label_make_model">Make & Model</label>
+                <input type="text" id="vehicleModel" placeholder="e.g., Toyota Camry 2020" required>
+              </div>
+              <div>
+                <label data-i18n="label_license_plate">License Plate</label>
+                <input type="text" id="licensePlate" placeholder="ABC123DEF" required>
+              </div>
+            </div>
+            
+            <div class="row-2col">
+              <div>
+                <label data-i18n="label_capacity">Cargo Capacity (kg)</label>
+                <input type="number" id="capacity" placeholder="500" required>
+              </div>
+              <div>
+                <label data-i18n="label_color">Color</label>
+                <input type="text" id="color" placeholder="White">
+              </div>
+            </div>
+            
+            <button type="submit" class="btn btn-primary" data-i18n="btn_save">💾 Save Vehicle Info</button>
+            <div id="vehicleMessage"></div>
+          </form>
+        </div>
+      </div>
+      
+      <!-- BANKING TAB -->
+      <div id="banking" class="tab-content">
+        <div class="card">
+          <h3 data-i18n="banking_title">Multi-Currency Banking</h3>
+          <p style="color: var(--gray-600); margin-bottom: var(--spacing-lg);" data-i18n="banking_note">Manage currency-specific payout accounts for your region</p>
+          
+          <div id="bankingAccountsContainer">
+            <!-- Generated by JS -->
+          </div>
+          
+          <form id="bankingForm" style="display: flex; flex-direction: column; gap: var(--spacing-md); max-width: 600px; margin-top: 24px;">
+            <h4 data-i18n="add_banking_account">Add New Account</h4>
+            
+            <div class="alert-info" data-i18n="banking_secure">✓ Your banking information is secure and encrypted with AES-256</div>
+            
+            <div class="row-2col">
+              <div>
+                <label data-i18n="label_currency">Primary Currency</label>
+                <select id="bankCurrency" required>
+                  <option value="">Select currency</option>
+                  <!-- Populated by JS -->
+                </select>
+              </div>
+              <div>
+                <label data-i18n="label_bank_name">Bank Name</label>
+                <input type="text" id="bankName" placeholder="e.g., HSBC, Banco Santander" required>
+              </div>
+            </div>
+            
+            <div class="row-2col">
+              <div>
+                <label data-i18n="label_account_number">Account Number</label>
+                <input type="text" id="accountNumber" placeholder="Your bank account number" required>
+              </div>
+              <div>
+                <label data-i18n="label_account_name">Account Holder Name</label>
+                <input type="text" id="accountName" placeholder="Name on bank account" required>
+              </div>
+            </div>
+            
+            <div class="row-2col">
+              <div>
+                <label data-i18n="label_swift_code">SWIFT/BIC Code</label>
+                <input type="text" id="swiftCode" placeholder="HSBCUS33XXX">
+              </div>
+              <div>
+                <label data-i18n="label_iban">IBAN (if applicable)</label>
+                <input type="text" id="iban" placeholder="DE89370400440532013000">
+              </div>
+            </div>
+            
+            <div style="display: flex; gap: var(--spacing-md);">
+              <label style="display: flex; align-items: center; gap: var(--spacing-md); cursor: pointer;">
+                <input type="checkbox" id="primary"> <span data-i18n="set_as_primary">Set as primary for payouts</span>
+              </label>
+            </div>
+            
+            <div style="display: flex; gap: var(--spacing-md);">
+              <button type="submit" class="btn btn-primary" data-i18n="btn_add_account">+ Add Account</button>
+              <button type="button" class="btn btn-ghost" id="clearBankingBtn" data-i18n="btn_clear">Clear</button>
+            </div>
+            <div id="bankingMessage"></div>
+          </form>
+        </div>
+      </div>
+      
+      <!-- COMPLIANCE TAB (NEW) -->
+      <div id="compliance" class="tab-content">
+        <div class="card">
+          <h3 data-i18n="compliance_title">Global Compliance & Tax</h3>
+          
+          <form id="complianceForm" style="display: flex; flex-direction: column; gap: var(--spacing-md); max-width: 600px;">
+            <h4 data-i18n="tax_residency">Tax Residency</h4>
+            <div class="alert-info" data-i18n="tax_residency_note">Your tax residency determines withholding rates and compliance requirements</div>
+            
+            <div>
+              <label data-i18n="label_tax_residency">Tax Residency Country</label>
+              <input type="text" id="taxResidency" placeholder="Country of tax residency" readonly style="background: var(--gray-100);">
+            </div>
+            
+            <div>
+              <label data-i18n="label_tax_id">Tax ID / TIN</label>
+              <input type="text" id="taxId" placeholder="Your tax identification number" required>
+            </div>
+            
+            <hr style="margin: 16px 0; border: none; border-top: 1px solid var(--gray-200);">
+            
+            <h4 data-i18n="cross_border_title">Cross-Border Certifications</h4>
+            
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+              <label style="display: flex; align-items: center; gap: var(--spacing-md); cursor: pointer; padding: 12px; border: 1px solid var(--gray-300); border-radius: 6px;">
+                <input type="checkbox" id="customsCertified"> 
+                <div>
+                  <div style="font-weight: 600;" data-i18n="customs_certified">Customs Certified</div>
+                  <small style="color: var(--gray-600);" data-i18n="customs_certified_desc">Can handle international shipments with customs documents</small>
+                </div>
+              </label>
+              
+              <label style="display: flex; align-items: center; gap: var(--spacing-md); cursor: pointer; padding: 12px; border: 1px solid var(--gray-300); border-radius: 6px;">
+                <input type="checkbox" id="internationalReady">
+                <div>
+                  <div style="font-weight: 600;" data-i18n="international_ready">International Ready</div>
+                  <small style="color: var(--gray-600);" data-i18n="international_ready_desc">Can fulfill cross-border deliveries and handle multiple currencies</small>
+                </div>
+              </label>
+              
+              <label style="display: flex; align-items: center; gap: var(--spacing-md); cursor: pointer; padding: 12px; border: 1px solid var(--gray-300); border-radius: 6px;">
+                <input type="checkbox" id="fastCard">
+                <div>
+                  <div style="font-weight: 600;" data-i18n="fast_card">FAST Card (NA Only)</div>
+                  <small style="color: var(--gray-600);" data-i18n="fast_card_desc">Expedited border crossing certification for North America</small>
+                </div>
+              </label>
+              
+              <label style="display: flex; align-items: center; gap: var(--spacing-md); cursor: pointer; padding: 12px; border: 1px solid var(--gray-300); border-radius: 6px;">
+                <input type="checkbox" id="vatRegistered">
+                <div>
+                  <div style="font-weight: 600;" data-i18n="vat_registered">VAT Registered (EU)</div>
+                  <small style="color: var(--gray-600);" data-i18n="vat_registered_desc">Registered for EU Value Added Tax collection and remittance</small>
+                </div>
+              </label>
+            </div>
+            
+            <hr style="margin: 16px 0; border: none; border-top: 1px solid var(--gray-200);">
+            
+            <h4 data-i18n="regulatory_requirements">Regulatory Requirements</h4>
+            
+            <div>
+              <label data-i18n="label_withholding_rate">Withholding Tax Rate (%)</label>
+              <input type="number" id="withholdingRate" placeholder="Auto-calculated based on region" readonly style="background: var(--gray-100);" step="0.5" min="0" max="50">
+            </div>
+            
+            <div>
+              <label data-i18n="label_tax_type">Tax Type</label>
+              <select id="taxType" required>
+                <option value="">Auto-detected</option>
+                <option value="GST">GST (Goods & Services Tax)</option>
+                <option value="VAT">VAT (Value Added Tax)</option>
+                <option value="NONE">No Withholding</option>
+              </select>
+            </div>
+            
+            <button type="submit" class="btn btn-primary" data-i18n="btn_save">💾 Save Compliance Info</button>
+            <div id="complianceMessage"></div>
+          </form>
+        </div>
+      </div>
+      
+      <!-- PREFERENCES TAB -->
+      <div id="preferences" class="tab-content">
+        <div class="card">
+          <h3 style="margin-bottom: var(--spacing-lg);" data-i18n="delivery_prefs">Delivery Preferences</h3>
+          
+          <form id="preferencesForm" style="display: flex; flex-direction: column; gap: var(--spacing-lg);">
+            <div id="servicePreferencesContainer">
+              <!-- Generated by JS based on region -->
+            </div>
+            
+            <div>
+              <label data-i18n="label_max_jobs">Maximum jobs per day</label>
+              <input type="number" id="maxJobs" value="10" min="1" max="50">
+            </div>
+            
+            <div>
+              <label style="display: flex; align-items: center; gap: var(--spacing-md); cursor: pointer;">
+                <input type="checkbox" id="nightShifts">
+                <span data-i18n="available_nights">Available for night shifts (8 PM - 6 AM)</span>
+              </label>
+            </div>
+            
+            <div>
+              <label style="display: flex; align-items: center; gap: var(--spacing-md); cursor: pointer;">
+                <input type="checkbox" id="weekendShifts" checked>
+                <span data-i18n="available_weekends">Available on weekends</span>
+              </label>
+            </div>
+            
+            <button type="submit" class="btn btn-primary" data-i18n="btn_save">💾 Save Preferences</button>
+            <div id="preferencesMessage"></div>
+          </form>
+        </div>
+      </div>
+      
+      <!-- GLOBAL SETTINGS TAB (NEW) -->
+      <div id="global" class="tab-content">
+        <div class="card">
+          <h3 data-i18n="global_settings">Global Settings</h3>
+          
+          <form id="globalForm" style="display: flex; flex-direction: column; gap: var(--spacing-md); max-width: 600px;">
+            <h4 data-i18n="localization">Localization</h4>
+            
+            <div class="row-2col">
+              <div>
+                <label data-i18n="label_language">Preferred Language</label>
+                <select id="preferredLanguage" required>
+                  <option value="en">English</option>
+                  <option value="es">Español</option>
+                  <option value="fr">Français</option>
+                  <option value="pt">Português</option>
+                </select>
+              </div>
+              <div>
+                <label data-i18n="label_distance_unit">Distance Unit</label>
+                <select id="distanceUnit" required>
+                  <option value="km">Kilometers (km)</option>
+                  <option value="mi">Miles (mi)</option>
+                </select>
+              </div>
+            </div>
+            
+            <div class="row-2col">
+              <div>
+                <label data-i18n="label_timezone">Home Timezone</label>
+                <select id="timezone" required>
+                  <!-- Populated by JS -->
+                </select>
+              </div>
+              <div>
+                <label data-i18n="label_currency_display">Display Currency</label>
+                <select id="currencyDisplay" required>
+                  <!-- Populated by JS based on region -->
+                </select>
+              </div>
+            </div>
+            
+            <hr style="margin: 16px 0; border: none; border-top: 1px solid var(--gray-200);">
+            
+            <h4 data-i18n="notifications">Notifications</h4>
+            
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+              <label style="display: flex; align-items: center; gap: var(--spacing-md); cursor: pointer;">
+                <input type="checkbox" id="emailNotifications" checked>
+                <span data-i18n="email_notifications">Email notifications for new jobs</span>
+              </label>
+              
+              <label style="display: flex; align-items: center; gap: var(--spacing-md); cursor: pointer;">
+                <input type="checkbox" id="smsNotifications" checked>
+                <span data-i18n="sms_notifications">SMS notifications for urgent updates</span>
+              </label>
+              
+              <label style="display: flex; align-items: center; gap: var(--spacing-md); cursor: pointer;">
+                <input type="checkbox" id="pushNotifications" checked>
+                <span data-i18n="push_notifications">Push notifications on mobile</span>
+              </label>
+            </div>
+            
+            <button type="submit" class="btn btn-primary" data-i18n="btn_save">💾 Save Settings</button>
+            <div id="globalMessage"></div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </main>
+  
+  <!-- FOOTER -->
+  <footer style="background-color: var(--primary); color: var(--white); padding: var(--spacing-xl) var(--spacing-md); margin-top: auto;">
+    <div class="container" style="text-align: center; color: var(--gray-300);">
+      <p>&copy; 2026 Georgensen Partners Global</p>
+    </div>
+  </footer>
+  
+  <script src="/js/core/api.js"></script>
+  <script src="/js/core/auth.js"></script>
+  <script src="/js/core/guards.js"></script>
+  
+  <script>
+    if (!isAuthenticated()) location.href = '../pages/index.html';
+    
+    // GLOBAL CONFIG
+    const REGIONS = {
+      NA: { label: 'North America', countries: ['US', 'CA', 'MX'], currencies: ['USD', 'CAD', 'MXN'], timezone: 'America/Toronto', countryCode: 'US' },
+      EU: { label: 'Europe', countries: ['GB', 'DE', 'FR', 'IT', 'ES', 'NL', 'BE', 'AT', 'CH'], currencies: ['EUR', 'GBP'], timezone: 'Europe/London', countryCode: 'GB' },
+      APAC: { label: 'Asia-Pacific', countries: ['AU', 'SG', 'JP', 'HK', 'NZ'], currencies: ['AUD', 'SGD', 'JPY'], timezone: 'Asia/Singapore', countryCode: 'AU' },
+      LATAM: { label: 'Latin America', countries: ['BR', 'AR', 'CL', 'MX'], currencies: ['BRL', 'ARS', 'CLP'], timezone: 'America/Sao_Paulo', countryCode: 'BR' },
+      MEA: { label: 'Middle East & Africa', countries: ['AE', 'SA', 'ZA'], currencies: ['AED', 'SAR', 'ZAR'], timezone: 'Asia/Dubai', countryCode: 'AE' }
+    };
+
+    const REGIONAL_DOCUMENTS = {
+      NA: [
+        { name: 'National ID / Passport', desc: 'Government-issued ID', required: true, type: 'identification' },
+        { name: 'Driver License', desc: 'Valid driving license', required: true, type: 'license' },
+        { name: 'FAST Card (Optional)', desc: 'Expedited border crossing', required: false, type: 'fast' },
+        { name: 'Background Check', desc: 'Criminal verification', required: true, type: 'background' },
+        { name: 'Insurance Certificate', desc: 'Liability insurance', required: true, type: 'insurance' }
+      ],
+      EU: [
+        { name: 'National ID / Passport', desc: 'Government-issued ID', required: true, type: 'identification' },
+        { name: 'Driver License', desc: 'Valid EU driving license', required: true, type: 'license' },
+        { name: 'VAT Registration', desc: 'EU VAT certificate', required: false, type: 'vat' },
+        { name: 'Background Check', desc: 'Criminal verification', required: true, type: 'background' },
+        { name: 'Insurance Certificate', desc: 'Third-party liability', required: true, type: 'insurance' }
+      ],
+      APAC: [
+        { name: 'National ID', desc: 'Government ID or Passport', required: true, type: 'identification' },
+        { name: 'Driver License', desc: 'Valid regional license', required: true, type: 'license' },
+        { name: 'Import/Export License', desc: 'Cross-border certification', required: false, type: 'import_export' },
+        { name: 'Background Check', desc: 'Police clearance certificate', required: true, type: 'background' },
+        { name: 'Business Registration', desc: 'Company/sole trader license', required: true, type: 'business' }
+      ],
+      LATAM: [
+        { name: 'Cédula / ID', desc: 'National identification', required: true, type: 'identification' },
+        { name: 'Driver License', desc: 'Valid regional license', required: true, type: 'license' },
+        { name: 'CUIL/RUT Number', desc: 'Tax ID number', required: true, type: 'tax_id' },
+        { name: 'Background Check', desc: 'Police certificate', required: true, type: 'background' },
+        { name: 'Insurance Certificate', desc: 'Vehicle liability insurance', required: true, type: 'insurance' }
+      ],
+      MEA: [
+        { name: 'Passport/ID', desc: 'Valid passport or national ID', required: true, type: 'identification' },
+        { name: 'Driver License', desc: 'Valid regional license', required: true, type: 'license' },
+        { name: 'Trade License', desc: 'Business registration license', required: true, type: 'business' },
+        { name: 'Background Check', desc: 'Police clearance', required: true, type: 'background' },
+        { name: 'Insurance Certificate', desc: 'Comprehensive coverage', required: true, type: 'insurance' }
+      ]
+    };
+
+    const REGIONAL_SERVICE_TYPES = {
+      NA: [
+        { id: 'same_day', name: 'Same-Day Delivery', range: '$80-500' },
+        { id: 'next_day', name: 'Next-Day Delivery', range: '$40-200' },
+        { id: 'freight', name: 'Freight/LTL', range: '$200-2000' }
+      ],
+      EU: [
+        { id: 'express', name: 'Express (24h)', range: '€60-400' },
+        { id: 'standard', name: 'Standard (2-3 days)', range: '€30-150' },
+        { id: 'economy', name: 'Economy (5-7 days)', range: '€10-50' }
+      ],
+      APAC: [
+        { id: 'same_day', name: 'Same-Day', range: '¥5,000-50,000' },
+        { id: 'next_day', name: 'Next-Day', range: '¥2,000-20,000' },
+        { id: 'international', name: 'Regional (2-5 days)', range: '¥10,000-100,000' }
+      ],
+      LATAM: [
+        { id: 'standard', name: 'Standard (1-2 days)', range: 'R$100-500' },
+        { id: 'express', name: 'Express (Same day)', range: 'R$300-1500' },
+        { id: 'regional', name: 'Regional (2-7 days)', range: 'R$150-800' }
+      ],
+      MEA: [
+        { id: 'same_day', name: 'Same-Day Delivery', range: 'د.إ 150-800' },
+        { id: 'next_day', name: 'Next-Day Delivery', range: 'د.إ 80-400' },
+        { id: 'regional', name: 'Regional (2-5 days)', range: 'د.إ 100-600' }
+      ]
+    };
+
+    const TAX_CONFIG = {
+      NA: { rate: 7, type: 'GST', label: 'GST/HST 7-13%' },
+      EU: { rate: 19, type: 'VAT', label: 'VAT 15-27%' },
+      APAC: { rate: 10, type: 'GST', label: 'GST 0-10%' },
+      LATAM: { rate: 17, type: 'VAT', label: 'VAT 15-19%' },
+      MEA: { rate: 5, type: 'VAT', label: 'VAT 0-15%' }
+    };
+
+    const TIMEZONES = [
+      'America/New_York', 'America/Chicago', 'America/Denver', 'America/Los_Angeles', 'America/Toronto',
+      'Europe/London', 'Europe/Paris', 'Europe/Berlin', 'Europe/Madrid', 'Europe/Amsterdam',
+      'Asia/Dubai', 'Asia/Singapore', 'Asia/Tokyo', 'Australia/Sydney', 'Pacific/Auckland'
+    ];
+
+    // i18n Translations
+    const i18n = {
+      en: {
+        nav_dashboard: 'Dashboard', nav_jobs: 'Available Jobs', nav_deliveries: 'Active', nav_earnings: 'Earnings', nav_settings: 'Settings',
+        btn_logout: 'Logout', btn_save: 'Save', btn_add_account: 'Add Account', btn_clear: 'Clear', btn_cancel: 'Cancel',
+        settings_title: 'Partner Settings', settings_subtitle: 'Manage your global profile, compliance, and regional settings',
+        tab_profile: 'Profile', tab_documents: 'Documents', tab_vehicle: 'Vehicle', tab_banking: 'Banking', tab_compliance: 'Compliance', tab_preferences: 'Preferences', tab_global: 'Global',
+        profile_info: 'Your Profile Information', profile_region_note: 'Your primary region is:',
+        label_full_name: 'Full Name', label_email: 'Email Address', label_phone: 'Phone Number', label_emergency: 'Emergency Contact',
+        label_address: 'Street Address', label_city: 'City', label_state: 'State/Province', label_country: 'Country', label_postal: 'Postal Code',
+        documents_title: 'Verification Documents', documents_note: 'Upload required documents for verification. Requirements vary by region.',
+        vehicle_info: 'Vehicle Information', label_vehicle_type: 'Vehicle Type', label_reg_number: 'Registration Number', label_make_model: 'Make & Model',
+        label_license_plate: 'License Plate', label_capacity: 'Cargo Capacity (kg)', label_color: 'Color',
+        vehicle_motorcycle: 'Motorcycle/Bike', vehicle_car: 'Car', vehicle_van: 'Van', vehicle_truck: 'Truck', vehicle_bicycle: 'Bicycle',
+        banking_title: 'Multi-Currency Banking', banking_note: 'Manage currency-specific payout accounts for your region', banking_secure: '✓ Your banking information is secure and encrypted with AES-256',
+        add_banking_account: 'Add New Account', label_currency: 'Primary Currency', label_bank_name: 'Bank Name', label_account_number: 'Account Number',
+        label_account_name: 'Account Holder Name', label_swift_code: 'SWIFT/BIC Code', label_iban: 'IBAN (if applicable)', set_as_primary: 'Set as primary for payouts',
+        compliance_title: 'Global Compliance & Tax', tax_residency: 'Tax Residency', tax_residency_note: 'Your tax residency determines withholding rates and compliance requirements',
+        label_tax_residency: 'Tax Residency Country', label_tax_id: 'Tax ID / TIN',
+        cross_border_title: 'Cross-Border Certifications', customs_certified: 'Customs Certified', customs_certified_desc: 'Can handle international shipments with customs documents',
+        international_ready: 'International Ready', international_ready_desc: 'Can fulfill cross-border deliveries and handle multiple currencies',
+        fast_card: 'FAST Card (NA Only)', fast_card_desc: 'Expedited border crossing certification for North America',
+        vat_registered: 'VAT Registered (EU)', vat_registered_desc: 'Registered for EU Value Added Tax collection and remittance',
+        regulatory_requirements: 'Regulatory Requirements', label_withholding_rate: 'Withholding Tax Rate (%)', label_tax_type: 'Tax Type',
+        delivery_prefs: 'Delivery Preferences', label_max_jobs: 'Maximum jobs per day', available_nights: 'Available for night shifts (8 PM - 6 AM)',
+        available_weekends: 'Available on weekends', global_settings: 'Global Settings', localization: 'Localization',
+        label_language: 'Preferred Language', label_distance_unit: 'Distance Unit', label_timezone: 'Home Timezone', label_currency_display: 'Display Currency',
+        notifications: 'Notifications', email_notifications: 'Email notifications for new jobs', sms_notifications: 'SMS notifications for urgent updates',
+        push_notifications: 'Push notifications on mobile'
+      },
+      es: {
+        nav_dashboard: 'Panel de Control', nav_jobs: 'Trabajos Disponibles', nav_deliveries: 'Activos', nav_earnings: 'Ganancias', nav_settings: 'Configuración',
+        btn_logout: 'Cerrar Sesión', btn_save: 'Guardar', btn_add_account: 'Agregar Cuenta', btn_clear: 'Limpiar', btn_cancel: 'Cancelar',
+        settings_title: 'Configuración de Socios', settings_subtitle: 'Administre su perfil global, cumplimiento y configuración regional',
+        tab_profile: 'Perfil', tab_documents: 'Documentos', tab_vehicle: 'Vehículo', tab_banking: 'Banca', tab_compliance: 'Cumplimiento', tab_preferences: 'Preferencias', tab_global: 'Global',
+        profile_info: 'Información de su Perfil', profile_region_note: 'Su región principal es:',
+        label_full_name: 'Nombre Completo', label_email: 'Correo Electrónico', label_phone: 'Número de Teléfono', label_emergency: 'Contacto de Emergencia',
+        label_address: 'Dirección de Calle', label_city: 'Ciudad', label_state: 'Estado/Provincia', label_country: 'País', label_postal: 'Código Postal',
+        documents_title: 'Documentos de Verificación', documents_note: 'Cargue los documentos requeridos para verificación. Los requisitos varían por región.',
+        vehicle_info: 'Información del Vehículo', label_vehicle_type: 'Tipo de Vehículo', label_reg_number: 'Número de Registro', label_make_model: 'Marca y Modelo',
+        label_license_plate: 'Placa de Licencia', label_capacity: 'Capacidad de Carga (kg)', label_color: 'Color',
+        vehicle_motorcycle: 'Motocicleta/Bicicleta', vehicle_car: 'Coche', vehicle_van: 'Furgoneta', vehicle_truck: 'Camión', vehicle_bicycle: 'Bicicleta',
+        banking_title: 'Banca Multimoneda', banking_note: 'Administre cuentas de pago específicas por moneda para su región', banking_secure: '✓ Su información bancaria es segura y está encriptada con AES-256',
+        add_banking_account: 'Agregar Nueva Cuenta', label_currency: 'Moneda Principal', label_bank_name: 'Nombre del Banco', label_account_number: 'Número de Cuenta',
+        label_account_name: 'Nombre del Titular de la Cuenta', label_swift_code: 'Código SWIFT/BIC', label_iban: 'IBAN (si aplica)', set_as_primary: 'Establecer como principal para pagos',
+        compliance_title: 'Cumplimiento y Fiscalidad Global', tax_residency: 'Residencia Fiscal', tax_residency_note: 'Su residencia fiscal determina las tasas de retención y cumplimiento',
+        label_tax_residency: 'País de Residencia Fiscal', label_tax_id: 'ID Fiscal / TIN',
+        cross_border_title: 'Certificaciones Transfronterizas', customs_certified: 'Certificado en Aduanas', customs_certified_desc: 'Puede manejar envíos internacionales con documentos aduanales',
+        international_ready: 'Listo para Internacional', international_ready_desc: 'Puede cumplir entregas transfronterizas y manejar múltiples monedas',
+        fast_card: 'Tarjeta FAST (Solo NA)', fast_card_desc: 'Certificación de cruce fronterizo expedito para América del Norte',
+        vat_registered: 'Registrado para IVA (UE)', vat_registered_desc: 'Registrado para cobrar y remitir impuesto sobre valor agregado de la UE',
+        regulatory_requirements: 'Requisitos Reglamentarios', label_withholding_rate: 'Tasa Impositiva Retenida (%)', label_tax_type: 'Tipo de Impuesto',
+        delivery_prefs: 'Preferencias de Entrega', label_max_jobs: 'Máximo de trabajos por día', available_nights: 'Disponible para turnos nocturnos (8 PM - 6 AM)',
+        available_weekends: 'Disponible en fines de semana', global_settings: 'Configuración Global', localization: 'Localización',
+        label_language: 'Idioma Preferido', label_distance_unit: 'Unidad de Distancia', label_timezone: 'Zona Horaria Local', label_currency_display: 'Moneda de Visualización',
+        notifications: 'Notificaciones', email_notifications: 'Notificaciones por correo electrónico para nuevos trabajos', sms_notifications: 'Notificaciones por SMS para actualizaciones urgentes',
+        push_notifications: 'Notificaciones push en dispositivo móvil'
+      },
+      fr: {
+        nav_dashboard: 'Tableau de Bord', nav_jobs: 'Emplois Disponibles', nav_deliveries: 'Actifs', nav_earnings: 'Gains', nav_settings: 'Paramètres',
+        btn_logout: 'Déconnexion', btn_save: 'Enregistrer', btn_add_account: 'Ajouter un Compte', btn_clear: 'Effacer', btn_cancel: 'Annuler',
+        settings_title: 'Paramètres des Partenaires', settings_subtitle: 'Gérez votre profil mondial, conformité et paramètres régionaux',
+        tab_profile: 'Profil', tab_documents: 'Documents', tab_vehicle: 'Véhicule', tab_banking: 'Banque', tab_compliance: 'Conformité', tab_preferences: 'Préférences', tab_global: 'Global',
+        profile_info: 'Informations de Votre Profil', profile_region_note: 'Votre région principale est:',
+        label_full_name: 'Nom Complet', label_email: 'Adresse E-mail', label_phone: 'Numéro de Téléphone', label_emergency: 'Contact d\'Urgence',
+        label_address: 'Adresse Complète', label_city: 'Ville', label_state: 'État/Province', label_country: 'Pays', label_postal: 'Code Postal',
+        documents_title: 'Documents de Vérification', documents_note: 'Téléchargez les documents requis pour la vérification. Les exigences varient selon la région.',
+        vehicle_info: 'Informations Véhicule', label_vehicle_type: 'Type de Véhicule', label_reg_number: 'Numéro d\'Immatriculation', label_make_model: 'Marque et Modèle',
+        label_license_plate: 'Plaque d\'Immatriculation', label_capacity: 'Capacité de Charge (kg)', label_color: 'Couleur',
+        vehicle_motorcycle: 'Motocyclette/Vélo', vehicle_car: 'Voiture', vehicle_van: 'Fourgonnette', vehicle_truck: 'Camion', vehicle_bicycle: 'Vélo',
+        banking_title: 'Banque Multidevises', banking_note: 'Gérez les comptes de paiement spécifiques à chaque devise pour votre région', banking_secure: '✓ Vos informations bancaires sont sécurisées et chiffrées avec AES-256',
+        add_banking_account: 'Ajouter un Nouveau Compte', label_currency: 'Devise Principale', label_bank_name: 'Nom de la Banque', label_account_number: 'Numéro de Compte',
+        label_account_name: 'Nom du Titulaire du Compte', label_swift_code: 'Code SWIFT/BIC', label_iban: 'IBAN (le cas échéant)', set_as_primary: 'Définir comme principal pour les paiements',
+        compliance_title: 'Conformité et Impôts Mondiaux', tax_residency: 'Résidence Fiscale', tax_residency_note: 'Votre résidence fiscale détermine les taux de retenue et la conformité',
+        label_tax_residency: 'Pays de Résidence Fiscale', label_tax_id: 'ID Fiscal / TIN',
+        cross_border_title: 'Certifications Transfrontalières', customs_certified: 'Certifié Douane', customs_certified_desc: 'Peut gérer les expéditions internationales avec documents douaniers',
+        international_ready: 'Recommandé International', international_ready_desc: 'Peut exécuter les livraisons transfrontalières et gérer plusieurs devises',
+        fast_card: 'Carte FAST (NA Uniquement)', fast_card_desc: 'Certification de passage en douane accélérée pour l\'Amérique du Nord',
+        vat_registered: 'Enregistré pour la TVA (UE)', vat_registered_desc: 'Enregistré pour percevoir et remettre la taxe sur la valeur ajoutée de l\'UE',
+        regulatory_requirements: 'Exigences Réglementaires', label_withholding_rate: 'Taux d\'Imposition Retenue (%)', label_tax_type: 'Type d\'Impôt',
+        delivery_prefs: 'Préférences de Livraison', label_max_jobs: 'Nombre maximal de travaux par jour', available_nights: 'Disponible pour les quarts de nuit (20h - 6h)',
+        available_weekends: 'Disponible les fins de semaine', global_settings: 'Paramètres Globaux', localization: 'Localisation',
+        label_language: 'Langue Préférée', label_distance_unit: 'Unité de Distance', label_timezone: 'Fuseau Horaire Local', label_currency_display: 'Devise d\'Affichage',
+        notifications: 'Notifications', email_notifications: 'Notifications par e-mail pour les nouveaux travaux', sms_notifications: 'Notifications SMS pour les mises à jour urgentes',
+        push_notifications: 'Notifications push sur mobile'
+      },
+      pt: {
+        nav_dashboard: 'Painel de Controle', nav_jobs: 'Trabalhos Disponíveis', nav_deliveries: 'Ativos', nav_earnings: 'Ganhos', nav_settings: 'Configurações',
+        btn_logout: 'Sair', btn_save: 'Salvar', btn_add_account: 'Adicionar Conta', btn_clear: 'Limpar', btn_cancel: 'Cancelar',
+        settings_title: 'Configurações de Parceiros', settings_subtitle: 'Gerencie seu perfil global, conformidade e configurações regionais',
+        tab_profile: 'Perfil', tab_documents: 'Documentos', tab_vehicle: 'Veículo', tab_banking: 'Banco', tab_compliance: 'Conformidade', tab_preferences: 'Preferências', tab_global: 'Global',
+        profile_info: 'Informações do Seu Perfil', profile_region_note: 'Sua região principal é:',
+        label_full_name: 'Nome Completo', label_email: 'Endereço de Email', label_phone: 'Número de Telefone', label_emergency: 'Contato de Emergência',
+        label_address: 'Endereço da Rua', label_city: 'Cidade', label_state: 'Estado/Província', label_country: 'País', label_postal: 'CEP',
+        documents_title: 'Documentos de Verificação', documents_note: 'Envie os documentos necessários para verificação. Os requisitos variam por região.',
+        vehicle_info: 'Informações do Veículo', label_vehicle_type: 'Tipo de Veículo', label_reg_number: 'Número de Registro', label_make_model: 'Marca e Modelo',
+        label_license_plate: 'Placa de Licença', label_capacity: 'Capacidade de Carga (kg)', label_color: 'Cor',
+        vehicle_motorcycle: 'Motocicleta/Bicicleta', vehicle_car: 'Carro', vehicle_van: 'Van', vehicle_truck: 'Caminhão', vehicle_bicycle: 'Bicicleta',
+        banking_title: 'Banco Multimoeda', banking_note: 'Gerencie contas de pagamento específicas por moeda para sua região', banking_secure: '✓ Suas informações bancárias são seguras e criptografadas com AES-256',
+        add_banking_account: 'Adicionar Nova Conta', label_currency: 'Moeda Principal', label_bank_name: 'Nome do Banco', label_account_number: 'Número da Conta',
+        label_account_name: 'Nome do Titular da Conta', label_swift_code: 'Código SWIFT/BIC', label_iban: 'IBAN (se aplicável)', set_as_primary: 'Definir como primária para pagamentos',
+        compliance_title: 'Conformidade e Impostos Globais', tax_residency: 'Residência Fiscal', tax_residency_note: 'Sua residência fiscal determina as alíquotas de retenção e conformidade',
+        label_tax_residency: 'País de Residência Fiscal', label_tax_id: 'ID Fiscal / TIN',
+        cross_border_title: 'Certificações Transfronteiriças', customs_certified: 'Certificado Aduaneiro', customs_certified_desc: 'Pode lidar com remessas internacionais com documentação aduaneira',
+        international_ready: 'Pronto para Internacional', international_ready_desc: 'Pode cumprir entregas transfronteiriças e manipular múltiplas moedas',
+        fast_card: 'Cartão FAST (Apenas NA)', fast_card_desc: 'Certificação de passagem em fronteira expedita para América do Norte',
+        vat_registered: 'Registrado para IVA (UE)', vat_registered_desc: 'Registrado para coletar e remeter o imposto sobre valor agregado da UE',
+        regulatory_requirements: 'Requisitos Regulatórios', label_withholding_rate: 'Taxa de Imposto Retido (%)', label_tax_type: 'Tipo de Imposto',
+        delivery_prefs: 'Preferências de Entrega', label_max_jobs: 'Máximo de trabalhos por dia', available_nights: 'Disponível para turnos noturnos (20h - 6h)',
+        available_weekends: 'Disponível nos fins de semana', global_settings: 'Configurações Globais', localization: 'Localização',
+        label_language: 'Idioma Preferido', label_distance_unit: 'Unidade de Distância', label_timezone: 'Fuso Horário Local', label_currency_display: 'Moeda de Exibição',
+        notifications: 'Notificações', email_notifications: 'Notificações por email para novos trabalhos', sms_notifications: 'Notificações por SMS para atualizações urgentes',
+        push_notifications: 'Notificações push no celular'
+      }
+    };
+
+    // STATE
+    let appState = {
+      currentLanguage: 'en',
+      currentRegion: 'NA',
+      bankingAccounts: []
+    };
+
+    // USER
+    const user = getCurrentUser();
+    document.getElementById('partnerName').textContent = user.first_name || 'Partner';
+
+    // UTILITY FUNCTIONS
+    function translate(key) {
+      return i18n[appState.currentLanguage][key] || key;
+    }
+
+    function updateTranslations() {
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        el.textContent = translate(key);
+      });
+    }
+
+    function changeLanguage(lang) {
+      appState.currentLanguage = lang;
+      document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.remove('active'));
+      event.target.classList.add('active');
+      updateTranslations();
+    }
+
+    // REGION SELECTOR
+    function initializeRegionSelector() {
+      const selector = document.getElementById('regionSelector');
+      Object.entries(REGIONS).forEach(([code, region]) => {
+        const btn = document.createElement('button');
+        btn.className = `region-btn ${code === appState.currentRegion ? 'active' : ''}`;
+        btn.textContent = region.label;
+        btn.onclick = () => selectRegion(code);
+        selector.appendChild(btn);
+      });
+    }
+
+    function selectRegion(regionCode) {
+      appState.currentRegion = regionCode;
+      document.querySelectorAll('.region-btn').forEach(btn => btn.classList.remove('active'));
+      event.target.classList.add('active');
+      
+      // Update UI for new region
+      updateRegionSpecificUI();
+    }
+
+    function updateRegionSpecificUI() {
+      const region = REGIONS[appState.currentRegion];
+      
+      // Update profile region display
+      document.getElementById('profileRegionDisplay').textContent = region.label;
+      document.getElementById('country').value = region.countries[0];
+      document.getElementById('taxResidency').value = region.countries[0];
+      
+      // Update documents
+      renderDocuments();
+      
+      // Update banking currencies
+      renderBankingCurrencies();
+      
+      // Update service preferences
+      renderServicePreferences();
+      
+      // Update global settings dropdowns
+      renderGlobalSettings();
+      
+      // Update tax info
+      const taxInfo = TAX_CONFIG[appState.currentRegion];
+      document.getElementById('withholdingRate').value = taxInfo.rate;
+      document.getElementById('taxType').value = taxInfo.type;
+    }
+
+    // DOCUMENTS
+    function renderDocuments() {
+      const container = document.getElementById('documentsContainer');
+      const docs = REGIONAL_DOCUMENTS[appState.currentRegion] || [];
+      
+      container.innerHTML = docs.map((doc, idx) => `
+        <div class="document-item">
+          <div>
+            <div style="font-weight: 600;">${doc.name}</div>
+            <small style="color: var(--gray-600);">${doc.desc}</small>
+          </div>
+          <div style="display: flex; align-items: center; gap: var(--spacing-md);">
+            <span class="doc-status ${idx > 1 ? 'pending' : 'verified'}">${idx > 1 ? '⏳ Pending' : '✓ Verified'}</span>
+            ${idx > 1 ? `<button class="btn btn-sm btn-ghost" onclick="resubmitDocument('${doc.type}')">Resubmit</button>` : ''}
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function resubmitDocument(docType) {
+      showNotification('Document resubmitted for verification', 'info');
+    }
+
+    // BANKING
+    function renderBankingCurrencies() {
+      const region = REGIONS[appState.currentRegion];
+      const select = document.getElementById('bankCurrency');
+      select.innerHTML = '<option value="">Select currency</option>';
+      region.currencies.forEach(curr => {
+        const opt = document.createElement('option');
+        opt.value = curr;
+        opt.textContent = curr;
+        select.appendChild(opt);
+      });
+    }
+
+    // SERVICE PREFERENCES
+    function renderServicePreferences() {
+      const container = document.getElementById('servicePreferencesContainer');
+      const services = REGIONAL_SERVICE_TYPES[appState.currentRegion] || [];
+      
+      container.innerHTML = services.map(svc => `
+        <div>
+          <label style="display: flex; align-items: center; gap: var(--spacing-md); cursor: pointer;">
+            <input type="checkbox" checked>
+            <span>${svc.name} <small style="color: var(--gray-600);">${svc.range}</small></span>
+          </label>
+        </div>
+      `).join('');
+    }
+
+    // GLOBAL SETTINGS
+    function renderGlobalSettings() {
+      const region = REGIONS[appState.currentRegion];
+      
+      // Timezones
+      const tzSelect = document.getElementById('timezone');
+      tzSelect.innerHTML = TIMEZONES.map(tz => `<option value="${tz}" ${tz === region.timezone ? 'selected' : ''}>${tz}</option>`).join('');
+      
+      // Currencies
+      const currSelect = document.getElementById('currencyDisplay');
+      currSelect.innerHTML = region.currencies.map(curr => `<option value="${curr}">${curr}</option>`).join('');
+    }
+
+    // TAB SWITCHING
+    function switchTab(e, tabName) {
+      document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+      document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+      
+      document.getElementById(tabName).classList.add('active');
+      e.target.classList.add('active');
+    }
+
+    // FORM HANDLERS
+    document.getElementById('profileForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      try {
+        const data = {
+          full_name: document.getElementById('fullName').value,
+          email: document.getElementById('email').value,
+          phone: document.getElementById('phone').value,
+          emergency_contact: document.getElementById('emergency').value,
+          address: document.getElementById('address').value,
+          city: document.getElementById('city').value,
+          state: document.getElementById('state').value,
+          country: document.getElementById('country').value,
+          postal_code: document.getElementById('postal').value,
+          primary_region: appState.currentRegion
+        };
+        await apiCall('/partners/update-profile', 'POST', data);
+        showNotification(translate('Profile updated successfully!'), 'success');
+      } catch (error) {
+        showNotification('Error: ' + error.message, 'error');
+      }
+    });
+
+    document.getElementById('vehicleForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      try {
+        const data = {
+          vehicle_type: document.getElementById('vehicleType').value,
+          registration_number: document.getElementById('regNumber').value,
+          make_model: document.getElementById('vehicleModel').value,
+          license_plate: document.getElementById('licensePlate').value,
+          cargo_capacity: parseInt(document.getElementById('capacity').value),
+          color: document.getElementById('color').value
+        };
+        await apiCall('/partners/update-vehicle', 'POST', data);
+        showNotification('Vehicle information saved!', 'success');
+      } catch (error) {
+        showNotification('Error: ' + error.message, 'error');
+      }
+    });
+
+    document.getElementById('bankingForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      try {
+        const data = {
+          currency: document.getElementById('bankCurrency').value,
+          bank_name: document.getElementById('bankName').value,
+          account_number: document.getElementById('accountNumber').value,
+          account_name: document.getElementById('accountName').value,
+          swift_code: document.getElementById('swiftCode').value,
+          iban: document.getElementById('iban').value,
+          is_primary: document.getElementById('primary').checked,
+          region: appState.currentRegion
+        };
+        await apiCall('/partners/add-banking-account', 'POST', data);
+        document.getElementById('bankingForm').reset();
+        showNotification('Banking account added successfully!', 'success');
+      } catch (error) {
+        showNotification('Error: ' + error.message, 'error');
+      }
+    });
+
+    document.getElementById('complianceForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      try {
+        const data = {
+          tax_residency: document.getElementById('taxResidency').value,
+          tax_id: document.getElementById('taxId').value,
+          customs_certified: document.getElementById('customsCertified').checked,
+          international_ready: document.getElementById('internationalReady').checked,
+          fast_card: document.getElementById('fastCard').checked,
+          vat_registered: document.getElementById('vatRegistered').checked,
+          region: appState.currentRegion
+        };
+        await apiCall('/partners/update-compliance', 'POST', data);
+        showNotification('Compliance information updated!', 'success');
+      } catch (error) {
+        showNotification('Error: ' + error.message, 'error');
+      }
+    });
+
+    document.getElementById('preferencesForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      try {
+        const checkboxes = document.querySelectorAll('#servicePreferencesContainer input[type="checkbox"]');
+        const services = [];
+        checkboxes.forEach((cb, idx) => {
+          if (cb.checked) services.push(REGIONAL_SERVICE_TYPES[appState.currentRegion][idx].id);
+        });
+        
+        const data = {
+          accepted_services: services,
+          max_jobs_per_day: parseInt(document.getElementById('maxJobs').value),
+          available_nights: document.getElementById('nightShifts').checked,
+          available_weekends: document.getElementById('weekendShifts').checked
+        };
+        await apiCall('/partners/update-preferences', 'POST', data);
+        showNotification('Preferences saved!', 'success');
+      } catch (error) {
+        showNotification('Error: ' + error.message, 'error');
+      }
+    });
+
+    document.getElementById('globalForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      try {
+        const data = {
+          preferred_language: document.getElementById('preferredLanguage').value,
+          distance_unit: document.getElementById('distanceUnit').value,
+          timezone: document.getElementById('timezone').value,
+          display_currency: document.getElementById('currencyDisplay').value,
+          email_notifications: document.getElementById('emailNotifications').checked,
+          sms_notifications: document.getElementById('smsNotifications').checked,
+          push_notifications: document.getElementById('pushNotifications').checked
+        };
+        await apiCall('/partners/update-global-settings', 'POST', data);
+        showNotification('Global settings saved!', 'success');
+      } catch (error) {
+        showNotification('Error: ' + error.message, 'error');
+      }
+    });
+
+    document.getElementById('clearBankingBtn').addEventListener('click', () => {
+      document.getElementById('bankingForm').reset();
+    });
+
+    // INITIALIZATION
+    document.getElementById('menuToggle').addEventListener('click', () => {
+      document.getElementById('navMenu').classList.toggle('mobile-menu-open');
+    });
+
+    initializeRegionSelector();
+    updateTranslations();
+    updateRegionSpecificUI();
+  </script>
+</body>
+</html>

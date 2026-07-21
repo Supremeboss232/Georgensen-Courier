@@ -1,0 +1,58 @@
+<!-- Register Form Wrapper -->
+<div id="registerFormWrapper"></div>
+
+<script>
+// Load register form from forms subdirectory
+fetch('/components/forms/register-form.html')
+    .then(response => response.text())
+    .then(html => {
+        document.getElementById('registerFormWrapper').innerHTML = html;
+        
+        // Attach form submission handler
+        const form = document.getElementById('registerFormComponent');
+        if (form) {
+            form.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const firstName = document.getElementById('firstName').value;
+                const lastName = document.getElementById('lastName').value;
+                const email = document.getElementById('registerEmail').value;
+                const password = document.getElementById('registerPassword').value;
+                const confirmPassword = document.getElementById('confirmPassword').value;
+                const accountType = document.getElementById('accountType').value;
+                
+                if (password !== confirmPassword) {
+                    alert('Passwords do not match!');
+                    return;
+                }
+                
+                try {
+                    const response = await fetch('/api/v1/auth/register', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            email: email,
+                            full_name: firstName + ' ' + lastName,
+                            password: password,
+                            role: accountType === 'partner' ? 'partner' : 'customer'
+                        })
+                    });
+                    
+                    if (response.ok) {
+                        alert('Registration successful! Please login with your credentials.');
+                        window.location.href = '/auth/login';
+                    } else {
+                        const error = await response.json();
+                        alert('Registration failed: ' + (error.detail || 'Unknown error'));
+                    }
+                } catch (error) {
+                    console.error('Registration error:', error);
+                    alert('Registration failed. Please try again.');
+                }
+            });
+        }
+    })
+    .catch(error => console.error('Error loading register form:', error));
+</script>

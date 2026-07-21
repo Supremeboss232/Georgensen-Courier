@@ -1,0 +1,121 @@
+<!-- Pricing Rules Form -->
+<div class="modal fade" id="pricingRulesModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Manage Pricing Rules</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="pricingForm">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Service Type</label>
+                        <select class="form-select" id="serviceType" required>
+                            <option value="">Select Service Type</option>
+                            <option value="local">Local Delivery</option>
+                            <option value="interstate">Interstate Shipping</option>
+                            <option value="international">International Shipping</option>
+                            <option value="express">Express Delivery</option>
+                        </select>
+                    </div>
+
+                    <h6 class="mb-3">Base Pricing</h6>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Base Fee ($)</label>
+                                <input type="number" class="form-control" id="baseFee" step="0.01" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Per KM Rate ($)</label>
+                                <input type="number" class="form-control" id="perKmRate" step="0.01" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h6 class="mb-3">Weight-Based Pricing</h6>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label class="form-label">Up to 5kg ($)</label>
+                                <input type="number" class="form-control" step="0.01">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label class="form-label">5-20kg ($)</label>
+                                <input type="number" class="form-control" step="0.01">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label class="form-label">Over 20kg ($)</label>
+                                <input type="number" class="form-control" step="0.01">
+                            </div>
+                        </div>
+                    </div>
+
+                    <h6 class="mb-3">Special Charges</h6>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Fragile Surcharge ($)</label>
+                                <input type="number" class="form-control" step="0.01">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Hazmat Surcharge ($)</label>
+                                <input type="number" class="form-control" step="0.01">
+                            </div>
+                        </div>
+                    </div>
+
+                    <h6 class="mb-3">Volume Discounts</h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Order Range</th>
+                                    <th>Discount %</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>10-20 orders/month</td>
+                                    <td><input type="number" class="form-control" step="0.1"></td>
+                                </tr>
+                                <tr>
+                                    <td>21-50 orders/month</td>
+                                    <td><input type="number" class="form-control" step="0.1"></td>
+                                </tr>
+                                <tr>
+                                    <td>50+ orders/month</td>
+                                    <td><input type="number" class="form-control" step="0.1"></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Effective Date</label>
+                        <input type="date" class="form-control" required>
+                    </div>
+
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="activateImmediately" checked>
+                        <label class="form-check-label" for="activateImmediately">
+                            Activate immediately
+                        </label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Pricing Rules</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

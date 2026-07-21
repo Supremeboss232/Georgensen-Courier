@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Management Form | Georjensen Admin</title>
+</head>
+<body>
+    <div class="form-container">
+        <h1>Create Order Manually</h1>
+        <p>Use this form to create orders in the system when customers submit via email, phone, or WhatsApp.</p>
+
+        <form id="orderForm" class="order-form">
+            <!-- Service Information -->
+            <section class="form-section">
+                <h2>Service Type</h2>
+
+                <div class="form-group">
+                    <label>Service Type *</label>
+                    <select name="serviceType" required>
+                        <option>Select service</option>
+                        <option>Local Courier (Same-City)</option>
+                        <option>Inter-City Courier</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Delivery Speed *</label>
+                    <select name="deliverySpeed" required>
+                        <option>Select speed</option>
+                        <option>Express (Same Day)</option>
+                        <option>Standard (Next Day)</option>
+                        <option>Economy (48 Hours)</option>
+                    </select>
+                </div>
+            </section>
+
+            <!-- Pickup Details -->
+            <section class="form-section">
+                <h2>Pickup Details</h2>
+
+                <div class="form-group">
+                    <label>Pickup Address *</label>
+                    <input type="text" name="pickupAddress" placeholder="Street address" required>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>City *</label>
+                        <input type="text" name="pickupCity" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Zip Code *</label>
+                        <input type="text" name="pickupZip" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Contact Person *</label>
+                    <input type="text" name="pickupContact" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Pickup Phone *</label>
+                    <input type="tel" name="pickupPhone" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Pickup Time Window</label>
+                    <div class="time-range">
+                        <input type="time" name="pickupTimeStart"> to <input type="time" name="pickupTimeEnd">
+                    </div>
+                </div>
+            </section>
+
+            <!-- Delivery Details -->
+            <section class="form-section">
+                <h2>Delivery Details</h2>
+
+                <div class="form-group">
+                    <label>Delivery Address *</label>
+                    <input type="text" name="deliveryAddress" placeholder="Street address" required>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>City *</label>
+                        <input type="text" name="deliveryCity" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Zip Code *</label>
+                        <input type="text" name="deliveryZip" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Recipient Name *</label>
+                    <input type="text" name="recipientName" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Recipient Phone *</label>
+                    <input type="tel" name="recipientPhone" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Recipient Email</label>
+                    <input type="email" name="recipientEmail">
+                </div>
+            </section>
+
+            <!-- Package Details -->
+            <section class="form-section">
+                <h2>Package Information</h2>
+
+                <div class="form-group">
+                    <label>Package Type *</label>
+                    <select name="packageType" required>
+                        <option>Select type</option>
+                        <option>Document (Envelope)</option>
+                        <option>Small Parcel</option>
+                        <option>Medium Box</option>
+                        <option>Large Package</option>
+                    </select>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Weight (kg) *</label>
+                        <input type="number" name="weight" min="0" step="0.1" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Estimated Value ($)</label>
+                        <input type="number" name="packageValue" min="0" step="0.01">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Package Description *</label>
+                    <textarea name="packageDescription" placeholder="What's in the package?" rows="3" required></textarea>
+                </div>
+
+                <div class="form-group checkbox">
+                    <label>
+                        <input type="checkbox" name="insurance">
+                        Add Insurance Coverage (5% of value)
+                    </label>
+                </div>
+
+                <div class="form-group">
+                    <label>Special Instructions</label>
+                    <textarea name="instructions" placeholder="e.g., Fragile, Handle with care, Ring doorbell twice" rows="3"></textarea>
+                </div>
+            </section>
+
+            <!-- Customer Information -->
+            <section class="form-section">
+                <h2>Customer Information</h2>
+
+                <div class="form-group">
+                    <label>Customer Name *</label>
+                    <input type="text" name="customerName" required>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Customer Email *</label>
+                        <input type="email" name="customerEmail" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Customer Phone *</label>
+                        <input type="tel" name="customerPhone" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Customer Type *</label>
+                    <select name="customerType" required>
+                        <option>Select type</option>
+                        <option>E-commerce Business</option>
+                        <option>Restaurant</option>
+                        <option>Freelancer</option>
+                        <option>Corporate</option>
+                        <option>Individual</option>
+                    </select>
+                </div>
+            </section>
+
+            <!-- Pricing & Payment -->
+            <section class="form-section">
+                <h2>Pricing & Payment</h2>
+
+                <div class="form-group">
+                    <label>Quote Amount ($) *</label>
+                    <input type="number" name="quoteAmount" min="0" step="0.01" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Payment Status *</label>
+                    <select name="paymentStatus" required>
+                        <option>Select status</option>
+                        <option>Pending</option>
+                        <option>Received (Credit Card)</option>
+                        <option>Received (Bank Transfer)</option>
+                        <option>Received (Invoice)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Notes for Admin</label>
+                    <textarea name="adminNotes" placeholder="Any special notes about this order..." rows="3"></textarea>
+                </div>
+            </section>
+
+            <!-- Form Actions -->
+            <div class="form-actions">
+                <button type="reset" class="btn btn-secondary">Clear</button>
+                <button type="submit" class="btn btn-primary">Create Order</button>
+            </div>
+        </form>
+    </div>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f0f2f5;
+            padding: 30px 20px;
+        }
+
+        .form-container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: #ffffff;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-container h1 {
+            color: #1e40af;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .form-container > p {
+            color: #6b7280;
+            margin-bottom: 30px;
+        }
+
+        .form-section {
+            margin-bottom: 40px;
+            padding-bottom: 30px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .form-section:last-child {
+            border-bottom: none;
+        }
+
+        .form-section h2 {
+            font-size: 18px;
+            margin-bottom: 20px;
+            color: #1f2937;
+            font-weight: 600;
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 500;
+            margin-bottom: 6px;
+            color: #111827;
+            font-size: 14px;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-family: inherit;
+            font-size: 14px;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #1e40af;
+            box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.1);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .time-range {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .time-range input {
+            flex: 1;
+        }
+
+        .form-group.checkbox label {
+            display: flex;
+            align-items: center;
+            font-weight: 400;
+        }
+
+        .form-group.checkbox input[type="checkbox"] {
+            width: auto;
+            margin-right: 8px;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 15px;
+        }
+
+        .btn-primary {
+            background: #1e40af;
+            color: #ffffff;
+            flex: 1;
+        }
+
+        .btn-primary:hover {
+            background: #1e3a8a;
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: #f3f4f6;
+            color: #111827;
+            border: 1px solid #d1d5db;
+        }
+
+        .btn-secondary:hover {
+            background: #e5e7eb;
+        }
+
+        @media (max-width: 768px) {
+            .form-container {
+                padding: 20px;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .time-range {
+                flex-direction: column;
+            }
+
+            .form-actions {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
+
+    <script>
+        document.getElementById('orderForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const data = Object.fromEntries(formData);
+            
+            // Generate tracking number
+            data.trackingNumber = 'GEO-' + new Date().getFullYear() + '-' + 
+                                  Math.floor(Math.random() * 1000000).toString().padStart(6, '0');
+            
+            console.log('Order Created:', data);
+            
+            alert('Order created successfully!\n\nTracking Number: ' + data.trackingNumber);
+            
+            this.reset();
+        });
+    </script>
+</body>
+</html>

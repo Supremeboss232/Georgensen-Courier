@@ -1,0 +1,72 @@
+<!-- Quote Form Wrapper -->
+<div id="quoteFormWrapper"></div>
+
+<script>
+// Load quote form from forms subdirectory
+fetch('/components/forms/quote-form.html')
+    .then(response => response.text())
+    .then(html => {
+        document.getElementById('quoteFormWrapper').innerHTML = html;
+        
+        // Attach form submission handler
+        const form = document.getElementById('quoteFormComponent');
+        if (form) {
+            form.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const pickupZip = document.getElementById('quotePickupZip').value;
+                const deliveryZip = document.getElementById('quoteDeliveryZip').value;
+                const weight = parseFloat(document.getElementById('quoteWeight').value);
+                const itemType = document.getElementById('itemType').value;
+                const dimensions = document.getElementById('dimensions')?.value || 'standard';
+                
+                try {
+                    const response = await fetch('/api/v1/quotes/calculate', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            pickup_zip: pickupZip,
+                            delivery_zip: deliveryZip,
+                            weight: weight,
+                            item_type: itemType,
+                            dimensions: dimensions
+                        })
+                    });
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        // Show quote result
+                        const resultDiv = document.getElementById('quoteResult');
+                        if (resultDiv) {
+                            resultDiv.innerHTML = `
+                                <div class="alert alert-success">
+                                    <h4>Quote Summary</h4>
+                                    <p>Estimated Cost: ₦${data.estimated_cost}</p>
+                                    <p>Estimated Delivery: ${data.estimated_days} days</p>
+                                    <button class="btn btn-primary" onclick="proceedToCheckout()">Proceed to Checkout</button>
+                                </div>
+                            `;
+                        }
+                    } else {
+                        alert('Quote calculation failed. Please try again.');
+                    }
+                } catch (error) {
+                    console.error('Quote error:', error);
+                    alert('Quote calculation failed. Please try again.');
+                }
+            });
+        }
+    })
+    .catch(error => console.error('Error loading quote form:', error));
+
+function proceedToCheckout() {
+    const token = localStorage.getItem('authToken');
+    if (token) {
+        window.location.href = '/customer/create-shipment';
+    } else {
+        window.location.href = '/auth/login?redirect=/customer/create-shipment';
+    }
+}
+</script>

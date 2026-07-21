@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Georgensen Courier - Admin Dashboard</title>
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="stylesheet" href="/assets/lib/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/assets/lib/fontawesome/css/all.min.css">
+    <style>
+        /* Admin Navbar Styles */
+        .admin-navbar {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        .admin-navbar-container {
+            max-width: 100%;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 70px;
+        }
+        .navbar-left {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+            flex: 1;
+        }
+        .navbar-brand {
+            display: flex;
+            align-items: center;
+        }
+        .brand-logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            text-decoration: none;
+            color: white;
+            font-weight: 700;
+            font-size: 1.1rem;
+            white-space: nowrap;
+        }
+        .brand-icon {
+            font-size: 1.5rem;
+        }
+        .brand-text {
+            display: none;
+        }
+        @media (min-width: 768px) {
+            .brand-text {
+                display: inline;
+            }
+        }
+        .nav-menu {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            gap: 0.5rem;
+        }
+        .nav-item {
+            position: relative;
+        }
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            font-size: 0.95rem;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+        .nav-link:hover {
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+        }
+        .nav-link.active {
+            background: rgba(255, 255, 255, 0.25);
+            color: white;
+            border-bottom: 3px solid #3498db;
+        }
+        .nav-link span {
+            display: none;
+        }
+        @media (min-width: 992px) {
+            .nav-link span {
+                display: inline;
+            }
+        }
+        .navbar-right {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+        .admin-actions {
+            display: flex;
+            gap: 0.75rem;
+        }
+        .action-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: white;
+            padding: 0.5rem 0.75rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        .action-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: #e74c3c;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: bold;
+        }
+        .user-info-section {
+            display: flex;
+            align-items: center;
+            position: relative;
+        }
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .user-avatar:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+        .user-menu {
+            position: absolute;
+            top: 50px;
+            right: 0;
+            background: white;
+            color: #333;
+            border-radius: 4px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            min-width: 200px;
+            z-index: 1001;
+            padding: 0.5rem 0;
+            display: none;
+        }
+        .user-menu.show {
+            display: block;
+        }
+        .user-menu-header {
+            padding: 0.75rem 1rem;
+        }
+        .user-name {
+            display: block;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        .user-role {
+            display: block;
+            color: #7f8c8d;
+        }
+        .menu-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            width: 100%;
+            padding: 0.75rem 1rem;
+            background: none;
+            border: none;
+            color: #2c3e50;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            font-size: 0.95rem;
+        }
+        .menu-item:hover {
+            background: #f8f9fa;
+            color: #2c3e50;
+        }
+        .admin-search-bar {
+            padding: 1rem 1.5rem;
+            background: rgba(0, 0, 0, 0.1);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .search-input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 0.95rem;
+        }
+        .search-results {
+            margin-top: 0.75rem;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .search-result-item {
+            padding: 0.75rem 1rem;
+            background: white;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        .search-result-item:hover {
+            background: #f8f9fa;
+        }
+        .search-result-icon {
+            color: #3498db;
+        }
+        .search-result-content {
+            flex: 1;
+        }
+        .search-result-title {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        .search-result-meta {
+            font-size: 0.85rem;
+            color: #7f8c8d;
+        }
+        @media (max-width: 768px) {
+            .admin-navbar-container {
+                padding: 0 1rem;
+                height: 60px;
+            }
+            .navbar-left {
+                gap: 1rem;
+            }
+            .nav-menu {
+                gap: 0rem;
+            }
+            .nav-link {
+                padding: 0.5rem 0.75rem;
+            }
+            .admin-actions {
+                gap: 0.5rem;
+            }
+            .action-btn {
+                padding: 0.5rem 0.5rem;
+            }
+        }
+        
+        /* Dashboard Styles */
+        .skeleton-loader { background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%); background-size: 200% 100%; animation: loading 1.5s infinite; height: 2rem; border-radius: 4px; }
+        @keyframes loading { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+        .regional-selector { padding: 1rem 0; border-bottom: 2px solid #e0e0e0; margin-bottom: 1.5rem; }
+        .region-badge { display: inline-block; padding: 0.5rem 1rem; background: #007bff; color: white; border-radius: 20px; margin-right: 0.5rem; cursor: pointer; }
+        .region-badge.active { background: #0056b3; }
+        .logistics-kpi { padding: 1rem; border-left: 4px solid #007bff; background: #f8f9fa; }
+        .logistics-kpi.warning { border-left-color: #ffc107; background: #fffbf0; }
+        .logistics-kpi.critical { border-left-color: #dc3545; background: #fdf0f0; }
+        .compliance-alert { padding: 1rem; margin-bottom: 1rem; border-radius: 4px; background: #fff3cd; border-left: 4px solid #ff9800; }
+        .system-health { display: flex; gap: 1rem; padding: 1rem; background: #f8f9fa; border-radius: 4px; }
+        .health-indicator { flex: 1; padding: 1rem; background: white; border-radius: 4px; border: 1px solid #e0e0e0; }
+        .health-status { display: inline-block; width: 12px; height: 12px; border-radius: 50%; margin-right: 0.5rem; }
+        .status-healthy { background: #28a745; }
+        .status-warning { background: #ffc107; }
+        .status-error { background: #dc3545; }
+        .currency-toggle { position: absolute; top: 1rem; right: 1rem; }
+        .multi-currency-value { font-size: 0.9rem; color: #666; margin-top: 0.25rem; }
+    </style>
+</head>
+<body>
+    <!-- Admin Navigation Bar -->
+    <nav class="admin-navbar">
+        <div class="admin-navbar-container">
+            <!-- Navbar Left: Branding and Main Nav -->
+            <div class="navbar-left">
+                <div class="navbar-brand">
+                    <a href="/admin/dashboard" class="brand-logo">
+                        <span class="brand-icon">🚚</span>
+                        <span class="brand-text">Georgensen Admin</span>
+                    </a>
+                </div>
+                
+                <ul class="nav-menu">
+                    <li class="nav-item">
+                        <a href="/admin/dashboard" class="nav-link" data-page="dashboard">
+                            <i class="fas fa-chart-line"></i>
+                            <span>Dashboard</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/admin/orders" class="nav-link" data-page="orders">
+                            <i class="fas fa-boxes"></i>
+                            <span>Orders</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/admin/partners" class="nav-link" data-page="partners">
+                            <i class="fas fa-handshake"></i>
+                            <span>Partners</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/admin/users" class="nav-link" data-page="users">
+                            <i class="fas fa-users"></i>
+                            <span>Users</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/admin/disputes" class="nav-link" data-page="disputes">
+                            <i class="fas fa-balance-scale"></i>
+                            <span>Disputes</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/admin/reports" class="nav-link" data-page="reports">
+                            <i class="fas fa-file-chart-line"></i>
+                            <span>Reports</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Navbar Right: Actions and User Menu -->
+            <div class="navbar-right">
+                <div class="admin-actions">
+                    <button class="action-btn search-btn" title="Search" onclick="toggleSearch()">
+                        <i class="fas fa-search"></i>
+                    </button>
+                    <button class="action-btn notifications-btn" title="Notifications" onclick="toggleNotifications()">
+                        <i class="fas fa-bell"></i>
+                        <span class="notification-badge" id="notificationBadge" style="display:none;">3</span>
+                    </button>
+                    <button class="action-btn settings-btn" title="Settings" onclick="openSettings()">
+                        <i class="fas fa-cog"></i>
+                    </button>
+                </div>
+
+                <div class="user-info-section">
+                    <div class="user-avatar" onclick="toggleUserMenu()">
+                        <span id="userInitial">A</span>
+                    </div>
+                    <div class="user-menu dropdown-menu" id="userMenu">
+                        <div class="user-menu-header">
+                            <span class="user-name" id="adminName">Admin User</span>
+                            <small class="user-role" id="adminRole">Operations Lead</small>
+                        </div>
+                        <hr style="margin: 0.5rem 0;">
+                        <a href="/admin/profile" class="menu-item">
+                            <i class="fas fa-user-circle"></i> My Profile
+                        </a>
+                        <a href="/admin/settings" class="menu-item">
+                            <i class="fas fa-sliders-h"></i> Settings
+                        </a>
+                        <a href="/admin/logs" class="menu-item">
+                            <i class="fas fa-history"></i> Activity Logs
+                        </a>
+                        <hr style="margin: 0.5rem 0;">
+                        <button class="menu-item" onclick="logoutAdmin()">
+                            <i class="fas fa-sign-out-alt"></i> Logout
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Search Bar (hidden by default) -->
+        <div class="admin-search-bar" id="searchBar" style="display:none;">
+            <input type="text" class="search-input" placeholder="Search orders, partners, disputes, customers..." id="adminSearch" onkeyup="handleAdminSearch()">
+            <div class="search-results" id="searchResults"></div>
+        </div>
+    </nav>
+    
+    <div class="container-fluid mt-4">
+        <!-- Global Tracking Search -->
+        <div class="row mb-4">
+            <div class="col-md-8">
+                <div class="input-group input-group-lg">
+                    <span class="input-group-text"><i class="fas fa-search"></i></span>
+                    <input type="text" id="globalTrackingSearch" class="form-control" placeholder="Search tracking number (e.g., GEO-2026-001234)..." />
+                    <button class="btn btn-primary" onclick="performTrackingSearch()">Search</button>
+                </div>
+            </div>
+            <div class="col-md-4 text-end">
+                <select id="currencyToggle" class="form-select" onchange="changeCurrency(this.value)">
+                    <option value="USD">USD ($)</option>
+                    <option value="EUR">EUR (€)</option>
+                    <option value="CAD">CAD (C$)</option>
+                    <option value="AED">AED (د.إ)</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Compliance Alerts -->
+        <div id="complianceAlertsContainer"></div>
+
+        <!-- Regional Selector -->
+        <div class="regional-selector">
+            <h6>Filter by Region:</h6>
+            <div id="regionSelectors"></div>
+        </div>
+
+        <!-- System Health Footer Bar -->
+        <div class="system-health mb-4">
+            <div class="health-indicator">
+                <span class="health-status status-healthy"></span>
+                <strong>Tracking API:</strong> <span id="trackerHealth">---</span>
+            </div>
+            <div class="health-indicator">
+                <span class="health-status status-healthy"></span>
+                <strong>Webhook Listeners:</strong> <span id="webhookHealth">---</span>
+            </div>
+            <div class="health-indicator">
+                <span class="health-status status-healthy"></span>
+                <strong>Database:</strong> <span id="dbHealth">---</span>
+            </div>
+            <div class="health-indicator">
+                <span class="health-status status-healthy"></span>
+                <strong>Last Sync:</strong> <span id="lastSync">---</span>
+            </div>
+        </div>
+
+        <!-- KPI Cards - Standard -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Total Orders</h5>
+                        <p class="display-6" id="totalOrders"><div class="skeleton-loader"></div></p>
+                        <div class="multi-currency-value" id="totalOrdersAlt"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Active Partners</h5>
+                        <p class="display-6" id="activePartners"><div class="skeleton-loader"></div></p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Revenue (Today)</h5>
+                        <p class="display-6" id="todayRevenue"><div class="skeleton-loader"></div></p>
+                        <div class="multi-currency-value" id="todayRevenueAlt"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Support Tickets</h5>
+                        <p class="display-6" id="supportTickets"><div class="skeleton-loader"></div></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- KPI Cards - Logistics-Specific -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card logistics-kpi">
+                    <h6><i class="fas fa-truck"></i> Shipments in Transit</h6>
+                    <p class="display-6" id="shipmentsInTransit"><div class="skeleton-loader"></div></p>
+                    <small class="text-muted">Real-time tracking active</small>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card logistics-kpi warning">
+                    <h6><i class="fas fa-flag"></i> Customs Clearance Holds</h6>
+                    <p class="display-6" id="customsHolds"><div class="skeleton-loader"></div></p>
+                    <small class="text-muted">Awaiting documentation</small>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card logistics-kpi critical">
+                    <h6><i class="fas fa-exclamation-triangle"></i> SLA Breach Risk</h6>
+                    <p class="display-6" id="slaBreachRisk"><div class="skeleton-loader"></div></p>
+                    <small class="text-muted">Nearing delivery deadline</small>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card logistics-kpi">
+                    <h6><i class="fas fa-chart-line"></i> On-Time Rate</h6>
+                    <p class="display-6" id="onTimeRate"><div class="skeleton-loader"></div></p>
+                    <small class="text-muted">Last 30 days</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts -->
+        <div class="row mt-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Orders Overview (by Region)</h5>
+                        <canvas id="ordersChart" style="max-height: 300px;"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Revenue Trend (Selected Currency)</h5>
+                        <canvas id="revenueChart" style="max-height: 300px;"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Regional Orders Table -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Active Orders in <span id="selectedRegionName">All Regions</span></h5>
+                    </div>
+                    <div class="card-body">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Tracking #</th>
+                                    <th>Region</th>
+                                    <th>Customer</th>
+                                    <th>Status</th>
+                                    <th>ETA</th>
+                                    <th>Revenue</th>
+                                    <th>SLA Risk</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ordersTableBody">
+                                <tr><td colspan="8" class="text-center">Loading...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer id="footer-container"></footer>
+    <script src="/js/core/api.js"></script>
+    <script src="/js/core/auth.js"></script>
+    <script src="/js/core/guards.js"></script>
+    <script src="/assets/lib/chart.js/Chart.min.js"></script>
+    <script src="/js/admin/dashboard.js"></script>
+</body>
+</html>

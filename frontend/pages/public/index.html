@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Georgensen Courier - Canada's trusted global logistics platform. Fast, secure shipping across North America and worldwide. Real-time tracking. Proudly Canadian. ">
+  <meta name="keywords" content="courier, logistics, shipping, Canada, North America, international freight, air freight, ocean freight, tracking, cross-border">
+  <meta name="language" content="en, fr">
+  <meta property="og:title" content="Georgensen Courier - Trusted North American Logistics">
+  <meta property="og:description" content="Fast and reliable courier services across the US and Canada. Get instant quotes and real-time tracking.">
+  <meta property="og:image" content="assets/brand-logo.png">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Georgensen Courier">
+  <meta name="twitter:description" content="Trusted logistics for North America">
+  
+  <!-- Security & Compliance -->
+  <meta name="author" content="Georgensen Courier">
+  <meta name="robots" content="index, follow">
+  
+  <title>Georgensen Courier | Canadian Global Logistics | Air • Truck • Ocean Freight</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="/css/main.css">
+  
+  <!-- Security & Access Control - Load before rendering -->
+  <script src="/js/core/guards.js"></script>
+  
+  <!-- Bilingual Support -->
+  <script>
+    const savedLanguage = localStorage.getItem('appLanguage') || (navigator.language.startsWith('fr') ? 'fr' : 'en');
+    const appLanguage = ['en', 'fr'].includes(savedLanguage) ? savedLanguage : 'en';
+    document.documentElement.lang = appLanguage;
+    localStorage.setItem('appLanguage', appLanguage);
+    window.currentLanguage = appLanguage;
+  </script>
+</head>
+<body>
+  <!-- NAVBAR -->
+  <div id="navbar-container"></div>
+  
+  <!-- MAIN CONTENT -->
+  <main>
+    <!-- HERO SECTION -->
+    <section class="hero" style="background: linear-gradient(135deg, rgba(102, 126, 234, 0.9) 0%, rgba(118, 75, 162, 0.9) 100%), url('/assets/hero-global.jpg') center/cover; background-attachment: fixed; min-height: 600px; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+      <!-- Language & Currency Toggle -->
+      <div style="position: absolute; top: 120px; right: 20px; display: flex; gap: 5px; background: rgba(255,255,255,0.1); padding: 6px 10px; border-radius: 20px; backdrop-filter: blur(10px);">
+        <!-- Language Toggle -->
+        <button id="langToggleEN" class="lang-toggle-btn" onclick="setLanguage('en')" style="border: none; background: transparent; color: white; cursor: pointer; font-weight: 600; padding: 5px 10px; border-radius: 15px;">EN</button>
+        <button id="langToggleFR" class="lang-toggle-btn" onclick="setLanguage('fr')" style="border: none; background: transparent; color: rgba(255,255,255,0.6); cursor: pointer; font-weight: 600; padding: 5px 10px; border-radius: 15px;">FR</button>
+        <span style="color: rgba(255,255,255,0.3); margin: 0 5px;">|</span>
+        <!-- Currency Toggle -->
+        <button class="currency-toggle" data-currency="CAD" style="border: none; background: transparent; color: white; cursor: pointer; font-weight: 600; padding: 5px 10px;"><i class="fas fa-dollar-sign"></i> CAD</button>
+        <button class="currency-toggle" data-currency="USD" style="border: none; background: transparent; color: rgba(255,255,255,0.6); cursor: pointer; font-weight: 600; padding: 5px 10px;"><i class="fas fa-dollar-sign"></i> USD</button>
+      </div>
+      
+      <div class="container" style="text-align: center; color: white;">
+        <div style="display: inline-block; background: rgba(255,255,255,0.2); padding: 10px 20px; border-radius: 25px; margin-bottom: 20px; font-size: 0.9em; backdrop-filter: blur(10px);">
+          <i class="fas fa-maple-leaf" style="color: #ff0000;"></i> Proudly Canadian • Globally Connected
+        </div>
+        <h1 style="color: white; font-size: 3em; margin-bottom: 15px;" data-en="Your Package. Our Priority. Anywhere, Everywhere." data-fr="Votre Colis. Notre Priorité. N'Importe Où, Partout.">Your Package. Our Priority. Anywhere, Everywhere.</h1>
+        <p style="font-size: 1.3em; margin-bottom: 30px; color: rgba(255,255,255,0.95);" data-en="Fast, secure, and transparent logistics solutions for North America and beyond." data-fr="Solutions logistiques rapides, sécurisées et transparentes pour l'Amérique du Nord et au-delà.">Fast, secure, and transparent logistics solutions for North America and beyond.</p>
+        <div class="cta-buttons">
+          <button class="btn btn-primary btn-lg" onclick="openQuoteModal()" style="background: white; color: #667eea; font-weight: 600; border: none; padding: 12px 30px; border-radius: 25px; cursor: pointer; font-size: 1.1em;" data-en="Get Quote" data-fr="Obtenir un Devis">Get Quote</button>
+          <button class="btn btn-outline btn-lg" onclick="scrollTo('services')" style="background: transparent; color: white; border: 2px solid white; font-weight: 600; padding: 10px 28px; border-radius: 25px; cursor: pointer; font-size: 1.1em;" data-en="Learn More" data-fr="En Savoir Plus">Learn More</button>
+        </div>
+      </div>
+    </section>
+    
+    <!-- SERVICES PREVIEW -->
+    <section id="services" class="p-xl" style="padding: var(--spacing-3xl) var(--spacing-md);">
+      <div class="container">
+        <h2 style="text-align: center; margin-bottom: 10px;" data-en="Global Logistics Services" data-fr="Services Logistiques Mondiaux">Global Logistics Services</h2>
+        <p style="text-align: center; color: #666; margin-bottom: 3em; font-size: 1.1em;" data-en="From local delivery to international freight. Truck, Air, and Ocean solutions." data-fr="De la livraison locale au fret international. Solutions par camion, air et mer.">From local delivery to international freight. Truck, Air, and Ocean solutions.</p>
+        
+        <div class="grid cols-2 gap-lg" style="margin-bottom: 2em;">
+          <!-- DOMESTIC & REGIONAL SECTION -->
+          <div style="grid-column: 1 / -1;">
+            <h3 style="color: #667eea; font-size: 1.3em; margin-bottom: 20px; border-bottom: 2px solid #667eea; padding-bottom: 10px;" data-en="Domestic & Regional" data-fr="Domestique et Régional">Domestic & Regional</h3>
+          </div>
+          
+          <!-- Intra-City Delivery (Zone 1) -->
+          <div class="card">
+            <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 8px 8px 0 0; text-align: center;">
+              <i class="fas fa-bicycle" style="font-size: 2.5em;"></i>
+              <h3 style="margin: 10px 0 0 0;" data-en="Same-Day Courier" data-fr="Messager Même Jour">Same-Day Courier</h3>
+            </div>
+            <div style="padding: 20px;">
+              <p data-en="Same-day delivery within city limits. Perfect for urgent documents and packages." data-fr="Livraison le même jour dans les limites de la ville. Parfait pour les documents et colis urgents.">Same-day delivery within city limits. Perfect for urgent documents and packages.</p>
+              <p style="color: var(--accent); font-weight: 600; font-size: 1.2em;">Starting from <span class="price-display" data-cad="8" data-usd="6">$8.00</span></p>
+              <p style="color: #999; font-size: 0.9em; margin-bottom: 1em;">Zone 1 - Local Hub</p>
+              <a href="/public/services.html#local" class="btn btn-ghost" style="margin-top: var(--spacing-md);">Learn More →</a>
+            </div>
+          </div>
+          
+          <!-- Regional Trucking (Zone 2) -->
+          <div class="card">
+            <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 8px 8px 0 0; text-align: center;">
+              <i class="fas fa-truck" style="font-size: 2.5em;"></i>
+              <h3 style="margin: 10px 0 0 0;" data-en="Regional Trucking" data-fr="Transport Régional">Regional Trucking</h3>
+            </div>
+            <div style="padding: 20px;">
+              <p data-en="2-3 day regional shipping between Canadian and US hubs. White-glove service available." data-fr="Expédition régionale 2-3 jours entre les centres canadiens et américains.">2-3 day regional shipping between Canadian and US hubs. White-glove service available.</p>
+              <p style="color: var(--accent); font-weight: 600; font-size: 1.2em;">Starting from <span class="price-display" data-cad="45" data-usd="35">$45.00</span></p>
+              <p style="color: #999; font-size: 0.9em; margin-bottom: 1em;">Zone 2 - Multi-Hub Network</p>
+              <a href="/public/services.html#regional" class="btn btn-ghost" style="margin-top: var(--spacing-md);">Learn More →</a>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid cols-2 gap-lg">
+          <!-- INTERNATIONAL FREIGHT SECTION -->
+          <div style="grid-column: 1 / -1;">
+            <h3 style="color: #667eea; font-size: 1.3em; margin-bottom: 20px; border-bottom: 2px solid #667eea; padding-bottom: 10px;" data-en="International Freight" data-fr="Fret International">International Freight</h3>
+          </div>
+
+          <!-- Air Freight -->
+          <div class="card">
+            <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 8px 8px 0 0; text-align: center;">
+              <i class="fas fa-plane" style="font-size: 2.5em;"></i>
+              <h3 style="margin: 10px 0 0 0;" data-en="Air Freight" data-fr="Fret Aérien">Air Freight</h3>
+            </div>
+            <div style="padding: 20px;">
+              <p data-en="Express international shipping. 2-5 days to worldwide destinations. Customs handling included." data-fr="Expédition internationale express. 2-5 jours vers les destinations mondiales. Dédouanement inclus.">Express international shipping. 2-5 days to worldwide destinations. Customs handling included.</p>
+              <p style="color: var(--accent); font-weight: 600; font-size: 1.2em;">Starting from <span class="price-display" data-cad="120" data-usd="95">$120.00</span></p>
+              <p style="color: #999; font-size: 0.9em; margin-bottom: 1em;">Zone 3 - Global Coverage</p>
+              <a href="/public/services.html#air-freight" class="btn btn-ghost" style="margin-top: var(--spacing-md);">Learn More →</a>
+            </div>
+          </div>
+
+          <!-- Ocean Freight -->
+          <div class="card">
+            <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 8px 8px 0 0; text-align: center;">
+              <i class="fas fa-ship" style="font-size: 2.5em;"></i>
+              <h3 style="margin: 10px 0 0 0;" data-en="Ocean Freight (LCL/FCL)" data-fr="Fret Maritime (LCL/TCF)">Ocean Freight (LCL/FCL)</h3>
+            </div>
+            <div style="padding: 20px;">
+              <p data-en="Cost-effective container shipping. 7-21 days globally. Full & less-than-container options." data-fr="Expédition par conteneur économique. 7-21 jours mondialement. Options conteneur complet et partiel.">Cost-effective container shipping. 7-21 days globally. Full & less-than-container options.</p>
+              <p style="color: var(--accent); font-weight: 600; font-size: 1.2em;">Starting from <span class="price-display" data-cad="250" data-usd="195">$250.00</span></p>
+              <p style="color: #999; font-size: 0.9em; margin-bottom: 1em;">Zone 3 - Container Ports</p>
+              <a href="/public/services.html#ocean-freight" class="btn btn-ghost" style="margin-top: var(--spacing-md);">Learn More →</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+              <a href="/public/services.html#international" class="btn btn-ghost" style="margin-top: var(--spacing-md);">Learn More →</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    
+    <!-- WHY CHOOSE US -->
+    <section style="background: linear-gradient(to right, rgba(243, 244, 246, 0.95) 0%, rgba(243, 244, 246, 0.95) 55%, rgba(255, 255, 255, 0.95) 100%); padding: var(--spacing-3xl) var(--spacing-md);">
+      <div class="container">
+        <h2 style="text-align: center; margin-bottom: var(--spacing-2xl);">Why Choose Georgensen?</h2>
+        
+        <div class="grid cols-2 gap-xl">
+          <div class="flex gap-lg">
+            <div style="font-size: 2.5em; min-width: 60px; color: #667eea;"><i class="fas fa-rocket"></i></div>
+            <div>
+              <h4>Lightning Fast</h4>
+              <p>Same-day delivery in major US and Canadian cities. Real-time GPS tracking on every shipment. Get where you need to go quickly.</p>
+            </div>
+          </div>
+          
+          <div class="flex gap-lg">
+            <div style="font-size: 2.5em; min-width: 60px; color: #667eea;"><i class="fas fa-shield-alt"></i></div>
+            <div>
+              <h4>Secure & Insured</h4>
+              <p>Full insurance coverage on all packages. Secure handling procedures. Proof of delivery on every shipment.</p>
+            </div>
+          </div>
+          
+          <div class="flex gap-lg">
+            <div style="font-size: 2.5em; min-width: 60px; color: #667eea;"><i class="fas fa-tag"></i></div>
+            <div>
+              <h4>Transparent Pricing</h4>
+              <p>No hidden fees. Get instant quotes in USD or CAD. Pay only for what you use. Full price breakdown included.</p>
+            </div>
+          </div>
+          
+          <div class="flex gap-lg">
+            <div style="font-size: 2.5em; min-width: 60px; color: #667eea;"><i class="fas fa-mobile-alt"></i></div>
+            <div>
+              <h4>Easy to Use</h4>
+              <p>Simple web interface designed for everyone. Mobile-responsive. Integrated with major e-commerce platforms.</p>
+            </div>
+          </div>
+          
+          <div class="flex gap-lg">
+            <div style="font-size: 2.5em; min-width: 60px; color: #667eea;"><i class="fas fa-headset"></i></div>
+            <div>
+              <h4>North American Support</h4>
+              <p>24/7 customer support in English and French. Toll-free: <strong>1-844-GEO-SHIP</strong> (1-844-436-7447). Dedicated account managers available.</p>
+            </div>
+          </div>
+          
+          <div class="flex gap-lg">
+            <div style="font-size: 2.5em; min-width: 60px; color: #667eea;"><i class="fas fa-chart-bar"></i></div>
+            <div>
+              <h4>Analytics & Reports</h4>
+              <p>Detailed tracking history. Business reports for all shipments. API access for enterprise clients.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    
+    <!-- HOW IT WORKS -->
+    <section style="padding: var(--spacing-3xl) var(--spacing-md);">
+      <div class="container">
+        <h2 style="text-align: center; margin-bottom: var(--spacing-2xl);">How It Works</h2>
+        
+        <div class="grid cols-4 gap-lg text-center">
+          <div>
+            <div style="background: var(--accent); color: white; width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5em; margin: 0 auto var(--spacing-md);">1</div>
+            <h4>Get a Quote</h4>
+            <p>Enter pickup and delivery details to get an instant price.</p>
+          </div>
+          
+          <div>
+            <div style="background: var(--accent); color: white; width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5em; margin: 0 auto var(--spacing-md);">2</div>
+            <h4>Place Order</h4>
+            <p>Confirm your order and schedule pickup at your convenience.</p>
+          </div>
+          
+          <div>
+            <div style="background: var(--accent); color: white; width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5em; margin: 0 auto var(--spacing-md);">3</div>
+            <h4>Track Live</h4>
+            <p>Get real-time GPS tracking and status updates every step.</p>
+          </div>
+          
+          <div>
+            <div style="background: var(--accent); color: white; width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5em; margin: 0 auto var(--spacing-md);">4</div>
+            <h4>Delivered</h4>
+            <p>Package arrives safely with proof of delivery included.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+    
+    <!-- CTA SECTION -->
+    <section style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); color: white; padding: var(--spacing-3xl) var(--spacing-md); text-align: center;">
+      <div class="container md">
+        <h2 style="color: white;">Ready to Ship?</h2>
+        <p style="font-size: var(--text-lg); margin-bottom: var(--spacing-xl);">Get your first quote in seconds. Free shipping estimation with no commitments.</p>
+        <button class="btn btn-primary btn-lg" onclick="openQuoteModal()">Get Started Now</button>
+      </div>
+    </section>
+  </main>
+  
+  <!-- FOOTER -->
+  <div id="footer-container"></div>
+  
+  <!-- MODALS -->
+  <div id="quoteModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Get a Shipping Quote</h3>
+        <button class="modal-close" onclick="closeQuoteModal()">✕</button>
+      </div>
+      <div class="modal-body" id="quoteFormContainer"></div>
+    </div>
+  </div>
+  
+  <div id="loginModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Login to Your Account</h3>
+        <button class="modal-close" onclick="closeLoginModal()">✕</button>
+      </div>
+      <div id="loginFormContainer"></div>
+    </div>
+  </div>
+  
+  <div id="registerModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Create Your Account</h3>
+        <button class="modal-close" onclick="closeRegisterModal()">✕</button>
+      </div>
+      <div id="registerFormContainer"></div>
+    </div>
+  </div>
+  
+  <!-- SCRIPTS -->
+  <script src="/js/main.js"></script>
+  <script src="/js/public/bilingual.js"></script>
+  <script src="/js/public/quote-calculator.js"></script>
+  <script>
+    // Initialize language on page load
+    window.addEventListener('DOMContentLoaded', function() {
+      const lang = localStorage.getItem('appLanguage') || 'en';
+      document.documentElement.lang = lang;
+      updateLanguageDisplay(lang);
+    });
+
+    // Currency handlers for CAD/USD toggle
+    document.querySelectorAll('.currency-toggle').forEach(btn => {
+      btn.addEventListener('click', function(e) {
+        e.preventDefault();
+        const currency = this.dataset.currency;
+        localStorage.setItem('appCurrency', currency);
+        updateCurrencyDisplay(currency);
+        updatePrices(currency);
+      });
+    });
+
+    function updateCurrencyDisplay(currency) {
+      document.querySelectorAll('.currency-toggle').forEach(btn => {
+        if (btn.dataset.currency === currency) {
+          btn.style.color = 'white';
+        } else {
+          btn.style.color = 'rgba(255, 255, 255, 0.6)';
+        }
+      });
+    }
+
+    function updateLanguageDisplay(lang) {
+      document.querySelectorAll('.lang-toggle-btn').forEach(btn => {
+        const btnLang = btn.textContent.toLowerCase();
+        if (btnLang === lang) {
+          btn.style.color = 'white';
+        } else {
+          btn.style.color = 'rgba(255, 255, 255, 0.6)';
+        }
+      });
+    }
+
+    function updatePrices(currency) {
+      const exchangeRate = 1.35; // CAD to USD ratio (approximate)
+      document.querySelectorAll('.price-display').forEach(el => {
+        const cadAmount = parseFloat(el.dataset.cad);
+        const usdAmount = parseFloat(el.dataset.usd);
+        
+        if (currency === 'USD') {
+          const converted = parseFloat(el.dataset.cad) / exchangeRate;
+          el.textContent = `$${converted.toFixed(2)}`;
+        } else {
+          el.textContent = `$${cadAmount.toFixed(2)}`;
+        }
+      });
+    }
+
+    // Weight unit conversion
+    function convertWeightUnits() {
+      const weightInput = document.getElementById('quoteWeight');
+      const unitSelect = document.getElementById('quoteWeightUnit');
+      
+      if (unitSelect && weightInput) {
+        unitSelect.addEventListener('change', function() {
+          // Just update display; conversion logic handled in quote.js
+          console.log(`Weight unit changed to: ${this.value}`);
+        });
+      }
+    }
+
+    // Dimension unit conversion
+    function convertDimensions() {
+      const dimensionUnit = document.getElementById('dimensionUnit');
+      if (dimensionUnit) {
+        dimensionUnit.addEventListener('change', function() {
+          console.log(`Dimension unit changed to: ${this.value}`);
+        });
+      }
+    }
+
+    // Scroll utility
+    function scrollTo(id) {
+      const element = document.getElementById(id);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+
+    // Modal functions
+    function openQuoteModal() {
+      const modal = document.getElementById('quoteModal');
+      if (modal) {
+        modal.classList.add('active');
+      }
+    }
+
+    function closeQuoteModal() {
+      const modal = document.getElementById('quoteModal');
+      if (modal) {
+        modal.classList.remove('active');
+      }
+    }
+
+    function openLoginModal() {
+      const modal = document.getElementById('loginModal');
+      if (modal) {
+        modal.classList.add('active');
+      }
+    }
+
+    function closeLoginModal() {
+      const modal = document.getElementById('loginModal');
+      if (modal) {
+        modal.classList.remove('active');
+      }
+    }
+
+    function openRegisterModal() {
+      const modal = document.getElementById('registerModal');
+      if (modal) {
+        modal.classList.add('active');
+      }
+    }
+
+    function closeRegisterModal() {
+      const modal = document.getElementById('registerModal');
+      if (modal) {
+        modal.classList.remove('active');
+      }
+    }
+
+    // Close modal when clicking outside
+    window.onclick = function(event) {
+      const modals = [
+        document.getElementById('quoteModal'),
+        document.getElementById('loginModal'),
+        document.getElementById('registerModal')
+      ];
+      modals.forEach(modal => {
+        if (modal && event.target === modal) {
+          modal.classList.remove('active');
+        }
+      });
+    }
+
+    // Load components
+    fetch('/components/navbar-public.html')
+      .then(r => r.text())
+      .then(html => {
+        const container = document.getElementById('navbar-container');
+        if (container) container.innerHTML = html;
+        updateNavbar();
+      })
+      .catch(e => console.error('Error loading navbar:', e));
+
+    fetch('/components/footer.html')
+      .then(r => r.text())
+      .then(html => {
+        const container = document.getElementById('footer-container');
+        if (container) container.innerHTML = html;
+      })
+      .catch(e => console.error('Error loading footer:', e));
+
+    fetch('/components/forms/quote-form.html')
+      .then(r => r.text())
+      .then(html => {
+        const container = document.getElementById('quoteFormContainer');
+        if (container) container.innerHTML = html;
+      })
+      .catch(e => console.error('Error loading quote form:', e));
+  </script>
+</body>
+</html>

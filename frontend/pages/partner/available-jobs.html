@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Available Jobs - Global Network</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="/css/main.css">
+  <style>
+    .global-controls {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+      padding: 1rem;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border-radius: 8px;
+    }
+
+    .region-selector {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .region-btn {
+      padding: 0.4rem 0.8rem;
+      border-radius: 20px;
+      border: 2px solid transparent;
+      background: rgba(255, 255, 255, 0.2);
+      color: white;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.85rem;
+      transition: all 0.3s;
+    }
+
+    .region-btn.active {
+      background: white;
+      color: #667eea;
+      border-color: white;
+    }
+
+    .region-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    .unit-toggle, .language-selector {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      color: white;
+      padding: 0.4rem 0.8rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    .filter-group {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+    }
+
+    .filter-btn {
+      padding: 0.6rem 1rem;
+      border: 1px solid var(--gray-300);
+      background: var(--white);
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      font-size: 0.9rem;
+    }
+
+    .filter-btn.active {
+      background: var(--accent);
+      color: var(--white);
+      border-color: var(--accent);
+    }
+
+    .filter-btn:hover {
+      border-color: var(--accent);
+    }
+
+    .job-card {
+      padding: 1.5rem;
+      background: var(--white);
+      border: 1px solid var(--gray-200);
+      border-radius: 8px;
+      margin-bottom: 1.5rem;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 1.5rem;
+      align-items: start;
+      transition: all 0.3s;
+    }
+
+    .job-card:hover {
+      border-color: var(--accent);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      transform: translateY(-2px);
+    }
+
+    .job-badges {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      margin-bottom: 0.5rem;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 0.3rem 0.6rem;
+      border-radius: 12px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .badge.region { background: #e3f2fd; color: #1565c0; }
+    .badge.shipment-type { background: #f3e5f5; color: #6a1b9a; }
+    .badge.customs { background: #fff3e0; color: #e65100; border: 1px solid #ffb74d; }
+    .badge.vat { background: #e8f5e9; color: #2e7d32; border: 1px solid #81c784; }
+    .badge.international { background: #fce4ec; color: #c2185b; }
+
+    .job-details {
+      display: grid;
+      gap: 1rem;
+    }
+
+    .job-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: start;
+      gap: 1rem;
+    }
+
+    .job-header h4 {
+      margin: 0;
+      font-size: 1.1rem;
+    }
+
+    .job-header small {
+      color: var(--gray-600);
+    }
+
+    .payout-display {
+      font-size: 1.4em;
+      font-weight: 700;
+      color: var(--accent);
+      text-align: right;
+    }
+
+    .job-meta {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 1rem;
+      margin: 1rem 0;
+    }
+
+    .meta-item {
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+    }
+
+    .meta-item small {
+      color: var(--gray-600);
+      font-size: 0.8rem;
+    }
+
+    .meta-item strong {
+      color: var(--primary);
+    }
+
+    .compliance-info {
+      background: #f5f5f5;
+      padding: 0.8rem;
+      border-radius: 6px;
+      margin: 0.5rem 0;
+    }
+
+    .compliance-info small {
+      color: var(--gray-700);
+      display: block;
+      margin-bottom: 0.3rem;
+    }
+
+    .regional-note {
+      background: #fff9c4;
+      border-left: 4px solid #f57f17;
+      padding: 0.8rem;
+      border-radius: 4px;
+      font-size: 0.85rem;
+      margin: 0.5rem 0;
+    }
+
+    .action-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      min-width: 120px;
+    }
+
+    .btn {
+      padding: 0.6rem 1rem;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s;
+      white-space: nowrap;
+      text-align: center;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: #e64a19;
+      transform: translateY(-2px);
+    }
+
+    .btn-secondary {
+      background: var(--gray-200);
+      color: var(--primary);
+    }
+
+    .btn-secondary:hover {
+      background: var(--gray-300);
+    }
+
+    /* Modal Styles */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+    }
+
+    .modal.show {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-content {
+      background-color: white;
+      padding: 2rem;
+      border-radius: 8px;
+      width: 90%;
+      max-width: 600px;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+      border-bottom: 1px solid var(--gray-200);
+      padding-bottom: 1rem;
+    }
+
+    .modal-header h2 {
+      margin: 0;
+    }
+
+    .close-btn {
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+      color: var(--gray-600);
+    }
+
+    .modal-section {
+      margin-bottom: 1.5rem;
+    }
+
+    .modal-section h3 {
+      margin-top: 0;
+      color: var(--primary);
+      font-size: 1rem;
+    }
+
+    .sla-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+      margin-top: 0.5rem;
+    }
+
+    .sla-table th, .sla-table td {
+      padding: 0.6rem;
+      text-align: left;
+      border-bottom: 1px solid var(--gray-200);
+    }
+
+    .sla-table th {
+      background: var(--gray-50);
+      font-weight: 600;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 2rem;
+    }
+
+    .spinner {
+      border: 4px solid var(--gray-200);
+      border-top: 4px solid var(--accent);
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .no-jobs {
+      text-align: center;
+      padding: 2rem;
+      color: var(--gray-600);
+    }
+
+    .stats-bar {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .stat-card {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 1rem;
+      border-radius: 8px;
+      text-align: center;
+    }
+
+    .stat-card strong {
+      display: block;
+      font-size: 1.5rem;
+      margin-top: 0.5rem;
+    }
+  </style>
+</head>
+<body>
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <div class="container">
+      <div class="logo">Georgensen Partners</div>
+      
+      <button class="menu-toggle" id="menuToggle">☰</button>
+      
+      <ul id="navMenu">
+        <li><a href="dashboard.html" data-i18n="dashboard">Dashboard</a></li>
+        <li><a href="available-jobs.html" style="color: var(--accent);" data-i18n="available-jobs">Available Jobs</a></li>
+        <li><a href="active-deliveries.html" data-i18n="active">Active</a></li>
+        <li><a href="earnings.html" data-i18n="earnings">Earnings</a></li>
+        <li><a href="settings.html" data-i18n="settings">Settings</a></li>
+        <li class="auth-buttons">
+          <span id="partnerName" style="color: var(--white);"></span>
+          <button class="btn btn-sm btn-outline" onclick="logout()" data-i18n="logout">Logout</button>
+        </li>
+      </ul>
+    </div>
+  </nav>
+  
+  <!-- PAGE HEADER -->
+  <section style="background: var(--gray-50); padding: 2rem 1rem; border-bottom: 1px solid var(--gray-200);">
+    <div class="container">
+      <h1 data-i18n="available-jobs">Available Jobs</h1>
+      <p style="color: var(--gray-600); margin-top: 0.5rem;" data-i18n="browse-accept">Browse and accept delivery jobs globally</p>
+    </div>
+  </section>
+  
+  <!-- GLOBAL CONTROLS -->
+  <section style="background: white; padding: 1.5rem 1rem; border-bottom: 1px solid var(--gray-200);">
+    <div class="container">
+      <div class="global-controls">
+        <div class="region-selector">
+          <span style="font-size: 0.9rem; font-weight: 600; display: flex; align-items: center;">🌍 Regions:</span>
+          <button class="region-btn active" data-region="NA" onclick="switchRegion('NA')">🇨🇦🇺🇸 NA</button>
+          <button class="region-btn" data-region="EU" onclick="switchRegion('EU')">🇪🇺 EU</button>
+          <button class="region-btn" data-region="APAC" onclick="switchRegion('APAC')">🌏 APAC</button>
+          <button class="region-btn" data-region="LATAM" onclick="switchRegion('LATAM')">🌎 LATAM</button>
+          <button class="region-btn" data-region="MEA" onclick="switchRegion('MEA')">🌍 MEA</button>
+          <button class="region-btn" data-region="ALL" onclick="switchRegion('ALL')" data-i18n="all">All</button>
+        </div>
+        <div style="display: flex; gap: 0.5rem; align-items: center;">
+          <small style="font-weight: 600;">Distance:</small>
+          <div style="display: flex; gap: 0.2rem; background: rgba(255,255,255,0.2); padding: 0.2rem; border-radius: 4px;">
+            <button style="padding: 0.3rem 0.6rem; border: none; background: rgba(255,255,255,0.3); color: white; cursor: pointer; border-radius: 3px; font-weight: 600;" class="active" onclick="setDistanceUnit('metric')">km</button>
+            <button style="padding: 0.3rem 0.6rem; border: none; background: transparent; color: white; cursor: pointer; border-radius: 3px; font-weight: 600;" onclick="setDistanceUnit('imperial')">mi</button>
+          </div>
+          <select class="language-selector" id="languageSelector" onchange="changeLanguage(this.value)">
+            <option value="en">English</option>
+            <option value="es">Español</option>
+            <option value="fr">Français</option>
+            <option value="pt">Português</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </section>
+  
+  <!-- MAIN CONTENT -->
+  <main style="flex: 1; padding: 2rem 1rem;">
+    <div class="container">
+      <!-- STATISTICS -->
+      <div class="stats-bar" id="statsBar">
+        <div class="stat-card">
+          <small data-i18n="available">Available</small>
+          <strong id="availableCount">0</strong>
+        </div>
+        <div class="stat-card">
+          <small data-i18n="avg-payout">Avg. Payout</small>
+          <strong id="avgPayout">--</strong>
+        </div>
+        <div class="stat-card">
+          <small data-i18n="high-priority">High Priority</small>
+          <strong id="highPriority">0</strong>
+        </div>
+        <div class="stat-card">
+          <small data-i18n="in-your-region">In Your Region</small>
+          <strong id="regionalCount">0</strong>
+        </div>
+      </div>
+
+      <!-- FILTERS -->
+      <div class="filter-group">
+        <button class="filter-btn active" onclick="filterJobs('all')" data-i18n="all">All</button>
+        <button class="filter-btn" onclick="filterJobs('economy')" data-i18n="economy">💰 Economy</button>
+        <button class="filter-btn" onclick="filterJobs('standard')" data-i18n="standard">📦 Standard</button>
+        <button class="filter-btn" onclick="filterJobs('express')" data-i18n="express">⚡ Express</button>
+        <button class="filter-btn" onclick="filterJobs('international')" data-i18n="international">🌐 International</button>
+        <button class="filter-btn" onclick="filterJobs('high-pay')" data-i18n="high-pay">💸 High Pay</button>
+      </div>
+      
+      <!-- JOBS LIST -->
+      <div id="jobsList">
+        <div class="loading">
+          <div class="spinner"></div>
+          <p data-i18n="loading">Loading available jobs...</p>
+        </div>
+      </div>
+    </div>
+  </main>
+  
+  <!-- JOB DETAILS MODAL -->
+  <div id="detailsModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="modalTitle">Job Details</h2>
+        <button class="close-btn" onclick="closeModal()">&times;</button>
+      </div>
+      
+      <div id="modalBody">
+        <!-- Dynamically populated -->
+      </div>
+      
+      <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+        <button class="btn btn-primary" style="flex: 1;" onclick="acceptJobFromModal()" data-i18n="accept-job">Accept Job</button>
+        <button class="btn btn-secondary" style="flex: 1;" onclick="closeModal()" data-i18n="cancel">Cancel</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- FOOTER -->
+  <footer style="background-color: var(--primary); color: var(--white); padding: 2rem 1rem; margin-top: auto;">
+    <div class="container" style="text-align: center; color: var(--gray-300);">
+      <p>&copy; 2026 Georgensen Global Partners Network</p>
+    </div>
+  </footer>
+  
+  <script src="/js/core/api.js"></script>
+  <script src="/js/core/auth.js"></script>
+  <script src="/js/core/guards.js"></script>
+  
+  <script>
+    if (!isAuthenticated()) location.href = '../pages/index.html';
+    
+    const user = getCurrentUser();
+    document.getElementById('partnerName').textContent = user.first_name || 'Partner';
+
+    // Global State
+    const appState = {
+      currentRegion: 'NA',
+      distanceUnit: 'metric',
+      language: 'en',
+      currentFilter: 'all',
+      allJobs: [],
+      selectedJob: null
+    };
+
+    // Regional Configuration
+    const REGIONS = {
+      NA: { name: 'North America', currencies: ['CAD', 'USD'], countries: ['CA', 'US'], timezone: 'America/Toronto', distanceUnit: 'km' },
+      EU: { name: 'Europe', currencies: ['EUR', 'GBP'], countries: ['GB', 'DE', 'FR', 'IT', 'ES', 'NL', 'CH', 'AT', 'SE', 'NO'], timezone: 'Europe/London', distanceUnit: 'km' },
+      APAC: { name: 'Asia-Pacific', currencies: ['AUD', 'SGD', 'JPY'], countries: ['AU', 'SG', 'JP', 'HK', 'NZ'], timezone: 'Asia/Singapore', distanceUnit: 'km' },
+      LATAM: { name: 'Latin America', currencies: ['MXN', 'BRL', 'ARS'], countries: ['MX', 'BR', 'AR', 'CL'], timezone: 'America/Sao_Paulo', distanceUnit: 'km' },
+      MEA: { name: 'Middle East & Africa', currencies: ['AED', 'SAR', 'ZAR'], countries: ['AE', 'SA', 'ZA'], timezone: 'Asia/Dubai', distanceUnit: 'km' }
+    };
+
+    // Regional SLAs
+    const REGIONAL_SLAS = {
+      NA: {
+        economy: { hours: 72, label: 'Delivery in 3 days', baseCost: 1.0 },
+        standard: { hours: 48, label: 'Delivery in 2 days', baseCost: 1.3 },
+        express: { hours: 24, label: 'Next day delivery', baseCost: 1.8 }
+      },
+      EU: {
+        economy: { hours: 96, label: 'Delivery in 4 days (Customs may apply)', baseCost: 1.2 },
+        standard: { hours: 48, label: 'Delivery in 2 days', baseCost: 1.4 },
+        express: { hours: 24, label: 'Next day (Express clearance)', baseCost: 2.0 }
+      },
+      APAC: {
+        economy: { hours: 120, label: 'Delivery in 5 days', baseCost: 0.9 },
+        standard: { hours: 72, label: 'Delivery in 3 days', baseCost: 1.2 },
+        express: { hours: 48, label: 'Expedited delivery (48 hrs)', baseCost: 1.7 }
+      },
+      LATAM: {
+        economy: { hours: 96, label: 'Entregas en 4 días', baseCost: 1.1 },
+        standard: { hours: 72, label: 'Entregas en 3 días', baseCost: 1.3 },
+        express: { hours: 48, label: 'Entrega acelerada (48 hrs)', baseCost: 1.8 }
+      },
+      MEA: {
+        economy: { hours: 120, label: 'Delivery in 5 days (Customs processing)', baseCost: 1.0 },
+        standard: { hours: 72, label: 'Delivery in 3 days', baseCost: 1.4 },
+        express: { hours: 48, label: 'Express (Expedited customs)', baseCost: 1.9 }
+      }
+    };
+
+    // i18n Translations
+    const i18n = {
+      en: {
+        'available-jobs': 'Available Jobs',
+        'browse-accept': 'Browse and accept delivery jobs globally',
+        'dashboard': 'Dashboard', 'active': 'Active', 'earnings': 'Earnings', 'settings': 'Settings', 'logout': 'Logout',
+        'all': 'All', 'economy': 'Economy', 'standard': 'Standard', 'express': 'Express', 'international': 'International', 'high-pay': 'High Pay',
+        'loading': 'Loading available jobs...',
+        'available': 'Available', 'avg-payout': 'Avg. Payout', 'high-priority': 'High Priority', 'in-your-region': 'In Your Region',
+        'accept-job': 'Accept Job', 'cancel': 'Cancel',
+        'distance': 'Distance', 'weight': 'Weight', 'payout': 'Payout', 'service': 'Service Level',
+        'pickup': 'Pickup', 'delivery': 'Delivery', 'order': 'Order #', 'package': 'Package',
+        'customs-status': 'Customs Status', 'vat-required': 'VAT Declaration', 'international-job': 'International',
+        'route-details': 'Route Details', 'regulations': 'Regulatory Info', 'sla-info': 'Service Level Agreement'
+      },
+      es: {
+        'available-jobs': 'Trabajos Disponibles',
+        'browse-accept': 'Examina y acepta trabajos de entrega globalmente',
+        'all': 'Todos', 'economy': 'Económico', 'standard': 'Estándar', 'express': 'Urgente', 'international': 'Internacional', 'high-pay': 'Alto Pago',
+        'loading': 'Cargando trabajos disponibles...',
+        'accept-job': 'Aceptar Trabajo', 'cancel': 'Cancelar',
+        'distance': 'Distancia', 'weight': 'Peso', 'payout': 'Pago', 'service': 'Nivel de Servicio'
+      },
+      fr: {
+        'available-jobs': 'Emplois Disponibles',
+        'browse-accept': 'Parcourir et accepter des emplois de livraison mondialement',
+        'all': 'Tous', 'economy': 'Économique', 'standard': 'Standard', 'express': 'Express', 'international': 'International', 'high-pay': 'Haut Paiement',
+        'loading': 'Chargement des emplois disponibles...',
+        'accept-job': 'Accepter l\'emploi', 'cancel': 'Annuler'
+      },
+      pt: {
+        'available-jobs': 'Trabalhos Disponíveis',
+        'browse-accept': 'Procure e aceite trabalhos de entrega globalmente',
+        'all': 'Todos', 'economy': 'Econômico', 'standard': 'Padrão', 'express': 'Expresso', 'international': 'Internacional', 'high-pay': 'Alto Pagamento',
+        'loading': 'Carregando trabalhos disponíveis...',
+        'accept-job': 'Aceitar Trabalho', 'cancel': 'Cancelar'
+      }
+    };
+
+    // Helper Functions
+    function getTranslation(key) {
+      return (i18n[appState.language] && i18n[appState.language][key]) || (i18n.en[key] || key);
+    }
+
+    function updatePageTranslations() {
+      document.querySelectorAll('[data-i18n]').forEach(elem => {
+        const key = elem.getAttribute('data-i18n');
+        if (elem.hasChildNodes() && elem.firstChild.nodeType === 3) {
+          elem.textContent = getTranslation(key);
+        } else if (!elem.querySelector('*')) {
+          elem.textContent = getTranslation(key);
+        }
+      });
+    }
+
+    function switchRegion(region) {
+      appState.currentRegion = region;
+      document.querySelectorAll('.region-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelector(`[data-region="${region}"]`).classList.add('active');
+      loadJobs();
+    }
+
+    function setDistanceUnit(unit) {
+      appState.distanceUnit = unit;
+      document.querySelectorAll('[onclick*="setDistanceUnit"]').forEach(btn => {
+        btn.classList.remove('active');
+      });
+      event.target.classList.add('active');
+      displayJobs();
+    }
+
+    function changeLanguage(lang) {
+      appState.language = lang;
+      updatePageTranslations();
+    }
+
+    function filterJobs(filter) {
+      appState.currentFilter = filter;
+      document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+      event.target.classList.add('active');
+      displayJobs();
+    }
+
+    function calculateDistance(distance_km) {
+      if (appState.distanceUnit === 'imperial') {
+        return (distance_km * 0.621371).toFixed(1) + ' mi';
+      }
+      return distance_km.toFixed(1) + ' km';
+    }
+
+    function getCurrencySymbol(currency) {
+      const symbols = {
+        'CAD': 'C$', 'USD': '$', 'EUR': '€', 'GBP': '£',
+        'AUD': 'A$', 'SGD': 'S$', 'JPY': '¥', 'MXN': '$',
+        'BRL': 'R$', 'ARS': '$', 'AED': 'د.إ', 'SAR': 'ر.س', 'ZAR': 'R'
+      };
+      return symbols[currency] || currency;
+    }
+
+    async function loadJobs() {
+      try {
+        // Fetch jobs from regional endpoint
+        const region = appState.currentRegion === 'ALL' ? 'NA' : appState.currentRegion;
+        const response = await apiCall(`/partners/available-jobs?region=${region}&limit=50`);
+        appState.allJobs = response || [];
+        
+        updateStats();
+        displayJobs();
+      } catch (error) {
+        console.error('Error loading jobs:', error);
+        document.getElementById('jobsList').innerHTML = `<div class="no-jobs">Error loading jobs: ${error.message}</div>`;
+      }
+    }
+
+    function updateStats() {
+      const available = appState.allJobs.length;
+      const highPriority = appState.allJobs.filter(j => j.service_type === 'express').length;
+      const avgPayout = appState.allJobs.length > 0 
+        ? appState.allJobs.reduce((sum, j) => sum + (j.payout || 0), 0) / appState.allJobs.length
+        : 0;
+      
+      document.getElementById('availableCount').textContent = available;
+      document.getElementById('highPriority').textContent = highPriority;
+      document.getElementById('regionalCount').textContent = available;
+      document.getElementById('avgPayout').textContent = getCurrencySymbol(REGIONS[appState.currentRegion].currencies[0]) + avgPayout.toFixed(2);
+    }
+
+    function displayJobs() {
+      let filtered = appState.allJobs;
+
+      // Apply service filter
+      if (appState.currentFilter === 'high-pay') {
+        filtered = filtered.filter(j => j.payout > 100);
+      } else if (appState.currentFilter === 'international') {
+        filtered = filtered.filter(j => j.is_international);
+      } else if (appState.currentFilter !== 'all') {
+        filtered = filtered.filter(j => j.service_type === appState.currentFilter);
+      }
+
+      const jobsList = document.getElementById('jobsList');
+      if (filtered.length === 0) {
+        jobsList.innerHTML = `<div class="no-jobs"><p>${getTranslation('loading')}</p></div>`;
+        return;
+      }
+
+      jobsList.innerHTML = filtered.map((job, idx) => {
+        const region = appState.currentRegion === 'ALL' ? 'NA' : appState.currentRegion;
+        const currency = REGIONS[region].currencies[0];
+        const isInternational = job.is_international;
+        const distance = calculateDistance(job.distance_km || 50);
+
+        return `
+          <div class="job-card">
+            <div class="job-details">
+              <div class="job-badges">
+                <span class="badge region">${region}</span>
+                ${isInternational ? '<span class="badge international">🌐 International</span>' : ''}
+                ${job.service_type === 'express' ? '<span class="badge shipment-type">⚡ Express</span>' : ''}
+                ${job.requires_customs ? '<span class="badge customs">🛂 Customs</span>' : ''}
+                ${job.requires_vat ? '<span class="badge vat">📋 VAT</span>' : ''}
+              </div>
+
+              <div class="job-header">
+                <div>
+                  <h4>📍 ${job.pickup_location} → ${job.delivery_location}</h4>
+                  <small>${getTranslation('order')} #${job.tracking_number}</small>
+                </div>
+                <div class="payout-display">${getCurrencySymbol(currency)}${job.payout.toFixed(2)}</div>
+              </div>
+
+              <div class="job-meta">
+                <div class="meta-item">
+                  <small>📦 ${getTranslation('weight')}</small>
+                  <strong>${job.package_weight}kg</strong>
+                </div>
+                <div class="meta-item">
+                  <small>📍 ${getTranslation('distance')}</small>
+                  <strong>${distance}</strong>
+                </div>
+                <div class="meta-item">
+                  <small>⏱️ ${getTranslation('service')}</small>
+                  <strong style="text-transform: capitalize;">${job.service_type}</strong>
+                </div>
+              </div>
+
+              ${job.requires_customs || job.requires_vat ? `
+                <div class="compliance-info">
+                  <small>⚠️ Regulatory Requirements:</small>
+                  ${job.requires_customs ? '<div style="color: #e65100;">🛂 Customs documentation required</div>' : ''}
+                  ${job.requires_vat ? '<div style="color: #2e7d32;">📋 VAT declaration needed</div>' : ''}
+                </div>
+              ` : ''}
+
+              ${isInternational ? `
+                <div class="regional-note">
+                  ℹ️ This is a cross-border shipment. Ensure all documentation is reviewed before accepting.
+                </div>
+              ` : ''}
+            </div>
+
+            <div class="action-buttons">
+              <button class="btn btn-primary" onclick="acceptJob('${job.id}', ${idx})" data-i18n="accept-job">Accept</button>
+              <button class="btn btn-secondary" onclick="viewJobDetails('${job.id}', ${idx})" data-i18n="details">Details</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function viewJobDetails(jobId, idx) {
+      const job = appState.allJobs[idx];
+      appState.selectedJob = job;
+      const region = appState.currentRegion === 'ALL' ? 'NA' : appState.currentRegion;
+      const currency = REGIONS[region].currencies[0];
+      const sla = REGIONAL_SLAS[region][job.service_type];
+
+      const modalBody = document.getElementById('modalBody');
+      modalBody.innerHTML = `
+        <div class="modal-section">
+          <h3>📍 ${getTranslation('route-details')}</h3>
+          <p><strong>Pickup:</strong> ${job.pickup_location}</p>
+          <p><strong>Delivery:</strong> ${job.delivery_location}</p>
+          <p><strong>Distance:</strong> ${calculateDistance(job.distance_km || 50)}</p>
+          <p><strong>Package Description:</strong> ${job.package_description || 'Standard Package'}</p>
+        </div>
+
+        <div class="modal-section">
+          <h3>💼 Service Level Agreement (${REGIONS[region].name})</h3>
+          <p><strong>Service:</strong> ${job.service_type.toUpperCase()}</p>
+          <p><strong>Expected Delivery:</strong> ${sla.label}</p>
+          <p><strong>Timeframe:</strong> ${sla.hours} hours</p>
+          <table class="sla-table">
+            <tr>
+              <th>Timeline</th>
+              <th>Requirement</th>
+            </tr>
+            <tr>
+              <td>Pickup</td>
+              <td>Within 2 hours of acceptance</td>
+            </tr>
+            <tr>
+              <td>In Transit</td>
+              <td>Update status every 6 hours</td>
+            </tr>
+            <tr>
+              <td>Delivery</td>
+              <td>Before ${sla.hours} hours expire</td>
+            </tr>
+          </table>
+        </div>
+
+        ${job.is_international ? `
+          <div class="modal-section">
+            <h3>🛂 ${getTranslation('regulations')}</h3>
+            <ul>
+              ${job.requires_customs ? '<li>✓ Customs clearance required</li>' : ''}
+              ${job.requires_vat ? '<li>✓ VAT documentation required</li>' : ''}
+              <li>✓ Package value: ${getCurrencySymbol(currency)}${job.total_value.toFixed(2)}</li>
+              <li>✓ Destination: ${job.destination_country}</li>
+            </ul>
+          </div>
+        ` : ''}
+
+        <div class="modal-section">
+          <h3>💰 Compensation</h3>
+          <p><strong>Base Payout:</strong> ${getCurrencySymbol(currency)}${job.payout.toFixed(2)}</p>
+          <p><strong>Currency:</strong> ${currency}</p>
+          <p><strong>Payout Terms:</strong> Weekly settlement via partner account</p>
+        </div>
+      `;
+
+      document.getElementById('modalTitle').textContent = `Order #${job.tracking_number}`;
+      document.getElementById('detailsModal').classList.add('show');
+    }
+
+    function closeModal() {
+      document.getElementById('detailsModal').classList.remove('show');
+    }
+
+    async function acceptJob(jobId, idx) {
+      try {
+        const response = await apiCall(`/partners/accept-job/${jobId}`, 'POST');
+        showNotification(`✅ Job accepted! ${response.tracking_number}`, 'success');
+        setTimeout(() => location.href = 'active-deliveries.html', 1500);
+      } catch (error) {
+        showNotification(`Error: ${error.message}`, 'error');
+      }
+    }
+
+    function acceptJobFromModal() {
+      if (appState.selectedJob) {
+        acceptJob(appState.selectedJob.id, 0);
+      }
+    }
+
+    document.getElementById('menuToggle').addEventListener('click', () => {
+      document.getElementById('navMenu').classList.toggle('mobile-menu-open');
+    });
+
+    document.getElementById('detailsModal').addEventListener('click', (e) => {
+      if (e.target.id === 'detailsModal') closeModal();
+    });
+
+    // Initialize
+    updatePageTranslations();
+    loadJobs();
+    setInterval(loadJobs, 30000); // Refresh every 30 seconds
+  </script>
+</body>
+</html>

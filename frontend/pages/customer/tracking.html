@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Track Shipment - Customer Portal</title>
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="stylesheet" href="/assets/lib/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .tracking-timeline {
+            position: relative;
+            padding: 20px 0;
+        }
+        
+        .timeline-item {
+            padding-left: 40px;
+            position: relative;
+            margin-bottom: 30px;
+        }
+        
+        .timeline-marker {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border: 3px solid white;
+            box-shadow: 0 0 0 4px #dee2e6;
+        }
+        
+        .timeline-content {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+        }
+        
+        .timeline-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: 500;
+        }
+        
+        .connection-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+        
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <nav id="navbar-container"></nav>
+    
+    <div class="container mt-4">
+        <h2>Track Your Shipment</h2>
+        
+        <!-- Search Section -->
+        <div class="row mb-4">
+            <div class="col-md-8">
+                <form id="trackingForm" onsubmit="handleTrackingSubmit(event)">
+                    <div class="input-group">
+                        <input 
+                            type="text" 
+                            class="form-control" 
+                            id="trackingNumber" 
+                            placeholder="Enter tracking number..." 
+                            required
+                        >
+                        <button class="btn btn-primary" type="submit">
+                            <i class="fas fa-search"></i> Track
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Tracking Display Section -->
+        <div class="row mt-4" id="trackingInfo" style="display: none;">
+            <div class="col-md-8">
+                <!-- Status Card -->
+                <div class="card mb-3 position-relative">
+                    <span id="connectionStatus" class="badge badge-warning connection-badge">Connecting...</span>
+                    <div class="card-body">
+                        <h5 class="card-title">Shipment Details</h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p class="text-muted mb-1"><strong>Tracking Number</strong></p>
+                                <p><span id="detailTrackingNumber">-</span></p>
+                            </div>
+                            <div class="col-md-6">
+                                <p class="text-muted mb-1"><strong>Status</strong></p>
+                                <div id="detailStatus">
+                                    <span class="status-badge" style="background: #e2e3e5; color: #383d41;">Pending</span>
+                                </div>
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p class="text-muted mb-1"><strong>Current Location</strong></p>
+                                <p id="detailLocation">-</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p class="text-muted mb-1"><strong>Last Update</strong></p>
+                                <p id="detailTime">-</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Timeline Card -->
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Tracking Timeline</h5>
+                        <div class="tracking-timeline" id="timelineContainer">
+                            <p class="text-muted text-center">No updates yet...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Sidebar -->
+            <div class="col-md-4">
+                <!-- Addresses Card -->
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <h6 class="card-title"><i class="fas fa-location-dot"></i> Addresses</h6>
+                        <hr>
+                        <p class="text-muted mb-1"><small><strong>From</strong></small></p>
+                        <p class="small" id="detailPickupAddress">-</p>
+                        <hr>
+                        <p class="text-muted mb-1"><small><strong>To</strong></small></p>
+                        <p class="small" id="detailDeliveryAddress">-</p>
+                    </div>
+                </div>
+
+                <!-- Estimated Delivery -->
+                <div class="card">
+                    <div class="card-body">
+                        <h6 class="card-title"><i class="fas fa-calendar-check"></i> Expected Delivery</h6>
+                        <p class="h6" id="detailDeliveryDate">-</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer id="footer-container"></footer>
+
+    <script src="/js/core/api.js"></script>
+    <script src="/js/core/auth.js"></script>
+    <script src="/js/core/guards.js"></script>
+    <script src="/js/tracking-realtime.js"></script>
+    <script>
+        let currentTracker = null;
+
+        /**
+         * Handle tracking form submission
+         */
+        async function handleTrackingSubmit(event) {
+            event.preventDefault();
+            
+            const trackingNum = document.getElementById('trackingNumber').value.trim();
+            if (!trackingNum) return;
+
+            // Close previous tracker
+            if (currentTracker) {
+                currentTracker.disconnect();
+            }
+
+            // Show display section
+            document.getElementById('trackingInfo').style.display = 'block';
+            
+            // Update display
+            document.getElementById('detailTrackingNumber').textContent = trackingNum;
+            document.getElementById('detailStatus').innerHTML = '<span class="status-badge" style="background: #e2e3e5; color: #383d41;">Loading...</span>';
+            document.getElementById('timelineContainer').innerHTML = '<p class="text-muted text-center">Connecting to live tracking...</p>';
+
+            try {
+                // Fetch initial status
+                const response = await fetch(`/api/v1/tracking/${trackingNum}`);
+                const data = await response.json();
+
+                if (response.ok) {
+                    // Update initial display
+                    document.getElementById('detailPickupAddress').textContent = data.pickup_address || '-';
+                    document.getElementById('detailDeliveryAddress').textContent = data.delivery_address || '-';
+                    document.getElementById('detailDeliveryDate').textContent = data.estimated_delivery_date || 'To be determined';
+                    
+                    // Display initial history
+                    if (data.raw_history && data.raw_history.length > 0) {
+                        document.getElementById('timelineContainer').innerHTML = '';
+                        data.raw_history.forEach(update => {
+                            displayTrackingUpdate(update);
+                        });
+                    } else {
+                        document.getElementById('timelineContainer').innerHTML = '<p class="text-muted text-center">No updates yet...</p>';
+                    }
+
+                    // Initialize real-time tracking
+                    const tracker = new TrackingClient(trackingNum);
+                    
+                    tracker.on('onConnected', () => {
+                        updateConnectionBadge(true);
+                        console.log('✓ Real-time tracking connected');
+                    });
+                    
+                    tracker.on('onUpdate', (data) => {
+                        updateTrackingDisplay(data);
+                    });
+                    
+                    tracker.on('onDisconnected', () => {
+                        updateConnectionBadge(false);
+                    });
+                    
+                    tracker.on('onError', () => {
+                        updateConnectionBadge(false);
+                    });
+                    
+                    tracker.connect();
+                    currentTracker = tracker;
+
+                } else {
+                    document.getElementById('detailStatus').innerHTML = '<span class="status-badge" style="background: #f8d7da; color: #721c24;">Not found</span>';
+                    document.getElementById('timelineContainer').innerHTML = '<p class="text-danger text-center">Tracking number not found</p>';
+                }
+            } catch (error) {
+                console.error('Error fetching tracking data:', error);
+                document.getElementById('timelineContainer').innerHTML = `<p class="text-danger text-center">Error: ${error.message}</p>`;
+            }
+        }
+
+        /**
+         * Update tracking display with new data
+         */
+        function updateTrackingDisplay(data) {
+            // Update status
+            const statusColor = getStatusColor(data.status);
+            document.getElementById('detailStatus').innerHTML = `<span class="status-badge" style="background: var(--bs-${statusColor}) !important; color: white;">${data.status}</span>`;
+            
+            // Update location
+            document.getElementById('detailLocation').textContent = data.location || `${data.latitude}, ${data.longitude}` || '-';
+            
+            // Update time
+            if (data.timestamp) {
+                const time = new Date(data.timestamp).toLocaleTimeString();
+                document.getElementById('detailTime').textContent = time;
+            }
+            
+            // Add to history
+            displayTrackingUpdate(data);
+        }
+
+        /**
+         * Update connection badge
+         */
+        function updateConnectionBadge(isConnected) {
+            const badge = document.getElementById('connectionStatus');
+            
+            if (isConnected) {
+                badge.className = 'badge badge-success connection-badge';
+                badge.innerHTML = '<i class="fas fa-circle" style="font-size: 8px;"></i> Live';
+            } else {
+                badge.className = 'badge badge-warning connection-badge';
+                badge.innerHTML = '<i class="fas fa-circle-notch" style="animation: spin 1s linear infinite; font-size: 8px;"></i> Reconnecting';
+            }
+        }
+
+        /**
+         * Map status to Bootstrap color
+         */
+        function getStatusColor(status) {
+            const colors = {
+                'pending': 'secondary',
+                'order_received': 'secondary',
+                'processing': 'info',
+                'picked_up': 'primary',
+                'in_transit': 'info',
+                'out_for_delivery': 'warning',
+                'delivered': 'success',
+                'failed_delivery': 'danger',
+                'cancelled': 'dark'
+            };
+            return colors[status] || 'secondary';
+        }
+
+        /**
+         * Display tracking update in timeline
+         */
+        function displayTrackingUpdate(data) {
+            const historyEl = document.getElementById('timelineContainer');
+            
+            // Clear "no updates" message if this is first update
+            if (historyEl.querySelector('.text-muted')) {
+                historyEl.innerHTML = '';
+            }
+            
+            const time = new Date(data.timestamp || data.created_at).toLocaleTimeString();
+            const statusColor = getStatusColorHex(data.status);
+            
+            const item = document.createElement('div');
+            item.className = 'timeline-item';
+            item.innerHTML = `
+                <div class="timeline-marker" style="background: ${statusColor};"></div>
+                <div class="timeline-content">
+                    <div class="timeline-header">
+                        <strong style="text-transform: capitalize;">${data.status?.replace(/_/g, ' ') || 'Update'}</strong>
+                        <span class="text-muted" style="font-size: 12px;">${time}</span>
+                    </div>
+                    ${data.location ? `<p style="margin: 8px 0;"><i class="fas fa-map-marker-alt"></i> <strong>${data.location}</strong></p>` : ''}
+                    ${data.notes ? `<p style="margin: 8px 0; color: #6c757d;"><em>${data.notes}</em></p>` : ''}
+                </div>
+            `;
+            
+            historyEl.insertBefore(item, historyEl.firstChild);
+            
+            // Limit to 20 items
+            while (historyEl.children.length > 20) {
+                historyEl.removeChild(historyEl.lastChild);
+            }
+        }
+
+        /**
+         * Map status to color hex
+         */
+        function getStatusColorHex(status) {
+            const colors = {
+                'pending': '#6c757d',
+                'order_received': '#6c757d',
+                'processing': '#17a2b8',
+                'picked_up': '#007bff',
+                'in_transit': '#17a2b8',
+                'out_for_delivery': '#ffc107',
+                'delivered': '#28a745',
+                'failed_delivery': '#dc3545',
+                'cancelled': '#343a40'
+            };
+            return colors[status] || '#6c757d';
+        }
+
+        // Load sidebar on page load
+        window.addEventListener('load', () => {
+            loadNavbar();
+            loadFooter();
+            guardCustomerPortal();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analytics & Reports - Admin Dashboard</title>
+    <link rel="stylesheet" href="/lib/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/lib/fontawesome/css/all.min.css">
+</head>
+<body>
+    <div class="d-flex">
+        <!-- Sidebar -->
+        <nav class="bg-dark text-white p-4" style="width: 250px; min-height: 100vh;">
+            <h4 class="mb-4">Admin Panel</h4>
+            <ul class="nav flex-column">
+                <li class="nav-item"><a class="nav-link" href="/admin-dashboard.html">Dashboard</a></li>
+                <li class="nav-item"><a class="nav-link" href="/orders-management.html">Orders</a></li>
+                <li class="nav-item"><a class="nav-link" href="/partners-management.html">Partners</a></li>
+                <li class="nav-item"><a class="nav-link" href="/support-tickets.html">Disputes</a></li>
+                <li class="nav-item"><a class="nav-link" href="/payments-management.html">Payments</a></li>
+                <li class="nav-item"><a class="nav-link active" href="#">Analytics</a></li>
+                <li class="nav-item"><a class="nav-link" href="/audit-logs.html">Audit Logs</a></li>
+            </ul>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="flex-grow-1 p-4">
+            <h1 class="mb-4">Analytics & Reports</h1>
+
+            <!-- Key Metrics -->
+            <div class="row mb-4">
+                <div class="col-md-3 mb-3">
+                    <div class="card">
+                        <div class="card-body">
+                            <h6 class="text-muted">Total Revenue</h6>
+                            <h3>$125,430</h3>
+                            <small class="text-success">+12% from last month</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="card">
+                        <div class="card-body">
+                            <h6 class="text-muted">Total Orders</h6>
+                            <h3>3,241</h3>
+                            <small class="text-success">+8% from last month</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="card">
+                        <div class="card-body">
+                            <h6 class="text-muted">Active Partners</h6>
+                            <h3>234</h3>
+                            <small class="text-success">+5% from last month</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="card">
+                        <div class="card-body">
+                            <h6 class="text-muted">Avg Rating</h6>
+                            <h3>4.8 / 5</h3>
+                            <small class="text-warning">2 reviews pending</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Reports -->
+            <div class="row">
+                <div class="col-lg-6 mb-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">Revenue Trends</h5>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="revenueChart" height="100"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6 mb-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">Orders by Type</h5>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="orderTypeChart" height="100"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Export Options -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Generate Reports</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Report Type</label>
+                            <select class="form-select" id="reportType">
+                                <option>Revenue Report</option>
+                                <option>Order Summary</option>
+                                <option>Partner Performance</option>
+                                <option>Customer Satisfaction</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Date Range</label>
+                            <select class="form-select" id="dateRange">
+                                <option>Last 7 Days</option>
+                                <option>Last 30 Days</option>
+                                <option>Last 90 Days</option>
+                                <option>Custom Range</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Format</label>
+                            <select class="form-select" id="reportFormat">
+                                <option>PDF</option>
+                                <option>CSV</option>
+                                <option>Excel</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary">Generate Report</button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="/lib/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="/lib/fontawesome/js/all.min.js"></script>
+    <script src="/lib/chart.js/Chart.min.js"></script>
+    <script>
+        // Revenue Chart
+        const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+        new Chart(revenueCtx, {
+            type: 'line',
+            data: {
+                labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                datasets: [{
+                    label: 'Revenue',
+                    data: [12000, 19000, 15000, 25000, 22000, 30000, 28000],
+                    borderColor: '#0d6efd',
+                    backgroundColor: 'rgba(13, 110, 253, 0.1)',
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: false } }
+            }
+        });
+
+        // Order Type Chart
+        const orderCtx = document.getElementById('orderTypeChart').getContext('2d');
+        new Chart(orderCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Local', 'Interstate', 'International', 'Express'],
+                datasets: [{
+                    data: [500, 350, 200, 150],
+                    backgroundColor: ['#0d6efd', '#6c757d', '#198754', '#ffc107']
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { position: 'bottom' } }
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Partner Management - Georgensen Courier</title>
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="stylesheet" href="/assets/lib/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/assets/lib/fontawesome/css/all.min.css">
+    <style>
+        /* Admin Navbar Styles */
+        .admin-navbar { background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%); color: white; padding: 0; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); }
+        .admin-navbar-container { max-width: 100%; margin: 0 auto; padding: 0 1.5rem; display: flex; justify-content: space-between; align-items: center; height: 70px; }
+        .navbar-left { display: flex; align-items: center; gap: 2rem; flex: 1; }
+        .navbar-brand { display: flex; align-items: center; }
+        .brand-logo { display: flex; align-items: center; gap: 0.75rem; text-decoration: none; color: white; font-weight: 700; font-size: 1.1rem; white-space: nowrap; }
+        .brand-icon { font-size: 1.5rem; }
+        .brand-text { display: none; }
+        @media (min-width: 768px) { .brand-text { display: inline; } }
+        .nav-menu { list-style: none; margin: 0; padding: 0; display: flex; gap: 0.5rem; }
+        .nav-item { position: relative; }
+        .nav-link { display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; color: rgba(255, 255, 255, 0.8); text-decoration: none; font-size: 0.95rem; border-radius: 4px; transition: all 0.3s ease; white-space: nowrap; }
+        .nav-link:hover { background: rgba(255, 255, 255, 0.15); color: white; }
+        .nav-link.active { background: rgba(255, 255, 255, 0.25); color: white; border-bottom: 3px solid #3498db; }
+        .nav-link span { display: none; }
+        @media (min-width: 992px) { .nav-link span { display: inline; } }
+        .navbar-right { display: flex; align-items: center; gap: 1.5rem; }
+        .admin-actions { display: flex; gap: 0.75rem; }
+        .action-btn { background: rgba(255, 255, 255, 0.1); border: none; color: white; padding: 0.5rem 0.75rem; border-radius: 4px; cursor: pointer; font-size: 1rem; transition: all 0.3s ease; position: relative; }
+        .action-btn:hover { background: rgba(255, 255, 255, 0.2); }
+        .notification-badge { position: absolute; top: -5px; right: -5px; background: #e74c3c; color: white; border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: bold; }
+        .user-info-section { display: flex; align-items: center; position: relative; }
+        .user-avatar { width: 36px; height: 36px; background: rgba(255, 255, 255, 0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; cursor: pointer; transition: all 0.3s ease; }
+        .user-avatar:hover { background: rgba(255, 255, 255, 0.3); }
+        .user-menu { position: absolute; top: 50px; right: 0; background: white; color: #333; border-radius: 4px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); min-width: 200px; z-index: 1001; padding: 0.5rem 0; display: none; }
+        .user-menu.show { display: block; }
+        .user-menu-header { padding: 0.75rem 1rem; }
+        .user-name { display: block; font-weight: 600; color: #2c3e50; }
+        .user-role { display: block; color: #7f8c8d; }
+        .menu-item { display: flex; align-items: center; gap: 0.75rem; width: 100%; padding: 0.75rem 1rem; background: none; border: none; color: #2c3e50; cursor: pointer; text-decoration: none; transition: all 0.2s ease; font-size: 0.95rem; }
+        .menu-item:hover { background: #f8f9fa; color: #2c3e50; }
+        .admin-search-bar { padding: 1rem 1.5rem; background: rgba(0, 0, 0, 0.1); border-top: 1px solid rgba(255, 255, 255, 0.1); }
+        .search-input { width: 100%; padding: 0.75rem 1rem; background: white; border: 1px solid #ddd; border-radius: 4px; font-size: 0.95rem; }
+        .search-results { margin-top: 0.75rem; max-height: 400px; overflow-y: auto; }
+        .search-result-item { padding: 0.75rem 1rem; background: white; border-bottom: 1px solid #eee; cursor: pointer; display: flex; align-items: center; gap: 0.75rem; }
+        .search-result-item:hover { background: #f8f9fa; }
+        .search-result-icon { color: #3498db; }
+        .search-result-content { flex: 1; }
+        .search-result-title { font-weight: 600; color: #2c3e50; }
+        .search-result-meta { font-size: 0.85rem; color: #7f8c8d; }
+        @media (max-width: 768px) { .admin-navbar-container { padding: 0 1rem; height: 60px; } .navbar-left { gap: 1rem; } .nav-menu { gap: 0rem; } .nav-link { padding: 0.5rem 0.75rem; } .admin-actions { gap: 0.5rem; } .action-btn { padding: 0.5rem 0.5rem; } }
+        
+        .regional-hub-header { padding: 2rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 8px; margin-bottom: 2rem; }
+        .regional-hub-header h1 { font-size: 2.5rem; margin: 0 0 0.5rem 0; }
+        .regional-hub-header p { margin: 0; opacity: 0.9; }
+        .filter-section { padding: 1.5rem; background: #f8f9fa; border-radius: 8px; margin-bottom: 2rem; }
+        .filter-group { display: flex; gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap; }
+        .filter-group select { flex: 1; min-width: 200px; }
+        .search-box { flex: 1; min-width: 250px; }
+        .bulk-actions-bar { padding: 1rem; background: #f0f0f0; border-radius: 4px; margin-bottom: 1rem; display: none; }
+        .bulk-actions-bar.active { display: block; }
+        .skeleton-row { background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%); background-size: 200% 100%; animation: loading 1.5s infinite; height: 60px; }
+        @keyframes loading { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+        .tier-badge { padding: 0.35rem 0.75rem; border-radius: 20px; font-size: 0.85rem; font-weight: 600; }
+        .tier-standard { background: #e3f2fd; color: #1565c0; }
+        .tier-gold { background: #fff8e1; color: #f57f17; }
+        .tier-elite { background: #f3e5f5; color: #6a1b9a; }
+        .compliance-badge { display: inline-block; padding: 0.35rem 0.75rem; border-radius: 20px; font-size: 0.85rem; font-weight: 500; margin-right: 0.5rem; margin-bottom: 0.5rem; }
+        .compliance-verified { background: #28a745; color: white; }
+        .compliance-warning { background: #ffc107; color: #333; }
+        .compliance-expired { background: #dc3545; color: white; }
+        .compliance-pending { background: #17a2b8; color: white; }
+        .region-chip { display: inline-block; padding: 0.25rem 0.75rem; background: #e9ecef; border-radius: 12px; font-size: 0.85rem; margin-right: 0.5rem; }
+        .service-zone { font-size: 0.9rem; color: #666; margin-top: 0.25rem; }
+        .rating-stars { color: #ffc107; font-size: 0.9rem; }
+        .partner-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1050; }
+        .partner-modal.show { display: flex; align-items: center; justify-content: center; }
+        .modal-content-custom { background: white; border-radius: 12px; padding: 2rem; max-width: 900px; max-height: 85vh; overflow-y: auto; box-shadow: 0 10px 40px rgba(0,0,0,0.3); }
+        .modal-close { position: absolute; top: 1rem; right: 1.5rem; cursor: pointer; font-size: 1.5rem; color: #666; }
+        .modal-tabs { display: flex; gap: 1rem; border-bottom: 2px solid #e0e0e0; margin-bottom: 1.5rem; }
+        .modal-tab { padding: 0.75rem 0; border-bottom: 3px solid transparent; cursor: pointer; color: #666; font-weight: 500; }
+        .modal-tab.active { color: #667eea; border-bottom-color: #667eea; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .info-row { padding: 0.75rem 0; border-bottom: 1px solid #e0e0e0; display: flex; justify-content: space-between; }
+        .info-row:last-child { border-bottom: none; }
+        .info-label { font-weight: 600; color: #333; }
+        .info-value { color: #666; }
+        .document-list { list-style: none; padding: 0; }
+        .document-item { padding: 0.75rem; background: #f8f9fa; border-radius: 4px; margin-bottom: 0.5rem; display: flex; justify-content: space-between; align-items: center; }
+        .doc-status-verified { color: #28a745; }
+        .doc-status-expired { color: #dc3545; }
+        .doc-status-pending { color: #ffc107; }
+        .communication-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1050; }
+        .communication-modal.show { display: flex; align-items: center; justify-content: center; }
+        .communication-form { background: white; border-radius: 12px; padding: 2rem; max-width: 600px; width: 90%; }
+        .map-container { height: 400px; background: #e9ecef; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #666; margin: 1rem 0; }
+    </style>
+</head>
+<body>
+    <!-- Admin Navigation Bar -->
+    <nav class="admin-navbar">
+        <div class="admin-navbar-container">
+            <div class="navbar-left">
+                <div class="navbar-brand">
+                    <a href="/admin/dashboard" class="brand-logo">
+                        <span class="brand-icon">🚚</span>
+                        <span class="brand-text">Georgensen Admin</span>
+                    </a>
+                </div>
+                <ul class="nav-menu">
+                    <li class="nav-item"><a href="/admin/dashboard" class="nav-link" data-page="dashboard"><i class="fas fa-chart-line"></i><span>Dashboard</span></a></li>
+                    <li class="nav-item"><a href="/admin/orders" class="nav-link" data-page="orders"><i class="fas fa-boxes"></i><span>Orders</span></a></li>
+                    <li class="nav-item"><a href="/admin/partners" class="nav-link" data-page="partners"><i class="fas fa-handshake"></i><span>Partners</span></a></li>
+                    <li class="nav-item"><a href="/admin/users" class="nav-link" data-page="users"><i class="fas fa-users"></i><span>Users</span></a></li>
+                    <li class="nav-item"><a href="/admin/disputes" class="nav-link" data-page="disputes"><i class="fas fa-balance-scale"></i><span>Disputes</span></a></li>
+                    <li class="nav-item"><a href="/admin/reports" class="nav-link" data-page="reports"><i class="fas fa-file-chart-line"></i><span>Reports</span></a></li>
+                </ul>
+            </div>
+            <div class="navbar-right">
+                <div class="admin-actions">
+                    <button class="action-btn search-btn" title="Search" onclick="toggleSearch()"><i class="fas fa-search"></i></button>
+                    <button class="action-btn notifications-btn" title="Notifications" onclick="toggleNotifications()"><i class="fas fa-bell"></i><span class="notification-badge" id="notificationBadge" style="display:none;">3</span></button>
+                    <button class="action-btn settings-btn" title="Settings" onclick="openSettings()"><i class="fas fa-cog"></i></button>
+                </div>
+                <div class="user-info-section">
+                    <div class="user-avatar" onclick="toggleUserMenu()"><span id="userInitial">A</span></div>
+                    <div class="user-menu dropdown-menu" id="userMenu">
+                        <div class="user-menu-header"><span class="user-name" id="adminName">Admin User</span><small class="user-role" id="adminRole">Operations Lead</small></div>
+                        <hr style="margin: 0.5rem 0;">
+                        <a href="/admin/profile" class="menu-item"><i class="fas fa-user-circle"></i> My Profile</a>
+                        <a href="/admin/settings" class="menu-item"><i class="fas fa-sliders-h"></i> Settings</a>
+                        <a href="/admin/logs" class="menu-item"><i class="fas fa-history"></i> Activity Logs</a>
+                        <hr style="margin: 0.5rem 0;">
+                        <button class="menu-item" onclick="logoutAdmin()"><i class="fas fa-sign-out-alt"></i> Logout</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="admin-search-bar" id="searchBar" style="display:none;">
+            <input type="text" class="search-input" placeholder="Search orders, partners, disputes, customers..." id="adminSearch" onkeyup="handleAdminSearch()">
+            <div class="search-results" id="searchResults"></div>
+        </div>
+    </nav>
+    
+    <div class="container-fluid mt-4">
+        <!-- Regional Hub Header -->
+        <div class="regional-hub-header">
+            <h1><i class="fas fa-globe"></i> Global Partner Oversight Hub</h1>
+            <p>Manage delivery partners across 6 major regions with localized compliance tracking</p>
+        </div>
+
+        <!-- Filters Section -->
+        <div class="filter-section">
+            <div class="row mb-3">
+                <div class="col-md-4">
+                    <label class="form-label"><strong>Filter by Region:</strong></label>
+                    <select id="regionFilter" class="form-select" onchange="filterPartners()">
+                        <option value="">🌍 All Regions</option>
+                        <option value="north_america">🇺🇸 North America</option>
+                        <option value="europe">🇪🇺 Europe</option>
+                        <option value="asia_pacific">🌏 Asia Pacific</option>
+                        <option value="middle_east">🇦🇪 Middle East</option>
+                        <option value="africa">🇿🇦 Africa</option>
+                        <option value="latin_america">🇧🇷 Latin America</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label"><strong>Tier Level:</strong></label>
+                    <select id="tierFilter" class="form-select" onchange="filterPartners()">
+                        <option value="">All Tiers</option>
+                        <option value="elite">🏆 Elite</option>
+                        <option value="gold">⭐ Gold</option>
+                        <option value="standard">📦 Standard</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label"><strong>Compliance Status:</strong></label>
+                    <select id="complianceFilter" class="form-select" onchange="filterPartners()">
+                        <option value="">All Status</option>
+                        <option value="verified">✓ Verified</option>
+                        <option value="warning">⚠ Warning</option>
+                        <option value="expired">✕ Expired</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <input type="text" id="partnerSearch" class="form-control" placeholder="Search by Partner ID or Name..." onkeyup="searchPartners()" />
+                </div>
+                <div class="col-md-6">
+                    <div class="btn-group w-100">
+                        <button class="btn btn-outline-primary" onclick="toggleActivityMap()">
+                            <i class="fas fa-map"></i> Activity Heatmap
+                        </button>
+                        <button class="btn btn-outline-primary" onclick="openBulkCommunication()">
+                            <i class="fas fa-envelope"></i> Send Region Alert
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bulk Actions Bar -->
+        <div class="bulk-actions-bar" id="bulkActionsBar">
+            <div class="d-flex gap-2 align-items-center">
+                <span id="selectedCount">0 partners selected</span>
+                <button class="btn btn-sm btn-info" onclick="sendBulkMessage()">
+                    <i class="fas fa-comment"></i> Send Message
+                </button>
+                <button class="btn btn-sm btn-warning" onclick="verifyBulkDocuments()">
+                    <i class="fas fa-file-check"></i> Verify Documents
+                </button>
+                <button class="btn btn-sm btn-danger" onclick="resetBulkSelection()">
+                    <i class="fas fa-times"></i> Clear
+                </button>
+            </div>
+        </div>
+
+        <!-- Activity Heatmap Section (Hidden by default) -->
+        <div id="mapSection" style="display: none; margin-bottom: 2rem;">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Active Partner Heatmap</h5>
+                </div>
+                <div class="card-body">
+                    <div class="map-container">
+                        <p><i class="fas fa-spinner fa-spin"></i> Integration with mapping service (Mapbox/Leaflet) to show active partners in real-time</p>
+                    </div>
+                    <small class="text-muted">Red zones indicate high partner concentration. Green zones show coverage gaps.</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Partners Table -->
+        <div class="card">
+            <div class="card-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Regional Partners <span id="partnerCount">(0)</span></h5>
+                    <div class="btn-group" role="group">
+                        <button type="button" class="btn btn-sm btn-success" onclick="createNewPartner()" title="Onboard new partner">
+                            <i class="fas fa-plus"></i> New Partner
+                        </button>
+                        <button type="button" class="btn btn-sm btn-info" onclick="viewPartnerAnalytics()" title="View partner metrics">
+                            <i class="fas fa-chart-bar"></i> Analytics
+                        </button>
+                        <button type="button" class="btn btn-sm btn-secondary" onclick="downloadPartnerData()" title="Download partner list">
+                            <i class="fas fa-download"></i> Export
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th style="width: 40px;"><input type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAll(this)" /></th>
+                            <th>Partner ID</th>
+                            <th>Name & Region</th>
+                            <th>Tier</th>
+                            <th>Completed Shipments</th>
+                            <th>Rating</th>
+                            <th>Compliance</th>
+                            <th>Service Zone</th>
+                            <th>Tax ID</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="partnersTableBody">
+                        <!-- Skeleton Loaders -->
+                        <tr class="skeleton-row"><td colspan="10"></td></tr>
+                        <tr class="skeleton-row"><td colspan="10"></td></tr>
+                        <tr class="skeleton-row"><td colspan="10"></td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Partner Profile Modal -->
+    <div class="partner-modal" id="partnerModal">
+        <div class="modal-content-custom">
+            <span class="modal-close" onclick="closePartnerModal()">&times;</span>
+            
+            <h4 id="modalPartnerName">Partner Profile</h4>
+            
+            <!-- Modal Tabs -->
+            <div class="modal-tabs">
+                <div class="modal-tab active" onclick="switchTab('overview')">
+                    <i class="fas fa-user"></i> Overview
+                </div>
+                <div class="modal-tab" onclick="switchTab('documents')">
+                    <i class="fas fa-file"></i> Documents
+                </div>
+                <div class="modal-tab" onclick="switchTab('vehicle')">
+                    <i class="fas fa-truck"></i> Fleet
+                </div>
+                <div class="modal-tab" onclick="switchTab('earnings')">
+                    <i class="fas fa-chart-line"></i> Earnings
+                </div>
+                <div class="modal-tab" onclick="switchTab('compliance')">
+                    <i class="fas fa-shield"></i> Compliance
+                </div>
+            </div>
+
+            <!-- Overview Tab -->
+            <div id="overview" class="tab-content active">
+                <div class="info-row">
+                    <span class="info-label">Partner ID:</span>
+                    <span class="info-value" id="modalPartnerId">---</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Email:</span>
+                    <span class="info-value" id="modalEmail">---</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Phone:</span>
+                    <span class="info-value" id="modalPhone">---</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Region:</span>
+                    <span class="info-value" id="modalRegion">---</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Tier:</span>
+                    <span class="info-value" id="modalTier">---</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Service Authorization:</span>
+                    <span class="info-value" id="modalServiceZone">---</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Joined Date:</span>
+                    <span class="info-value" id="modalJoinedDate">---</span>
+                </div>
+            </div>
+
+            <!-- Documents Tab -->
+            <div id="documents" class="tab-content">
+                <h6>Required Regional Documents</h6>
+                <ul class="document-list" id="documentsList">
+                    <li class="document-item">
+                        <span>Loading documents...</span>
+                        <span><i class="fas fa-spinner fa-spin"></i></span>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Vehicle Tab -->
+            <div id="vehicle" class="tab-content">
+                <div class="info-row">
+                    <span class="info-label">Vehicle Type:</span>
+                    <span class="info-value" id="modalVehicleType">---</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">License Plate:</span>
+                    <span class="info-value" id="modalLicensePlate">---</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Insurance Status:</span>
+                    <span class="info-value" id="modalInsuranceStatus">---</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Capacity (kg):</span>
+                    <span class="info-value" id="modalCapacity">---</span>
+                </div>
+            </div>
+
+            <!-- Earnings Tab -->
+            <div id="earnings" class="tab-content">
+                <div class="info-row">
+                    <span class="info-label">Total Earnings:</span>
+                    <span class="info-value" id="modalTotalEarnings">---</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Pending Payouts:</span>
+                    <span class="info-value" id="modalPendingPayouts">---</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Last Payout Date:</span>
+                    <span class="info-value" id="modalLastPayout">---</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Average Order Value:</span>
+                    <span class="info-value" id="modalAvgOrderValue">---</span>
+                </div>
+            </div>
+
+            <!-- Compliance Tab -->
+            <div id="compliance" class="tab-content">
+                <div class="info-row">
+                    <span class="info-label">Tax ID (Regional):</span>
+                    <span class="info-value" id="modalTaxId">---</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">KYC Status:</span>
+                    <span class="info-value" id="modalKycStatus">---</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Background Check:</span>
+                    <span class="info-value" id="modalBackgroundCheck">---</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Last Compliance Review:</span>
+                    <span class="info-value" id="modalLastReview">---</span>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="mt-4">
+                <button class="btn btn-primary" onclick="editPartner()">Edit Profile</button>
+                <button class="btn btn-warning" onclick="requestDocumentVerification()">Request Document Verification</button>
+                <button class="btn btn-danger" onclick="suspendPartner()">Suspend Account</button>
+                <button class="btn btn-outline-primary btn-sm" onclick="viewPartnerOrders()">View Orders</button>
+                <button class="btn btn-outline-info btn-sm" onclick="viewPartnerDisputes()">View Disputes</button>
+                <button class="btn btn-secondary" onclick="closePartnerModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bulk Communication Modal -->
+    <div class="communication-modal" id="communicationModal">
+        <div class="communication-form">
+            <h5><i class="fas fa-envelope"></i> Send Regional Communication</h5>
+            
+            <div class="mt-3">
+                <label class="form-label">Target Region:</label>
+                <select id="commRegion" class="form-select">
+                    <option value="">Select a region...</option>
+                    <option value="north_america">🇺🇸 North America</option>
+                    <option value="europe">🇪🇺 Europe</option>
+                    <option value="asia_pacific">🌏 Asia Pacific</option>
+                    <option value="middle_east">🇦🇪 Middle East</option>
+                    <option value="africa">🇿🇦 Africa</option>
+                    <option value="latin_america">🇧🇷 Latin America</option>
+                </select>
+            </div>
+
+            <div class="mt-3">
+                <label class="form-label">Subject:</label>
+                <input type="text" id="commSubject" class="form-control" placeholder="e.g., New Customs Regulations..." />
+            </div>
+
+            <div class="mt-3">
+                <label class="form-label">Message:</label>
+                <textarea id="commMessage" class="form-control" rows="5" placeholder="Enter your message..."></textarea>
+            </div>
+
+            <div class="mt-4">
+                <button class="btn btn-primary" onclick="sendCommunication()">Send to Region</button>
+                <button class="btn btn-secondary" onclick="closeCommunicationModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <footer id="footer-container"></footer>
+    <script src="/js/core/api.js"></script>
+    <script src="/js/core/auth.js"></script>
+    <script src="/js/core/guards.js"></script>
+    <script src="/js/admin/partners.js"></script>
+</body>
+</html>

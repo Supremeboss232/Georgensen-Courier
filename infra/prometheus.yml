@@ -1,0 +1,62 @@
+# Prometheus Configuration for Georgensen Courier API
+# Defines scrape targets, intervals, and data retention policies
+
+global:
+  # How often to scrape targets by default
+  scrape_interval: 15s
+  
+  # How long until a scrape request times out
+  scrape_timeout: 10s
+  
+  # How often to evaluate rules
+  evaluation_interval: 15s
+  
+  # External labels to attach to all metrics
+  external_labels:
+    monitor: 'georgensen-api'
+    environment: 'development'
+
+# Alert rules - can define alerting rules here
+rule_files:
+  # - 'alert_rules.yml'
+
+alerting:
+  alertmanagers:
+    # - static_configs:
+    #     - targets:
+    #         - localhost:9093
+
+# Scrape configurations
+scrape_configs:
+  # Prometheus self-monitoring
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # FastAPI backend API metrics
+  - job_name: 'georgensen_api'
+    static_configs:
+      - targets: ['localhost:8000']
+    metrics_path: '/metrics'
+    scrape_interval: 15s
+    scrape_timeout: 10s
+
+  # Redis metrics (requires redis_exporter)
+  # - job_name: 'redis'
+  #   static_configs:
+  #     - targets: ['localhost:6379']
+
+  # Celery worker metrics (via flower)
+  - job_name: 'celery'
+    static_configs:
+      - targets: ['localhost:5555']
+    metrics_path: '/metrics'
+    scrape_interval: 30s
+
+# Data retention
+storage:
+  # How long to keep metrics (default is 15 days)
+  tsdb:
+    retention:
+      time: 15d
+      size: 0  # 0 disables size limit

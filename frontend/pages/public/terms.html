@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Terms of Service - Georgensen Courier. Canada-based global logistics. International shipping terms, customs, and liability policies.">
+    <title>Terms of Service - Georgensen Courier | Canada-Based Global Logistics</title>
+    
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="/assets/lib/bootstrap/css/bootstrap.min.css">
+    
+    <!-- FontAwesome (Local) -->
+    <link rel="stylesheet" href="/assets/lib/fontawesome/css/all.min.css">
+    
+    <!-- Main CSS -->
+    <link rel="stylesheet" href="/css/main.css">
+    
+    <style>
+        :root {
+            --primary-color: #667eea;
+            --secondary-color: #764ba2;
+            --accent-color: #ffc107;
+            --light-color: #f8f9fa;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+        }
+
+        main {
+            flex: 1;
+            padding: 40px 0;
+        }
+
+        .page-header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            padding: 40px 0;
+            margin-bottom: 40px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .page-header h1 {
+            font-weight: 700;
+            margin-bottom: 10px;
+            font-size: 2em;
+        }
+
+        .page-header .lead {
+            opacity: 0.95;
+            margin-bottom: 12px;
+        }
+
+        .terms-card {
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .terms-card h3 {
+            color: var(--primary-color);
+            font-weight: 700;
+            margin-bottom: 16px;
+            margin-top: 24px;
+            font-size: 1.3em;
+        }
+
+        .terms-card h3:first-child {
+            margin-top: 0;
+        }
+
+        .terms-card h4 {
+            color: #333;
+            font-weight: 600;
+            margin-top: 16px;
+            margin-bottom: 12px;
+        }
+
+        .terms-card p {
+            color: #555;
+            line-height: 1.6;
+            margin-bottom: 12px;
+        }
+
+        .terms-card ul {
+            list-style: none;
+            padding: 0;
+            margin: 12px 0;
+        }
+
+        .terms-card li {
+            padding: 8px 0;
+            color: #555;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .terms-card li:before {
+            content: "→";
+            color: var(--primary-color);
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+
+        .terms-card li:last-child {
+            border-bottom: none;
+        }
+
+        .warning-box {
+            background: rgba(255, 193, 7, 0.1);
+            border-left: 4px solid #ffc107;
+            padding: 16px;
+            border-radius: 6px;
+            margin: 16px 0;
+        }
+
+        .warning-box strong {
+            color: #856404;
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .note-box {
+            background: rgba(23, 162, 184, 0.1);
+            border-left: 4px solid #17a2b8;
+            padding: 16px;
+            border-radius: 6px;
+            margin: 16px 0;
+        }
+
+        .note-box strong {
+            color: #0c5460;
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .toc {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+
+        .toc h5 {
+            color: var(--primary-color);
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+
+        .toc ol {
+            margin: 0;
+            padding-left: 20px;
+        }
+
+        .toc li {
+            margin-bottom: 6px;
+            color: #555;
+        }
+
+        .toc a {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc a:hover {
+            text-decoration: underline;
+        }
+
+        .contact-box {
+            background: white;
+            border-radius: 10px;
+            padding: 24px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            margin-top: 30px;
+        }
+
+        .contact-box h4 {
+            color: var(--primary-color);
+            font-weight: 700;
+            margin-bottom: 16px;
+        }
+
+        .contact-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+            color: #555;
+        }
+
+        .contact-item i {
+            color: var(--primary-color);
+            flex-shrink: 0;
+        }
+
+        footer {
+            background: white;
+            border-top: 1px solid #e9ecef;
+            margin-top: 60px;
+        }
+
+        @media (max-width: 768px) {
+            .page-header {
+                padding: 30px 0;
+            }
+
+            .page-header h1 {
+                font-size: 1.5em;
+            }
+
+            .terms-card {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="app" style="display: flex; flex-direction: column; min-height: 100vh;">
+        <!-- Navbar (injected by main.js) -->
+        <div id="navbar-container"></div>
+
+        <!-- Page Header -->
+        <div class="page-header">
+            <div class="container">
+                <h1>
+                    <i class="fas fa-gavel" style="margin-right: 12px;"></i>
+                    Terms of Service
+                </h1>
+                <p class="lead">Canada-Based Global Logistics | International Shipping Agreement</p>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <main class="container" style="max-width: 900px;">
+            <!-- Last Updated -->
+            <div style="background: #f8f9fa; padding: 16px; border-radius: 8px; margin-bottom: 30px; text-align: center; color: #666;">
+                <strong>Last Updated:</strong> April 17, 2026 | <strong>Effective Date:</strong> April 17, 2026
+            </div>
+
+            <!-- Table of Contents -->
+            <div class="toc">
+                <h5><i class="fas fa-list"></i> Quick Navigation</h5>
+                <ol>
+                    <li><a href="#acceptance">Acceptance of Terms</a></li>
+                    <li><a href="#service">Service Agreement & Use</a></li>
+                    <li><a href="#pricing">Pricing & Currency</a></li>
+                    <li><a href="#customs">Customs, Duties & Taxes</a></li>
+                    <li><a href="#prohibited">Prohibited Items</a></li>
+                    <li><a href="#liability">International Shipping Liability</a></li>
+                    <li><a href="#insurance">Insurance & Extended Coverage</a></li>
+                    <li><a href="#force-majeure">Force Majeure & Delays</a></li>
+                    <li><a href="#user-responsibility">User Responsibilities</a></li>
+                    <li><a href="#limitations">Limitations of Liability</a></li>
+                    <li><a href="#governing-law">Governing Law & Jurisdiction</a></li>
+                    <li><a href="#modifications">Modifications & Updates</a></li>
+                    <li><a href="#contact">Contact Us</a></li>
+                </ol>
+            </div>
+
+            <!-- Section 1: Acceptance -->
+            <div class="terms-card" id="acceptance">
+                <h3>1. Acceptance of Terms</h3>
+                <p>By accessing and using Georgensen Courier's website, mobile application, tracking services, quote calculator, and shipping services, you agree to be legally bound by these Terms of Service and our <a href="/privacy.html" style="color: var(--primary-color);">Privacy Policy</a>.</p>
+                <p><strong>Global Shipping Agreement:</strong> By requesting quotes, calculating shipping costs, or submitting shipments through our platform, you agree to:</p>
+                <ul>
+                    <li>Use our services only for lawful purposes</li>
+                    <li>Accept responsibility for customs, duties, and taxes on international shipments</li>
+                    <li>Ensure all items comply with international shipping regulations and the laws of destination countries</li>
+                    <li>Accept international data transfers as disclosed in our Privacy Policy</li>
+                </ul>
+                <p><strong>If you do not agree to these terms, do not use Georgensen's services.</strong></p>
+            </div>
+
+            <!-- Section 2: Service Agreement -->
+            <div class="terms-card" id="service">
+                <h3>2. Service Agreement & Use</h3>
+                <p>Georgensen Courier provides logistics and shipping coordination services including quote calculation, real-time tracking, customs documentation, and shipment coordination through third-party carriers (FedEx, UPS, regional couriers).</p>
+                
+                <h4>Permitted Use</h4>
+                <p>You may use our services to:</p>
+                <ul>
+                    <li>Calculate shipping quotes for domestic and international shipments</li>
+                    <li>Track shipments in real-time with GPS and customs status</li>
+                    <li>Generate customs documentation and HS code classification</li>
+                    <li>Manage delivery notifications and communications</li>
+                    <li>Request support and submit inquiries</li>
+                </ul>
+
+                <h4>Prohibited Use</h4>
+                <p>You may NOT use our services to:</p>
+                <ul>
+                    <li>Ship illegal items or items that violate destination country laws</li>
+                    <li>Circumvent customs regulations or misrepresent shipment contents</li>
+                    <li>Use automated scripts, bots, or crawlers to extract data</li>
+                    <li>Access tracking information for shipments you did not authorize</li>
+                    <li>Attempt to reverse-engineer or hack our platform</li>
+                    <li>Share your account credentials or tracking passwords with unauthorized parties</li>
+                </ul>
+            </div>
+
+            <!-- Section 3: Pricing & Currency -->
+            <div class="terms-card" id="pricing">
+                <h3>3. Pricing & Currency Fluctuations</h3>
+                <p>All quotes provided through our platform are estimates in Canadian Dollars (CAD) unless otherwise specified.</p>
+
+                <h4>Quote Validity & Changes</h4>
+                <ul>
+                    <li>Quotes are valid for 7 days from issuance</li>
+                    <li>Quotes may change based on weight, dimensions, service type, and destination</li>
+                    <li>Final pricing is confirmed at time of shipment submission</li>
+                </ul>
+
+                <h4>Currency Fluctuations</h4>
+                <div class="warning-box">
+                    <strong>⚠️ CAD/USD Exchange Rate Risk</strong>
+                    <p>International shipments may be partially billed in USD based on carrier fees (FedEx, UPS). Our quotes use current exchange rates (approximately 1 USD = 1.35 CAD). Actual final billing may differ if exchange rates fluctuate between quote date and shipment date. We will notify you of any significant currency adjustments.</p>
+                </div>
+
+                <h4>Price Components</h4>
+                <ul>
+                    <li><strong>Base Fare:</strong> Zone-based shipping cost (Zones 1-5)</li>
+                    <li><strong>Distance Charge:</strong> Calculated per km</li>
+                    <li><strong>Weight Charge:</strong> Calculated per kg (metric-first)</li>
+                    <li><strong>Fuel Surcharge:</strong> 12% of subtotal (dynamic)</li>
+                    <li><strong>Customs Fee:</strong> $50 CAD for international shipments</li>
+                    <li><strong>Provincial Tax:</strong> Based on destination province (ON 13% HST, QC 14.975%, etc.)</li>
+                </ul>
+
+                <h4>Payment Terms</h4>
+                <ul>
+                    <li>Payment accepted via credit card through Stripe (PCI-DSS compliant)</li>
+                    <li>Payment required before shipment dispatch (pre-authorization)</li>
+                    <li>Invoices issued upon successful payment</li>
+                    <li>No refunds issued for quotes only; refund policy for shipments available upon request</li>
+                </ul>
+            </div>
+
+            <!-- Section 4: Customs, Duties & Taxes -->
+            <div class="terms-card" id="customs">
+                <h3>4. Customs, Duties & Taxes</h3>
+                <p>International shipments are subject to customs duties, import taxes, and brokerage fees in destination countries. <strong>The Receiver (Importer of Record) is responsible for all applicable customs charges.</strong></p>
+
+                <h4>Canadian Outbound Shipments</h4>
+                <ul>
+                    <li>Sender must provide accurate Harmonized System (HS) codes for items</li>
+                    <li>Sender responsible for customs export documentation</li>
+                    <li>CBSA (Canada Border Services Agency) clearance required before dispatch</li>
+                </ul>
+
+                <h4>International Inbound Shipments to Canada</h4>
+                <ul>
+                    <li>Receiver responsible for import duties and HST/GST on item value</li>
+                    <li>Receiver may pay brokerage fees ($50+ CAD) for customs clearance</li>
+                    <li>CBSA may delay shipments for inspection (1-5 business days)</li>
+                    <li>No liability for customs delays beyond Georgensen's control</li>
+                </ul>
+
+                <h4>US-Bound Shipments</h4>
+                <ul>
+                    <li>Advance cargo information required for US CBP (Customs & Border Protection)</li>
+                    <li>Receiver responsible for US import duties and state sales tax</li>
+                    <li>US brokerage fees apply (typically $25-75 USD per shipment)</li>
+                </ul>
+
+                <h4>Provincial Tax Rates (Canada)</h4>
+                <p>Georgensen calculates provincial taxes based on destination postal code:</p>
+                <ul>
+                    <li>Ontario (ON): 13% HST</li>
+                    <li>Quebec (QC): 14.975% (5% GST + 9.975% PST)</li>
+                    <li>British Columbia (BC): 12% (5% GST + 7% PST)</li>
+                    <li>Alberta (AB): 5% GST only</li>
+                    <li>Manitoba (MB): 13% (5% GST + 8% PST)</li>
+                    <li>Saskatchewan (SK): 11% (5% GST + 6% PST)</li>
+                    <li>Nova Scotia (NS): 15% HST</li>
+                    <li>New Brunswick (NB): 15% HST</li>
+                    <li>Prince Edward Island (PE): 15% HST</li>
+                    <li>Newfoundland & Labrador (NL): 15% HST</li>
+                </ul>
+            </div>
+
+            <!-- Section 5: Prohibited Items -->
+            <div class="terms-card" id="prohibited">
+                <h3>5. Prohibited Items & International Restrictions</h3>
+                <p>The following items are prohibited by international aviation, maritime, and customs regulations and <strong>cannot be shipped via our services</strong>:</p>
+
+                <h4>Hazardous Materials (IATA/IMDG)</h4>
+                <ul>
+                    <li>Explosives, ammunition, firearms, or weapons</li>
+                    <li>Flammable liquids, gases, or solids</li>
+                    <li>Oxidizers and peroxides</li>
+                    <li>Toxic and infectious substances</li>
+                    <li>Radioactive materials</li>
+                    <li>Corrosive substances (acids, bases)</li>
+                </ul>
+
+                <h4>Restricted Battery Materials</h4>
+                <ul>
+                    <li>Lithium batteries (except in approved quantities)</li>
+                    <li>Lead-acid batteries without proper packaging</li>
+                </ul>
+
+                <h4>Prohibited by Destination Country</h4>
+                <ul>
+                    <li>Items prohibited by customs law in destination (e.g., certain agricultural products)</li>
+                    <li>Counterfeit goods, pirated content</li>
+                    <li>Controlled substances or narcotics</li>
+                    <li>Currency or precious metals (except declared via proper channels)</li>
+                </ul>
+
+                <h4>Other Restrictions</h4>
+                <ul>
+                    <li>Perishable items without proper packaging and insurance</li>
+                    <li>Hazmat items without sender certification</li>
+                    <li>Items exceeding weight/dimension limits per zone</li>
+                </ul>
+
+                <div class="warning-box">
+                    <strong>⚠️ Your Responsibility</strong>
+                    <p>You are responsible for ensuring all items comply with this list and destination country regulations. Georgensen reserves the right to refuse shipments and may report violations to authorities. If prohibited items are discovered, the shipment will be seized/destroyed and no refund issued.</p>
+                </div>
+            </div>
+
+            <!-- Section 6: International Liability -->
+            <div class="terms-card" id="liability">
+                <h3>6. International Shipping Liability & Carrier Limits</h3>
+                <p>Georgensen acts as a logistics coordinator, not the direct carrier. Liability for loss or damage is governed by international convention and third-party carrier agreements.</p>
+
+                <h4>Montreal Convention (International Air Carriage)</h4>
+                <p>For international air shipments, liability is governed by the <strong>Montreal Convention (1999)</strong>, which limits carrier liability to approximately <strong>$20 USD per kg</strong> or the declared value, whichever is less. This applies to FedEx International and UPS International Express services.</p>
+
+                <h4>Standard Shipping Liability (Domestic)</h4>
+                <p>For domestic Canadian shipments, liability is limited to the shipping fee paid unless Extended Coverage is purchased (see Section 7).</p>
+
+                <h4>Carrier-Specific Terms</h4>
+                <ul>
+                    <li><strong>FedEx:</strong> Responsibility begins at pickup and ends at delivery. Liability subject to FedEx terms of service and Montreal Convention for international.</li>
+                    <li><strong>UPS:</strong> Responsibility begins at pickup and ends at delivery. Liability subject to UPS terms of service and Montreal Convention for international.</li>
+                    <li><strong>Regional Couriers:</strong> Liability per courier agreement; typically limited to $100-500 CAD unless Extended Coverage purchased.</li>
+                </ul>
+
+                <h4>Disclaimers</h4>
+                <ul>
+                    <li>Georgensen is NOT liable for loss, theft, or damage to packages in carrier possession</li>
+                    <li>Georgensen is NOT liable for delays caused by customs inspections, weather, or international port congestion</li>
+                    <li>Georgensen is NOT liable for indirect damages (lost business, lost profits, consequential damages)</li>
+                </ul>
+
+                <div class="note-box">
+                    <strong>ℹ️ Important for High-Value Shipments</strong>
+                    <p>If you are shipping items worth more than $1,000 CAD, we strongly recommend purchasing Extended Coverage (insurance) to protect against loss or damage.</p>
+                </div>
+            </div>
+
+            <!-- Section 7: Insurance & Extended Coverage -->
+            <div class="terms-card" id="insurance">
+                <h3>7. Insurance & Extended Coverage</h3>
+                <p>Due to liability limits imposed by international convention and carriers, Georgensen offers optional Extended Coverage (insurance) to protect high-value shipments.</p>
+
+                <h4>Standard Shipping (No Insurance)</h4>
+                <ul>
+                    <li>Liability limited to shipping fee ($8-250 CAD)</li>
+                    <li>Montreal Convention limits apply ($20 USD per kg)</li>
+                    <li>No coverage for theft, weather delays, or customs hold-ups</li>
+                    <li><strong>Recommended for items under $500 CAD</strong></li>
+                </ul>
+
+                <h4>Extended Coverage (Optional Insurance)</h4>
+                <ul>
+                    <li>Coverage up to declared shipment value (90-100% based on deductible)</li>
+                    <li>Covers loss, damage, theft, and weather-related delays</li>
+                    <li>Premium: 1-5% of shipment value depending on risk category</li>
+                    <li>Deductible: $50-200 CAD per claim</li>
+                    <li><strong>Recommended for items over $500 CAD</strong></li>
+                </ul>
+
+                <h4>Coverage Exclusions</h4>
+                <p>Extended Coverage does NOT cover:</p>
+                <ul>
+                    <li>Prohibited items or illegal shipments</li>
+                    <li>Items with insufficient or incorrect packaging</li>
+                    <li>Misrepresented item values or contents</li>
+                    <li>Claims not filed within 30 days of delivery date</li>
+                    <li>Consequential damages or business losses</li>
+                </ul>
+
+                <h4>Filing a Claim</h4>
+                <p>To file an insurance claim:</p>
+                <ul>
+                    <li>Report issue within 48 hours of delivery to support@georgensen.ca</li>
+                    <li>Provide tracking number, photos of damage/packaging, and itemized list of contents</li>
+                    <li>Claims adjudicated within 10-15 business days</li>
+                    <li>Payment issued to original shipper upon approval</li>
+                </ul>
+            </div>
+
+            <!-- Section 8: Force Majeure -->
+            <div class="terms-card" id="force-majeure">
+                <h3>8. Force Majeure & International Delays</h3>
+                <p>Georgensen is not liable for delays or failures caused by events beyond reasonable control:</p>
+
+                <h4>Qualifying Events</h4>
+                <ul>
+                    <li>Natural disasters (earthquakes, hurricanes, floods)</li>
+                    <li>Extreme weather conditions (snowstorms, ice storms blocking roads)</li>
+                    <li>War, terrorism, civil unrest, or government actions</li>
+                    <li>Customs delays and inspections (1-14 days typical)</li>
+                    <li>International port congestion or labor strikes</li>
+                    <li>Carrier mechanical failures or flight cancellations</li>
+                    <li>Pandemics or epidemics affecting shipping operations</li>
+                </ul>
+
+                <h4>Customs Hold-Ups (Expected)</h4>
+                <p><strong>Customs delays are NOT refundable and are expected for international shipments.</strong> Typical timelines:</p>
+                <ul>
+                    <li>CBSA (Canada): 1-3 days (expedited) to 5-7 days (inspected)</li>
+                    <li>US CBP: 1-2 days (expedited) to 5-10 days (inspected)</li>
+                    <li>Other countries: 1-14 days depending on destination customs</li>
+                </ul>
+
+                <h4>Communication During Delays</h4>
+                <p>If a shipment experiences a force majeure event:</p>
+                <ul>
+                    <li>We will provide status update within 24 hours</li>
+                    <li>Updated delivery estimate provided (if possible)</li>
+                    <li>Refund offered only if shipment is unrecoverable (lost at sea, destroyed in disaster)</li>
+                </ul>
+
+                <div class="warning-box">
+                    <strong>⚠️ Customs Delays</strong>
+                    <p>For time-sensitive shipments, we recommend purchasing Express service with direct customs pre-clearance. Standard service may experience 3-7 day delays at international borders.</p>
+                </div>
+            </div>
+
+            <!-- Section 9: User Responsibilities -->
+            <div class="terms-card" id="user-responsibility">
+                <h3>9. User Responsibilities</h3>
+                <p>As a user of Georgensen's services, you are responsible for:</p>
+
+                <h4>Accurate Information</h4>
+                <ul>
+                    <li>Providing correct sender and receiver addresses (including postal codes)</li>
+                    <li>Accurate package weight and dimensions (in kg and cm)</li>
+                    <li>Correct item descriptions and HS codes for international shipments</li>
+                    <li>Truthful declared value for customs purposes</li>
+                </ul>
+
+                <h4>Shipment Compliance</h4>
+                <ul>
+                    <li>Ensuring all items comply with this prohibited items list and destination laws</li>
+                    <li>Proper packaging to prevent damage during transit</li>
+                    <li>Hazmat certification if shipping dangerous goods</li>
+                    <li>Payment of all customs duties and taxes (if applicable)</li>
+                </ul>
+
+                <h4>Account Security</h4>
+                <ul>
+                    <li>Keeping login credentials confidential</li>
+                    <li>Not sharing tracking numbers or account access with unauthorized parties</li>
+                    <li>Reporting suspicious activity immediately</li>
+                </ul>
+
+                <h4>Dispute Resolution</h4>
+                <ul>
+                    <li>Reporting lost or damaged shipments within 48 hours</li>
+                    <li>Providing documentation (photos, receipts) for claims</li>
+                    <li>Working with carriers to resolve issues</li>
+                </ul>
+            </div>
+
+            <!-- Section 10: Limitations of Liability -->
+            <div class="terms-card" id="limitations">
+                <h3>10. Limitations of Liability</h3>
+                <p>TO THE FULLEST EXTENT PERMITTED BY LAW, GEORGENSEN'S TOTAL LIABILITY FOR ANY CLAIM ARISING FROM OR RELATING TO THESE TERMS OR OUR SERVICES SHALL NOT EXCEED THE AMOUNT PAID FOR THE SPECIFIC SHIPMENT IN QUESTION.</p>
+
+                <h4>Georgensen is NOT Liable For:</h4>
+                <ul>
+                    <li>Indirect, incidental, special, or consequential damages</li>
+                    <li>Lost profits, business interruption, or lost revenue</li>
+                    <li>Loss or damage caused by customs delays or inspections</li>
+                    <li>Loss or damage to items while in carrier possession</li>
+                    <li>Third-party actions or carrier negligence</li>
+                    <li>Errors in quote calculations based on incorrect information provided by user</li>
+                </ul>
+
+                <h4>Exceptions</h4>
+                <p>The above limitations do not apply to:</p>
+                <ul>
+                    <li>Death or personal injury caused by Georgensen's gross negligence</li>
+                    <li>Fraud or willful misconduct by Georgensen</li>
+                    <li>Breach of confidentiality regarding payment information</li>
+                </ul>
+
+                <div class="warning-box">
+                    <strong>⚠️ Montreal Convention Limits</strong>
+                    <p>For international air shipments, liability is further limited by the Montreal Convention to approximately $20 USD per kg. Insurance is recommended for high-value international shipments.</p>
+                </div>
+            </div>
+
+            <!-- Section 11: Governing Law -->
+            <div class="terms-card" id="governing-law">
+                <h3>11. Governing Law & Jurisdiction</h3>
+                <p><strong>These Terms of Service are governed by the laws of the Province of Ontario, Canada, and the federal laws of Canada applicable therein. You irrevocably submit to the exclusive jurisdiction of the courts located in Toronto, Ontario, Canada.</strong></p>
+
+                <h4>Canadian Legal Framework</h4>
+                <ul>
+                    <li>Canadian Consumer Protection Act (federal protections for consumers)</li>
+                    <li>Ontario Consumer Protection Act (for Ontario-based customers)</li>
+                    <li>Personal Information Protection and Electronic Documents Act (PIPEDA)</li>
+                    <li>Competition Act (pricing transparency requirements)</li>
+                </ul>
+
+                <h4>International Shipment Framework</h4>
+                <p>For international shipments:</p>
+                <ul>
+                    <li><strong>Montreal Convention (1999):</strong> Governs air carriage liability</li>
+                    <li><strong>UNCITRAL Model Law:</strong> Governs cross-border electronic commerce</li>
+                    <li><strong>Destination Country Laws:</strong> Customs and import/export regulations apply</li>
+                </ul>
+
+                <h4>Dispute Resolution</h4>
+                <p>In the event of a dispute:</p>
+                <ul>
+                    <li><strong>First Step:</strong> Contact our support team at support@georgensen.ca or privacy@georgensen.ca</li>
+                    <li><strong>Second Step:</strong> Attempt good-faith resolution within 30 days</li>
+                    <li><strong>Third Step:</strong> If unresolved, disputes may be escalated to Ontario small claims court</li>
+                </ul>
+            </div>
+
+            <!-- Section 12: Modifications & Updates -->
+            <div class="terms-card" id="modifications">
+                <h3>12. Modifications & Updates to Terms</h3>
+                <p>Georgensen reserves the right to modify these Terms of Service at any time. We will notify you of material changes by:</p>
+                <ul>
+                    <li>Posting the updated Terms on this page with a new "Last Updated" date</li>
+                    <li>Sending an email notification to your registered account email</li>
+                    <li>Displaying a prominent notice on our homepage</li>
+                </ul>
+
+                <h4>Continued Use</h4>
+                <p>Your continued use of Georgensen's services after changes to these Terms constitutes acceptance of the updated Terms. If you do not agree with changes, you must stop using our services.</p>
+
+                <h4>Version History</h4>
+                <ul>
+                    <li><strong>April 17, 2026:</strong> Initial version - Comprehensive Canada-based global logistics terms with Montreal Convention, customs, and currency provisions</li>
+                </ul>
+            </div>
+
+            <!-- Contact Section -->
+            <div class="contact-box" id="contact">
+                <h4><i class="fas fa-envelope" style="margin-right: 8px;"></i> Questions About Our Terms?</h4>
+                <p>If you have questions about these Terms of Service or need clarification, please contact our legal and support team:</p>
+                
+                <div style="margin-top: 16px;">
+                    <div class="contact-item">
+                        <i class="fas fa-envelope"></i>
+                        <span><strong>Email:</strong> <a href="mailto:support@georgensen.ca" style="color: var(--primary-color);">support@georgensen.ca</a> or <a href="mailto:legal@georgensen.ca" style="color: var(--primary-color);">legal@georgensen.ca</a></span>
+                    </div>
+                    <div class="contact-item">
+                        <i class="fas fa-phone"></i>
+                        <span><strong>Toll-Free (Canada/US):</strong> 1-800-GEORGENSEN</span>
+                    </div>
+                    <div class="contact-item">
+                        <i class="fas fa-phone"></i>
+                        <span><strong>International:</strong> +1-416-555-1234</span>
+                    </div>
+                    <div class="contact-item">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span><strong>Address:</strong> Toronto, Ontario, Canada</span>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer (injected by main.js) -->
+        <div id="footer-container"></div>
+    </div>
+
+    <!-- Scripts in Proper Order -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/main.js"></script>
+</body>
+</html>

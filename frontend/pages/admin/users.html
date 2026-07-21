@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Management - Georgensen Courier</title>
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="stylesheet" href="/assets/lib/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/assets/lib/fontawesome/css/all.min.css">
+    <style>
+        /* Admin Navbar Styles */
+        .admin-navbar { background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%); color: white; padding: 0; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); }
+        .admin-navbar-container { max-width: 100%; margin: 0 auto; padding: 0 1.5rem; display: flex; justify-content: space-between; align-items: center; height: 70px; }
+        .navbar-left { display: flex; align-items: center; gap: 2rem; flex: 1; }
+        .navbar-brand { display: flex; align-items: center; }
+        .brand-logo { display: flex; align-items: center; gap: 0.75rem; text-decoration: none; color: white; font-weight: 700; font-size: 1.1rem; white-space: nowrap; }
+        .brand-icon { font-size: 1.5rem; }
+        .brand-text { display: none; }
+        @media (min-width: 768px) { .brand-text { display: inline; } }
+        .nav-menu { list-style: none; margin: 0; padding: 0; display: flex; gap: 0.5rem; }
+        .nav-item { position: relative; }
+        .nav-link { display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; color: rgba(255, 255, 255, 0.8); text-decoration: none; font-size: 0.95rem; border-radius: 4px; transition: all 0.3s ease; white-space: nowrap; }
+        .nav-link:hover { background: rgba(255, 255, 255, 0.15); color: white; }
+        .nav-link.active { background: rgba(255, 255, 255, 0.25); color: white; border-bottom: 3px solid #3498db; }
+        .nav-link span { display: none; }
+        @media (min-width: 992px) { .nav-link span { display: inline; } }
+        .navbar-right { display: flex; align-items: center; gap: 1.5rem; }
+        .admin-actions { display: flex; gap: 0.75rem; }
+        .action-btn { background: rgba(255, 255, 255, 0.1); border: none; color: white; padding: 0.5rem 0.75rem; border-radius: 4px; cursor: pointer; font-size: 1rem; transition: all 0.3s ease; position: relative; }
+        .action-btn:hover { background: rgba(255, 255, 255, 0.2); }
+        .notification-badge { position: absolute; top: -5px; right: -5px; background: #e74c3c; color: white; border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: bold; }
+        .user-info-section { display: flex; align-items: center; position: relative; }
+        .user-avatar { width: 36px; height: 36px; background: rgba(255, 255, 255, 0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; cursor: pointer; transition: all 0.3s ease; }
+        .user-avatar:hover { background: rgba(255, 255, 255, 0.3); }
+        .user-menu { position: absolute; top: 50px; right: 0; background: white; color: #333; border-radius: 4px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); min-width: 200px; z-index: 1001; padding: 0.5rem 0; display: none; }
+        .user-menu.show { display: block; }
+        .user-menu-header { padding: 0.75rem 1rem; }
+        .user-name { display: block; font-weight: 600; color: #2c3e50; }
+        .user-role { display: block; color: #7f8c8d; }
+        .menu-item { display: flex; align-items: center; gap: 0.75rem; width: 100%; padding: 0.75rem 1rem; background: none; border: none; color: #2c3e50; cursor: pointer; text-decoration: none; transition: all 0.2s ease; font-size: 0.95rem; }
+        .menu-item:hover { background: #f8f9fa; color: #2c3e50; }
+        .admin-search-bar { padding: 1rem 1.5rem; background: rgba(0, 0, 0, 0.1); border-top: 1px solid rgba(255, 255, 255, 0.1); }
+        .search-input { width: 100%; padding: 0.75rem 1rem; background: white; border: 1px solid #ddd; border-radius: 4px; font-size: 0.95rem; }
+        .search-results { margin-top: 0.75rem; max-height: 400px; overflow-y: auto; }
+        .search-result-item { padding: 0.75rem 1rem; background: white; border-bottom: 1px solid #eee; cursor: pointer; display: flex; align-items: center; gap: 0.75rem; }
+        .search-result-item:hover { background: #f8f9fa; }
+        .search-result-icon { color: #3498db; }
+        .search-result-content { flex: 1; }
+        .search-result-title { font-weight: 600; color: #2c3e50; }
+        .search-result-meta { font-size: 0.85rem; color: #7f8c8d; }
+        @media (max-width: 768px) { .admin-navbar-container { padding: 0 1rem; height: 60px; } .navbar-left { gap: 1rem; } .nav-menu { gap: 0rem; } .nav-link { padding: 0.5rem 0.75rem; } .admin-actions { gap: 0.5rem; } .action-btn { padding: 0.5rem 0.5rem; } }
+        
+        .search-section { padding: 1.5rem; background: #f8f9fa; border-radius: 8px; margin-bottom: 2rem; }
+        .filter-group { display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+        .filter-group select { flex: 1; min-width: 200px; }
+        .skeleton-row { background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%); background-size: 200% 100%; animation: loading 1.5s infinite; height: 48px; }
+        @keyframes loading { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+        .role-badge { padding: 0.35rem 0.75rem; border-radius: 20px; font-size: 0.85rem; font-weight: 500; }
+        .role-customer { background: #d1ecf1; color: #0c5460; }
+        .role-partner { background: #d4edda; color: #155724; }
+        .role-regional-mgr { background: #fff3cd; color: #856404; }
+        .role-admin { background: #f8d7da; color: #721c24; }
+        .status-badge { padding: 0.35rem 0.75rem; border-radius: 20px; font-size: 0.85rem; font-weight: 500; }
+        .status-verified { background: #28a745; color: white; }
+        .status-pending { background: #ffc107; color: #333; }
+        .status-expired { background: #dc3545; color: white; }
+        .status-inactive { background: #6c757d; color: white; }
+        .checkbox-column { width: 40px; }
+        .bulk-actions { padding: 1rem; background: #f0f0f0; border-radius: 4px; margin-bottom: 1rem; display: none; }
+        .bulk-actions.active { display: block; }
+        .region-chip { display: inline-block; padding: 0.25rem 0.75rem; background: #e9ecef; border-radius: 12px; font-size: 0.85rem; margin-right: 0.5rem; }
+        .user-detail-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; }
+        .user-detail-modal.show { display: flex; align-items: center; justify-content: center; }
+        .modal-content-custom { background: white; border-radius: 8px; padding: 2rem; max-width: 600px; max-height: 80vh; overflow-y: auto; }
+        .modal-close { position: absolute; top: 1rem; right: 1rem; cursor: pointer; font-size: 1.5rem; }
+        .compliance-row { padding: 0.75rem 0; border-bottom: 1px solid #e0e0e0; }
+        .compliance-row:last-child { border-bottom: none; }
+        .timezone-info { font-size: 0.85rem; color: #666; margin-top: 0.25rem; }
+    </style>
+</head>
+<body>
+    <!-- Embedded Admin Navbar -->
+    <nav class="admin-navbar">
+        <div class="admin-navbar-container">
+            <div class="navbar-left">
+                <div class="navbar-brand">
+                    <a href="/admin/" class="brand-logo">
+                        <span class="brand-icon"><i class="fas fa-cube"></i></span>
+                        <span class="brand-text">Georgensen Admin</span>
+                    </a>
+                </div>
+                <ul class="nav-menu">
+                    <li class="nav-item">
+                        <a href="/admin/" class="nav-link" data-page="dashboard">
+                            <i class="fas fa-chart-line"></i> <span>Dashboard</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/admin/orders" class="nav-link" data-page="orders">
+                            <i class="fas fa-boxes"></i> <span>Orders</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/admin/partners" class="nav-link" data-page="partners">
+                            <i class="fas fa-handshake"></i> <span>Partners</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/admin/users" class="nav-link" data-page="users">
+                            <i class="fas fa-users"></i> <span>Users</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/admin/disputes" class="nav-link" data-page="disputes">
+                            <i class="fas fa-gavel"></i> <span>Disputes</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/admin/reports" class="nav-link" data-page="reports">
+                            <i class="fas fa-file-chart-line"></i> <span>Reports</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            
+            <div class="navbar-right">
+                <div class="admin-actions">
+                    <button class="action-btn" onclick="toggleSearch()" title="Search">
+                        <i class="fas fa-search"></i>
+                    </button>
+                    <button class="action-btn" onclick="toggleNotifications()" title="Notifications">
+                        <i class="fas fa-bell"></i>
+                        <span class="notification-badge">3</span>
+                    </button>
+                </div>
+                <div class="user-info-section">
+                    <div class="user-avatar" onclick="toggleUserMenu()" title="User Menu">
+                        <span id="userInitial">A</span>
+                    </div>
+                    <div class="user-menu" id="userMenu">
+                        <div class="user-menu-header">
+                            <span class="user-name" id="adminName">Admin User</span>
+                            <span class="user-role" id="adminRole">Admin</span>
+                        </div>
+                        <button class="menu-item" onclick="openSettings()">
+                            <i class="fas fa-cog"></i> Settings
+                        </button>
+                        <button class="menu-item" onclick="logoutAdmin()">
+                            <i class="fas fa-sign-out-alt"></i> Logout
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="admin-search-bar" id="searchBar" style="display: none;">
+            <div class="input-group">
+                <input type="text" id="adminSearch" class="search-input" placeholder="Search orders, partners, disputes..." oninput="handleAdminSearch()" />
+                <div id="searchResults" class="search-results"></div>
+            </div>
+        </div>
+    </nav>
+    
+    <div class="container-fluid mt-4">
+        <!-- Page Header with Actions -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h2><i class="fas fa-users"></i> User Management</h2>
+                <p class="text-muted">Manage customers, partners, and staff across all regions</p>
+            </div>
+            <button class="btn btn-primary" onclick="openUserModal()">
+                <i class="fas fa-user-plus"></i> Add User
+            </button>
+        </div>
+
+        <!-- Global User Search -->
+        <div class="search-section">
+            <div class="input-group input-group-lg">
+                <span class="input-group-text"><i class="fas fa-search"></i></span>
+                <input type="text" id="globalUserSearch" class="form-control" 
+                       placeholder="Search by Account ID, Email, or Phone across all regions..." />
+                <button class="btn btn-outline-secondary" onclick="performUserSearch()">Search</button>
+            </div>
+        </div>
+
+        <!-- Filters & Bulk Actions -->
+        <div class="filter-group">
+            <select id="regionFilter" class="form-select" onchange="filterUsers()">
+                <option value="">🌍 All Regions</option>
+                <option value="north_america">🇺🇸 North America</option>
+                <option value="europe">🇪🇺 Europe</option>
+                <option value="asia_pacific">🌏 Asia Pacific</option>
+                <option value="middle_east">🇦🇪 Middle East</option>
+                <option value="latin_america">🇧🇷 Latin America</option>
+            </select>
+            
+            <select id="roleFilter" class="form-select" onchange="filterUsers()">
+                <option value="">All Roles</option>
+                <option value="customer">Customer (Sender)</option>
+                <option value="partner">Partner (Driver)</option>
+                <option value="regional_mgr">Regional Manager</option>
+                <option value="admin">Global Admin</option>
+            </select>
+            
+            <select id="complianceFilter" class="form-select" onchange="filterUsers()">
+                <option value="">All Compliance Status</option>
+                <option value="verified">✓ KYC Verified</option>
+                <option value="pending">⧗ Verification Pending</option>
+                <option value="expired">⚠ Documents Expired</option>
+                <option value="inactive">Inactive</option>
+            </select>
+        </div>
+
+        <!-- Bulk Actions Bar -->
+        <div class="bulk-actions" id="bulkActionsBar">
+            <div class="d-flex gap-2 align-items-center">
+                <span id="selectedCount">0 users selected</span>
+                <button class="btn btn-sm btn-info" onclick="sendRegionalUpdate()">
+                    <i class="fas fa-envelope"></i> Send Regional Update
+                </button>
+                <button class="btn btn-sm btn-warning" onclick="suspendRegionalAccess()">
+                    <i class="fas fa-ban"></i> Suspend Regional Access
+                </button>
+                <button class="btn btn-sm btn-danger" onclick="resetBulkSelection()">
+                    <i class="fas fa-times"></i> Clear Selection
+                </button>
+            </div>
+        </div>
+
+        <!-- Users Table -->
+        <div class="card">
+            <div class="card-header">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="selectAllCheckbox" 
+                           onchange="toggleSelectAll(this)" />
+                    <label class="form-check-label" for="selectAllCheckbox">
+                        Select All
+                    </label>
+                </div>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover mb-0" id="usersTable">
+                    <thead>
+                        <tr>
+                            <th style="width: 40px;"></th>
+                            <th>Account ID</th>
+                            <th>Name</th>
+                            <th>Email / Phone</th>
+                            <th>Role</th>
+                            <th>Region</th>
+                            <th>Compliance Status</th>
+                            <th>Joined</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usersTableBody">
+                        <!-- Skeleton Loaders -->
+                        <tr class="skeleton-row"><td colspan="9"></td></tr>
+                        <tr class="skeleton-row"><td colspan="9"></td></tr>
+                        <tr class="skeleton-row"><td colspan="9"></td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- User Detail Modal -->
+    <div class="user-detail-modal" id="userDetailModal">
+        <div class="modal-content-custom">
+            <span class="modal-close" onclick="closeUserModal()">&times;</span>
+            
+            <h4 id="modalUserName">User Details</h4>
+            
+            <div class="mt-4">
+                <h6>Account Information</h6>
+                <div class="compliance-row">
+                    <strong>Account ID:</strong> <span id="modalAccountId">---</span>
+                </div>
+                <div class="compliance-row">
+                    <strong>Email:</strong> <span id="modalEmail">---</span>
+                </div>
+                <div class="compliance-row">
+                    <strong>Phone:</strong> <span id="modalPhone">---</span>
+                </div>
+                <div class="compliance-row">
+                    <strong>Role:</strong> <span id="modalRole">---</span>
+                </div>
+                <div class="compliance-row">
+                    <strong>Primary Region:</strong> <span id="modalRegion">---</span>
+                </div>
+            </div>
+
+            <div class="mt-4">
+                <h6>Compliance & Verification</h6>
+                <div class="compliance-row">
+                    <strong>KYC Status:</strong> <span id="modalKycStatus">---</span>
+                </div>
+                <div class="compliance-row">
+                    <strong>Background Check:</strong> <span id="modalBackgroundCheck">---</span>
+                </div>
+                <div class="compliance-row">
+                    <strong>Document Expiry:</strong> <span id="modalDocExpiry">---</span>
+                </div>
+                <div class="compliance-row">
+                    <strong>Last Verified:</strong> <span id="modalLastVerified">---</span>
+                </div>
+            </div>
+
+            <div class="mt-4">
+                <h6>Regional Logistics History</h6>
+                <div id="modalLogisticsHistory">
+                    <p class="text-muted">Loading history...</p>
+                </div>
+            </div>
+
+            <div class="mt-4">
+                <button class="btn btn-primary" onclick="editUser()">Edit User</button>
+                <button class="btn btn-danger" onclick="deactivateUser()">Deactivate Account</button>
+                <button class="btn btn-secondary" onclick="closeUserModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <footer id="footer-container"></footer>
+    <script src="/js/core/api.js"></script>
+    <script src="/js/core/auth.js"></script>
+    <script src="/js/core/guards.js"></script>
+    <script src="/js/admin/users.js"></script>
+</body>
+</html>

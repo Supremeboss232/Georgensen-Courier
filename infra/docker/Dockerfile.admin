@@ -1,0 +1,15 @@
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Copy admin files
+COPY admin/ .
+
+# Install simple HTTP server
+RUN npm install -g http-server
+
+# Expose port
+EXPOSE 8081
+
+# Serve admin
+CMD ["http-server", "-p", "8081", "-c-1"]

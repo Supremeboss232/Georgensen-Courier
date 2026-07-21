@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Georgensen Courier</title>
+    
+    <!-- Bootstrap Lite CSS (lightweight alternative) -->
+    <link rel="stylesheet" href="/css/bootstrap-lite.css">
+    
+    <!-- Main Stylesheet -->
+    <link rel="stylesheet" href="/css/main.css">
+    
+    <style>
+        /* Login Page Specific Styles */
+        body.login-page {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .login-container {
+            flex-grow: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem 0;
+        }
+        
+        .login-card {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            max-width: 450px;
+            width: 100%;
+        }
+        
+        .login-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 10px 10px 0 0;
+            text-align: center;
+        }
+        
+        .login-header h1 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+        }
+        
+        .login-header p {
+            font-size: 0.95rem;
+            opacity: 0.95;
+            margin: 0;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-label {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 0.5rem;
+        }
+        
+        .form-control {
+            padding: 0.75rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 5px;
+            transition: border-color 0.3s;
+        }
+        
+        .form-control:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+        
+        .btn-login {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            padding: 0.75rem;
+            font-weight: 600;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .login-footer {
+            text-align: center;
+            padding: 1.5rem;
+            border-top: 1px solid #e0e0e0;
+        }
+        
+        .login-footer p {
+            margin: 0.5rem 0;
+            font-size: 0.95rem;
+        }
+        
+        .login-footer a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        
+        .login-footer a:hover {
+            text-decoration: underline;
+        }
+        
+        /* Role Info Section */
+        .role-info {
+            background-color: #f8f9fa;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .role-info-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 0.75rem;
+            font-size: 0.9rem;
+        }
+        
+        .role-item {
+            display: flex;
+            align-items: center;
+            padding: 0.5rem 0;
+            font-size: 0.85rem;
+        }
+        
+        .role-icon {
+            color: #667eea;
+            margin-right: 0.75rem;
+            width: 20px;
+            text-align: center;
+        }
+        
+        .loading-spinner {
+            display: none;
+            text-align: center;
+            padding: 1rem;
+        }
+        
+        .error-message {
+            display: none;
+            background-color: #f8d7da;
+            color: #721c24;
+            padding: 1rem;
+            border-radius: 5px;
+            margin-bottom: 1rem;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .success-message {
+            display: none;
+            background-color: #d4edda;
+            color: #155724;
+            padding: 1rem;
+            border-radius: 5px;
+            margin-bottom: 1rem;
+            border: 1px solid #c3e6cb;
+        }
+    </style>
+</head>
+<body class="login-page">
+    <!-- Public Navigation Bar -->
+    <nav id="navbar-container"></nav>
+    
+    <!-- Login Container -->
+    <div class="login-container">
+        <div class="login-card">
+            <!-- Login Header with Branding -->
+            <div class="login-header">
+                <h1>🚚 Georgensen</h1>
+                <p>Logistics Platform Login</p>
+            </div>
+            
+            <!-- Login Form Body -->
+            <div class="card p-4">
+                <!-- Error Message Alert -->
+                <div id="errorMessage" class="error-message">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span id="errorText"></span>
+                </div>
+                
+                <!-- Success Message Alert -->
+                <div id="successMessage" class="success-message">
+                    <i class="fas fa-check-circle"></i>
+                    <span id="successText"></span>
+                </div>
+                
+                <!-- Role Information Section -->
+                <div class="role-info">
+                    <div class="role-info-title">
+                        <i class="fas fa-info-circle"></i> Available Account Types
+                    </div>
+                    <div class="role-item">
+                        <div class="role-icon">
+                            <i class="fas fa-user-shield"></i>
+                        </div>
+                        <span><strong>Admin:</strong> System & hub management</span>
+                    </div>
+                    <div class="role-item">
+                        <div class="role-icon">
+                            <i class="fas fa-truck"></i>
+                        </div>
+                        <span><strong>Driver/Partner:</strong> Deliveries & tracking</span>
+                    </div>
+                    <div class="role-item">
+                        <div class="role-icon">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <span><strong>Customer:</strong> Shipment creation & tracking</span>
+                    </div>
+                </div>
+                
+                <!-- Login Form -->
+                <form id="loginForm" novalidate>
+                    <div class="form-group">
+                        <label for="email" class="form-label">
+                            <i class="fas fa-envelope"></i> Email Address
+                        </label>
+                        <input 
+                            type="email" 
+                            class="form-control" 
+                            id="email" 
+                            name="email" 
+                            placeholder="your.email@example.com"
+                            autocomplete="username"
+                            required
+                            aria-label="Email address">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="password" class="form-label">
+                            <i class="fas fa-lock"></i> Password
+                        </label>
+                        <input 
+                            type="password" 
+                            class="form-control" 
+                            id="password" 
+                            name="password" 
+                            placeholder="Enter your password"
+                            autocomplete="current-password"
+                            required
+                            aria-label="Password">
+                    </div>
+                    
+                    <!-- Submit Button with Loading State -->
+                    <button 
+                        type="submit" 
+                        class="btn btn-primary w-100"
+                        id="submitBtn">
+                        <span id="submitText">
+                            <i class="fas fa-sign-in-alt"></i> Login
+                        </span>
+                        <span id="submitSpinner" class="loading-spinner" style="display: none;">
+                            <i class="fas fa-spinner fa-spin"></i> Logging in...
+                        </span>
+                    </button>
+                </form>
+                
+                <!-- Footer Links -->
+                <div class="login-footer">
+                    <p>Don't have an account? <a href="/auth/register"><i class="fas fa-user-plus"></i> Register here</a></p>
+                    <p><a href="/auth/forgot-password"><i class="fas fa-question-circle"></i> Forgot your password?</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Footer Container -->
+    <footer id="footer-container"></footer>
+    
+    <!-- ======================== SCRIPTS ======================== -->
+    <!-- Core Authentication & Authorization -->
+    <script src="/js/core/auth.js"></script>
+    <script src="/js/core/guards.js"></script>
+    <script src="/js/core/api.js"></script>
+    
+    <!-- Main App Initialization (navbar, logout, etc.) -->
+    <script src="/js/main.js"></script>
+    
+    <!-- Login Handler with Role-Based Redirection -->
+    <script src="/js/auth/login.js"></script>
+    
+    <!-- Additional Security: Load navbar-public component if not already loaded -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Load public navbar component
+            if (document.getElementById('navbar-container')) {
+                fetch('/components/navbar-public.html')
+                    .then(response => response.text())
+                    .then(html => {
+                        document.getElementById('navbar-container').innerHTML = html;
+                    })
+                    .catch(error => console.error('Error loading navbar:', error));
+            }
+            
+            // Load footer component
+            if (document.getElementById('footer-container')) {
+                fetch('/components/footer.html')
+                    .then(response => response.text())
+                    .then(html => {
+                        document.getElementById('footer-container').innerHTML = html;
+                    })
+                    .catch(error => console.error('Error loading footer:', error));
+            }
+        });
+    </script>
+</body>
+</html>

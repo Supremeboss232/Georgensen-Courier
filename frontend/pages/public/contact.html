@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Contact Georgensen Courier: Canada-based global logistics. Toll-free support, customs brokerage, international operations. Bilingual English/French support.">
+    <meta name="keywords" content="contact logistics, customs support, international freight, Canadian courier, toll-free support, bilingual">
+    <title>Contact Us - Georgensen Courier | Canada-Global Logistics</title>
+    
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="/assets/lib/bootstrap/css/bootstrap.min.css">
+    
+    <!-- FontAwesome (Local) -->
+    <link rel="stylesheet" href="/assets/lib/fontawesome/css/all.min.css">
+    
+    <!-- Main CSS -->
+    <link rel="stylesheet" href="/css/main.css">
+    
+    <style>
+        :root {
+            --primary-color: #667eea;
+            --secondary-color: #764ba2;
+            --accent-color: #ffc107;
+            --success-color: #28a745;
+            --info-color: #17a2b8;
+            --light-color: #f8f9fa;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+        }
+
+        main {
+            flex: 1;
+            padding: 40px 0;
+        }
+
+        .page-header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            padding: 40px 0;
+            margin-bottom: 40px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .page-header h1 {
+            font-weight: 700;
+            margin-bottom: 10px;
+            font-size: 2.2em;
+        }
+
+        .page-header .lead {
+            font-size: 1.1em;
+            opacity: 0.95;
+            margin-bottom: 12px;
+        }
+
+        .bilingual-badge {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            border-radius: 20px;
+            padding: 8px 16px;
+            display: inline-block;
+            font-size: 0.9em;
+            margin-top: 10px;
+        }
+
+        .bilingual-badge i {
+            margin-right: 6px;
+        }
+
+        /* Contact Card Styling */
+        .contact-card {
+            background: white;
+            border-radius: 10px;
+            padding: 24px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+            text-align: center;
+            border-top: 3px solid var(--primary-color);
+            height: 100%;
+        }
+
+        .contact-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+        }
+
+        .contact-icon {
+            font-size: 2em;
+            color: var(--primary-color);
+            margin-bottom: 12px;
+        }
+
+        .contact-card h5 {
+            color: #333;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .contact-card p {
+            color: #666;
+            margin-bottom: 8px;
+            font-size: 0.95em;
+        }
+
+        .contact-card small {
+            color: #999;
+            display: block;
+            margin-top: 8px;
+        }
+
+        .company-header-info {
+            background: white;
+            border-radius: 10px;
+            padding: 28px;
+            margin-bottom: 40px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .company-header-info h4 {
+            color: var(--primary-color);
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+
+        .company-header-info .row {
+            margin-top: 16px;
+        }
+
+        .hq-badge {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 8px 14px;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 0.85em;
+            text-transform: uppercase;
+            display: inline-block;
+            margin-right: 8px;
+        }
+
+        /* Hub List */
+        .hub-list {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 12px;
+        }
+
+        .hub-list ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .hub-list li {
+            padding: 8px 0;
+            color: #555;
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .hub-list li:last-child {
+            border-bottom: none;
+        }
+
+        .hub-list li:before {
+            content: "📍";
+            font-size: 1.1em;
+        }
+
+        /* Form Card */
+        .form-card {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+        }
+
+        .form-card .card-header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            padding: 24px;
+            border: none;
+        }
+
+        .form-card .card-header h5 {
+            margin: 0;
+            font-weight: 700;
+        }
+
+        .form-card .card-body {
+            padding: 28px;
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .form-control, .form-select {
+            border-radius: 6px;
+            border: 1px solid #ddd;
+            padding: 10px 12px;
+            font-size: 0.95em;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+
+        .btn-submit {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            border: none;
+            color: white;
+            padding: 12px 28px;
+            font-weight: 600;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            font-size: 1em;
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+            color: white;
+        }
+
+        /* Business Hours */
+        .hours-section {
+            background: white;
+            border-radius: 10px;
+            padding: 24px;
+            margin-top: 40px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            border-left: 4px solid var(--success-color);
+        }
+
+        .hours-section h5 {
+            color: var(--primary-color);
+            font-weight: 700;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .hours-section i {
+            color: var(--success-color);
+        }
+
+        .hours-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .hours-list li {
+            padding: 10px 0;
+            color: #555;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .hours-list li:last-child {
+            border-bottom: none;
+        }
+
+        .international-note {
+            background: rgba(23, 162, 184, 0.1);
+            border-left: 4px solid var(--info-color);
+            padding: 12px 16px;
+            border-radius: 4px;
+            margin-top: 12px;
+            color: #555;
+            font-size: 0.95em;
+        }
+
+        .international-note strong {
+            color: var(--info-color);
+        }
+
+        /* Department Routing */
+        .department-note {
+            background: rgba(102, 126, 234, 0.05);
+            border: 1px solid rgba(102, 126, 234, 0.2);
+            border-radius: 6px;
+            padding: 12px;
+            margin-top: 12px;
+            font-size: 0.9em;
+            color: #555;
+        }
+
+        @media (max-width: 768px) {
+            .page-header {
+                padding: 30px 0;
+            }
+
+            .page-header h1 {
+                font-size: 1.5em;
+            }
+
+            .form-card .card-body {
+                padding: 20px;
+            }
+
+            .btn-submit {
+                padding: 10px 20px;
+            }
+        }
+
+        footer {
+            background: white;
+            border-top: 1px solid #e9ecef;
+            margin-top: 60px;
+        }
+    </style>
+</head>
+<body>
+    <div id="app" style="display: flex; flex-direction: column; min-height: 100vh;">
+        <!-- Navbar (injected by main.js) -->
+        <div id="navbar-container"></div>
+
+        <!-- Page Header -->
+        <div class="page-header">
+            <div class="container">
+                <h1>
+                    <i class="fas fa-headset" style="margin-right: 12px;"></i>
+                    Contact Georgensen
+                </h1>
+                <p class="lead">Canada-Based Global Logistics Support</p>
+                <div class="bilingual-badge">
+                    <i class="fas fa-language"></i> English • Français
+                </div>
+            </div>
+        </div>
+
+        <main class="container">
+            <!-- Regional Headquarters Info -->
+            <div class="company-header-info">
+                <div class="row">
+                    <div class="col-lg-8">
+                        <h4>
+                            <span class="hq-badge">🍁 Canadian Headquarters</span>
+                        </h4>
+                        <p style="margin-bottom: 12px; color: #666;">
+                            Primary operations hub with global reach via regional distribution centers across North America. We operate 24/7 for international shipment tracking and support.
+                        </p>
+                        <div class="hub-list">
+                            <strong style="color: #333;">Strategic Regional Hubs:</strong>
+                            <ul>
+                                <li><strong>Toronto (YYZ)</strong> - North American Distribution & CBSA Pre-Clearance</li>
+                                <li><strong>Vancouver (YVR)</strong> - Asia-Pacific Gateway & Port Authority</li>
+                                <li><strong>Montreal (YUL)</strong> - Atlantic Trade & EU Specialty</li>
+                                <li><strong>Calgary (YYC)</strong> - Prairie Consolidation & US Mountain Access</li>
+                                <li><strong>Chicago (ORD)</strong> - US Midwest Hub with Customs Pre-Clearance</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <div style="background: #f8f9fa; border-radius: 8px; padding: 20px; text-align: center;">
+                            <h6 style="color: var(--primary-color); margin-bottom: 16px;">Quick Contact</h6>
+                            <div style="margin-bottom: 16px;">
+                                <div style="font-size: 0.85em; color: #999; margin-bottom: 4px;">TOLL-FREE (Canada/US)</div>
+                                <a href="tel:+18008675309" style="font-size: 1.2em; font-weight: 700; color: var(--primary-color); text-decoration: none;">
+                                    1-800-GEORGENSEN
+                                </a>
+                            </div>
+                            <div>
+                                <div style="font-size: 0.85em; color: #999; margin-bottom: 4px;">INTERNATIONAL</div>
+                                <a href="tel:+14165551234" style="font-size: 1.2em; font-weight: 700; color: var(--primary-color); text-decoration: none;">
+                                    +1-416-555-1234
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contact Information Cards -->
+            <div class="row g-4 mb-5">
+                <!-- Toll-Free Phone -->
+                <div class="col-md-4">
+                    <div class="contact-card">
+                        <i class="fas fa-phone contact-icon"></i>
+                        <h5>Toll-Free Support</h5>
+                        <p>
+                            <a href="tel:+18008675309" style="color: var(--primary-color); text-decoration: none; font-weight: 600;">
+                                1-800-GEORGENSEN
+                            </a>
+                        </p>
+                        <small>Available Canada & US</small>
+                        <small>Mon-Fri: 8 AM - 6 PM EST</small>
+                    </div>
+                </div>
+
+                <!-- International Support -->
+                <div class="col-md-4">
+                    <div class="contact-card">
+                        <i class="fas fa-globe contact-icon"></i>
+                        <h5>International Line</h5>
+                        <p>
+                            <a href="tel:+14165551234" style="color: var(--primary-color); text-decoration: none; font-weight: 600;">
+                                +1-416-555-1234
+                            </a>
+                        </p>
+                        <small>Global operations support</small>
+                        <small>24/7 for urgent tracking</small>
+                    </div>
+                </div>
+
+                <!-- Email Support -->
+                <div class="col-md-4">
+                    <div class="contact-card">
+                        <i class="fas fa-envelope contact-icon"></i>
+                        <h5>Email Support</h5>
+                        <p>
+                            <a href="mailto:support@georgensen.ca" style="color: var(--primary-color); text-decoration: none; font-weight: 600;">
+                                support@georgensen.ca
+                            </a>
+                        </p>
+                        <small>Response within 2 hours</small>
+                        <small>(Business hours)</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contact Form -->
+            <div class="form-card mb-5">
+                <div class="card-header">
+                    <h5>Send us a Message</h5>
+                </div>
+                <div class="card-body">
+                    <form id="contactForm">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="contactName" class="form-label">Your Name *</label>
+                                <input type="text" class="form-control" id="contactName" placeholder="Full name" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="contactEmail" class="form-label">Email Address *</label>
+                                <input type="email" class="form-control" id="contactEmail" placeholder="you@company.com" required>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="contactPhone" class="form-label">Phone Number (Optional)</label>
+                                <input type="tel" class="form-control" id="contactPhone" placeholder="+1-416-555-1234">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="contactCompany" class="form-label">Company (Optional)</label>
+                                <input type="text" class="form-control" id="contactCompany" placeholder="Your company">
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="contactSubject" class="form-label">Subject * <span style="color: #999; font-size: 0.9em;">(Select department)</span></label>
+                            <select class="form-select" id="contactSubject" required>
+                                <option value="">-- Select Department --</option>
+                                <option value="general">General Inquiry</option>
+                                <option value="customs_clearance">Customs & Clearance Support</option>
+                                <option value="international_freight">International Freight Inquiry</option>
+                                <option value="quote">Request a Quote</option>
+                                <option value="tracking">Tracking Issue / Delivery Problem</option>
+                                <option value="claims_insurance">Claims & Insurance</option>
+                                <option value="partnership">Partnership Opportunity</option>
+                                <option value="feedback">Feedback</option>
+                                <option value="complaint">Complaint</option>
+                            </select>
+                            <div class="department-note">
+                                <i class="fas fa-info-circle" style="margin-right: 8px;"></i>
+                                <strong>Customs Support:</strong> Dedicated brokers handle CBSA/US CFP inquiries | 
+                                <strong>Freight:</strong> Intermodal (air/ocean/truck) specialists
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="contactMessage" class="form-label">Message *</label>
+                            <textarea class="form-control" id="contactMessage" rows="6" placeholder="Tell us how we can help..." required></textarea>
+                        </div>
+
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="contactAgree" required>
+                            <label class="form-check-label" for="contactAgree">
+                                I agree to the <a href="/privacy.html" style="color: var(--primary-color); text-decoration: none;">privacy policy</a> and 
+                                <a href="/terms.html" style="color: var(--primary-color); text-decoration: none;">terms of service</a>
+                            </label>
+                        </div>
+
+                        <button type="submit" class="btn-submit">
+                            <i class="fas fa-paper-plane" style="margin-right: 8px;"></i>Send Message
+                        </button>
+                        <div id="formMessage" style="margin-top: 12px; display: none;"></div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Business Hours -->
+            <div class="hours-section">
+                <h5>
+                    <i class="fas fa-clock"></i> Business Hours & Availability
+                </h5>
+                <div class="row">
+                    <div class="col-lg-6">
+                        <strong style="color: #333;">Regular Support Hours (EST)</strong>
+                        <ul class="hours-list" style="margin-top: 12px;">
+                            <li>
+                                <span>Monday - Friday</span>
+                                <strong>8:00 AM - 6:00 PM EST</strong>
+                            </li>
+                            <li>
+                                <span>Saturday</span>
+                                <strong>9:00 AM - 2:00 PM EST</strong>
+                            </li>
+                            <li>
+                                <span>Sunday & Holidays</span>
+                                <strong>Closed</strong>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="col-lg-6">
+                        <strong style="color: #333;">Special Support</strong>
+                        <ul class="hours-list" style="margin-top: 12px;">
+                            <li>
+                                <span>Tracking (24/7)</span>
+                                <strong>Always Available</strong>
+                            </li>
+                            <li>
+                                <span>International Ops</span>
+                                <strong>24/7 Emergency</strong>
+                            </li>
+                            <li>
+                                <span>Estimated Response</span>
+                                <strong>2-4 Hours</strong>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="international-note">
+                    <i class="fas fa-exclamation-circle" style="margin-right: 8px;"></i>
+                    <strong>International Shipments:</strong> Tracking available 24/7/365. Call international line for urgent customs or delivery issues.
+                </div>
+            </div>
+
+            <!-- FAQ Quick Links -->
+            <div style="background: white; border-radius: 10px; padding: 24px; margin-top: 40px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);">
+                <h5 style="color: var(--primary-color); font-weight: 700; margin-bottom: 16px;">
+                    <i class="fas fa-question-circle" style="margin-right: 10px;"></i>FAQ & Self-Service
+                </h5>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <a href="/tracking.html" style="color: var(--primary-color); text-decoration: none; font-weight: 600;">
+                            <i class="fas fa-location-dot" style="margin-right: 8px;"></i>Track Your Shipment
+                        </a>
+                    </div>
+                    <div class="col-md-6">
+                        <a href="/quote.html" style="color: var(--primary-color); text-decoration: none; font-weight: 600;">
+                            <i class="fas fa-calculator" style="margin-right: 8px;"></i>Get a Quote
+                        </a>
+                    </div>
+                    <div class="col-md-6">
+                        <a href="/services.html" style="color: var(--primary-color); text-decoration: none; font-weight: 600;">
+                            <i class="fas fa-globe" style="margin-right: 8px;"></i>Browse Services
+                        </a>
+                    </div>
+                    <div class="col-md-6">
+                        <a href="/about.html" style="color: var(--primary-color); text-decoration: none; font-weight: 600;">
+                            <i class="fas fa-info-circle" style="margin-right: 8px;"></i>About Us
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer (injected by main.js) -->
+        <div id="footer-container"></div>
+    </div>
+
+    <!-- Scripts in Proper Order -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/main.js"></script>
+    <script src="/js/core/api.js"></script>
+    <script src="/js/public/contact.js"></script>
+</body>
+</html>

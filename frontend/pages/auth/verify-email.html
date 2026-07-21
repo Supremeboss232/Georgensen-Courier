@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify Email - Georgensen Courier</title>
+    
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="/assets/lib/bootstrap/css/bootstrap.min.css">
+    
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="/assets/lib/fontawesome/css/all.min.css">
+    
+    <!-- Main Stylesheet -->
+    <link rel="stylesheet" href="/css/main.css">
+    
+    <!-- Guard Script: Prevent non-registered or already-verified users -->
+    <script src="/js/core/guards.js"></script>
+    
+    <style>
+        /* Email Verification Page Specific Styles */
+        body.verify-email-page {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .verification-container {
+            flex-grow: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem 0;
+        }
+        
+        .verification-card {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            max-width: 450px;
+            width: 100%;
+        }
+        
+        .verification-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 10px 10px 0 0;
+            text-align: center;
+        }
+        
+        .verification-header h1 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+        }
+        
+        .verification-header p {
+            font-size: 0.95rem;
+            opacity: 0.95;
+            margin: 0;
+        }
+        
+        .verification-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-label {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .form-control {
+            padding: 0.75rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 5px;
+            transition: border-color 0.3s;
+            text-align: center;
+            font-size: 1.5rem;
+            letter-spacing: 0.5rem;
+            font-weight: 600;
+        }
+        
+        .form-control:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+        
+        .code-input-hint {
+            font-size: 0.85rem;
+            color: #666;
+            text-align: center;
+            margin-top: 0.5rem;
+        }
+        
+        .btn-verify {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            padding: 0.75rem;
+            font-weight: 600;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .btn-verify:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .verification-footer {
+            text-align: center;
+            padding: 1.5rem;
+            border-top: 1px solid #e0e0e0;
+        }
+        
+        .verification-footer p {
+            margin: 0.5rem 0;
+            font-size: 0.95rem;
+            color: #666;
+        }
+        
+        .resend-link {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        
+        .resend-link:hover {
+            color: #764ba2;
+            text-decoration: underline;
+        }
+        
+        .resend-link:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        .resend-timer {
+            font-size: 0.85rem;
+            color: #999;
+            margin-left: 0.5rem;
+        }
+        
+        .verification-status {
+            display: none;
+            padding: 1rem;
+            border-radius: 5px;
+            margin-bottom: 1rem;
+            border: 1px solid;
+            animation: slideIn 0.3s ease;
+        }
+        
+        .verification-status.show {
+            display: block;
+        }
+        
+        .success-status {
+            background-color: #d4edda;
+            color: #155724;
+            border-color: #c3e6cb;
+        }
+        
+        .error-status {
+            background-color: #f8d7da;
+            color: #721c24;
+            border-color: #f5c6cb;
+        }
+        
+        .info-status {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border-color: #bee5eb;
+        }
+        
+        .warning-status {
+            background-color: #fff3cd;
+            color: #856404;
+            border-color: #ffeaa7;
+        }
+        
+        .loading-spinner {
+            display: none;
+            text-align: center;
+            padding: 1rem;
+        }
+        
+        .info-box {
+            background-color: #f8f9fa;
+            border: 1px solid #e0e0e0;
+            border-radius: 5px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
+            color: #666;
+        }
+        
+        .info-box strong {
+            color: #333;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body class="bg-light verify-email-page">
+    <!-- Public Navigation Bar -->
+    <nav id="navbar-container"></nav>
+    
+    <!-- Verification Container -->
+    <div class="verification-container">
+        <div class="verification-card">
+            <!-- Verification Header -->
+            <div class="verification-header">
+                <div class="verification-icon">
+                    <i class="fas fa-envelope-open-text"></i>
+                </div>
+                <h1>Verify Your Email</h1>
+                <p>Secure your Georgensen account</p>
+            </div>
+            
+            <!-- Verification Form Body -->
+            <div class="card-body p-4">
+                <!-- Info Box -->
+                <div class="info-box">
+                    <i class="fas fa-info-circle"></i>
+                    <strong>Check your email:</strong> We've sent a verification code to your email address. Enter it below to complete your registration.
+                </div>
+                
+                <!-- Verification Status (dynamic feedback) -->
+                <div id="verificationStatus" class="verification-status">
+                    <i id="statusIcon"></i>
+                    <span id="statusText"></span>
+                </div>
+                
+                <!-- Email Verification Form -->
+                <form id="verifyEmailForm" novalidate>
+                    <div class="form-group">
+                        <label for="code" class="form-label">
+                            <i class="fas fa-barcode"></i> Verification Code
+                        </label>
+                        <input 
+                            type="text" 
+                            class="form-control" 
+                            id="code" 
+                            name="code" 
+                            placeholder="000000"
+                            inputmode="numeric"
+                            maxlength="6"
+                            pattern="[0-9]*"
+                            required
+                            aria-label="6-digit verification code"
+                            autocomplete="off">
+                        <div class="code-input-hint">
+                            Enter the 6-digit code from your email
+                        </div>
+                    </div>
+                    
+                    <!-- Submit Button with Loading State -->
+                    <button 
+                        type="submit" 
+                        class="btn btn-verify btn-primary w-100"
+                        id="submitBtn">
+                        <span id="submitText">
+                            <i class="fas fa-check-circle"></i> Verify Email
+                        </span>
+                        <span id="submitSpinner" class="loading-spinner" style="display: none;">
+                            <i class="fas fa-spinner fa-spin"></i> Verifying...
+                        </span>
+                    </button>
+                </form>
+                
+                <!-- Footer Links and Resend -->
+                <div class="verification-footer">
+                    <p>
+                        Didn't receive the code? 
+                        <button 
+                            type="button"
+                            class="resend-link"
+                            id="resendLink">
+                            <i class="fas fa-redo-alt"></i> Resend
+                        </button>
+                        <span class="resend-timer" id="resendTimer"></span>
+                    </p>
+                    <p style="margin-top: 1rem;">
+                        <a href="/auth/login" style="color: #667eea; text-decoration: none; font-weight: 600;">
+                            <i class="fas fa-arrow-left"></i> Back to Login
+                        </a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Footer Container -->
+    <footer id="footer-container"></footer>
+    
+    <!-- ======================== SCRIPTS ======================== -->
+    <!-- Main App Initialization (navbar, logout, etc.) -->
+    <script src="/js/main.js"></script>
+    
+    <!-- Core Authentication & Authorization -->
+    <script src="/js/core/api.js"></script>
+    
+    <!-- Email Verification Handler with Resend Logic -->
+    <script src="/js/auth/verify.js"></script>
+    
+    <!-- Bootstrap JS for interactive components -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Load navbar and footer components -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Load public navbar component
+            if (document.getElementById('navbar-container')) {
+                fetch('/components/navbar-public.html')
+                    .then(response => response.text())
+                    .then(html => {
+                        document.getElementById('navbar-container').innerHTML = html;
+                    })
+                    .catch(error => console.error('Error loading navbar:', error));
+            }
+            
+            // Load footer component
+            if (document.getElementById('footer-container')) {
+                fetch('/components/footer.html')
+                    .then(response => response.text())
+                    .then(html => {
+                        document.getElementById('footer-container').innerHTML = html;
+                    })
+                    .catch(error => console.error('Error loading footer:', error));
+            }
+        });
+    </script>
+</body>
+</html>

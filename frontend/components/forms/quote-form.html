@@ -1,0 +1,415 @@
+<!-- Quote Form for Global Logistics -->
+<form id="quoteFormComponent" class="needs-validation" novalidate>
+    <!-- Origin Country & Region -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="mb-3">
+                <label for="quoteOriginCountry" class="form-label">Origin Country</label>
+                <select class="form-control" id="quoteOriginCountry" name="originCountry" required onchange="updateCurrencyAndZones()">
+                    <option value="">-- Select Country --</option>
+                    
+                    <!-- North America -->
+                    <optgroup label="🌎 North America">
+                        <option value="CA" selected>Canada (CA)</option>
+                        <option value="US">United States (US)</option>
+                    </optgroup>
+                    
+                    <!-- Europe -->
+                    <optgroup label="🇪🇺 Europe">
+                        <option value="GB">United Kingdom (GB)</option>
+                        <option value="DE">Germany (DE)</option>
+                        <option value="FR">France (FR)</option>
+                        <option value="IT">Italy (IT)</option>
+                        <option value="ES">Spain (ES)</option>
+                        <option value="NL">Netherlands (NL)</option>
+                        <option value="BE">Belgium (BE)</option>
+                        <option value="AT">Austria (AT)</option>
+                        <option value="CH">Switzerland (CH)</option>
+                        <option value="SE">Sweden (SE)</option>
+                        <option value="NO">Norway (NO)</option>
+                        <option value="DK">Denmark (DK)</option>
+                        <option value="FI">Finland (FI)</option>
+                        <option value="PL">Poland (PL)</option>
+                        <option value="CZ">Czech Republic (CZ)</option>
+                        <option value="IE">Ireland (IE)</option>
+                    </optgroup>
+                    
+                    <!-- Asia-Pacific -->
+                    <optgroup label="🌏 Asia-Pacific">
+                        <option value="AU">Australia (AU)</option>
+                        <option value="SG">Singapore (SG)</option>
+                        <option value="JP">Japan (JP)</option>
+                        <option value="HK">Hong Kong (HK)</option>
+                        <option value="NZ">New Zealand (NZ)</option>
+                        <option value="IN">India (IN)</option>
+                        <option value="TH">Thailand (TH)</option>
+                        <option value="MY">Malaysia (MY)</option>
+                        <option value="ID">Indonesia (ID)</option>
+                        <option value="PH">Philippines (PH)</option>
+                    </optgroup>
+                    
+                    <!-- Middle East & Africa -->
+                    <optgroup label="🌍 Middle East & Africa">
+                        <option value="AE">United Arab Emirates (AE)</option>
+                        <option value="SA">Saudi Arabia (SA)</option>
+                        <option value="KW">Kuwait (KW)</option>
+                        <option value="QA">Qatar (QA)</option>
+                        <option value="BH">Bahrain (BH)</option>
+                        <option value="ZA">South Africa (ZA)</option>
+                        <option value="EG">Egypt (EG)</option>
+                        <option value="MA">Morocco (MA)</option>
+                        <option value="NG">Nigeria (NG)</option>
+                        <option value="KE">Kenya (KE)</option>
+                    </optgroup>
+                    
+                    <!-- Latin America -->
+                    <optgroup label="🌎 Latin America">
+                        <option value="MX">Mexico (MX)</option>
+                        <option value="BR">Brazil (BR)</option>
+                        <option value="AR">Argentina (AR)</option>
+                        <option value="CL">Chile (CL)</option>
+                        <option value="CO">Colombia (CO)</option>
+                        <option value="PE">Peru (PE)</option>
+                        <option value="VE">Venezuela (VE)</option>
+                        <option value="EC">Ecuador (EC)</option>
+                    </optgroup>
+                </select>
+                <small class="form-text text-muted">Determines base currency and tax</small>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="mb-3">
+                <label for="quoteDestinationCountry" class="form-label">Destination Country</label>
+                <select class="form-control" id="quoteDestinationCountry" name="destinationCountry" required onchange="updateZonePricing()">
+                    <option value="">-- Select Country --</option>
+                    
+                    <!-- North America -->
+                    <optgroup label="🌎 North America">
+                        <option value="CA" selected>Canada (CA)</option>
+                        <option value="US">United States (US)</option>
+                    </optgroup>
+                    
+                    <!-- Europe -->
+                    <optgroup label="🇪🇺 Europe">
+                        <option value="GB">United Kingdom (GB)</option>
+                        <option value="DE">Germany (DE)</option>
+                        <option value="FR">France (FR)</option>
+                        <option value="IT">Italy (IT)</option>
+                        <option value="ES">Spain (ES)</option>
+                        <option value="NL">Netherlands (NL)</option>
+                        <option value="BE">Belgium (BE)</option>
+                        <option value="AT">Austria (AT)</option>
+                        <option value="CH">Switzerland (CH)</option>
+                        <option value="SE">Sweden (SE)</option>
+                        <option value="NO">Norway (NO)</option>
+                        <option value="DK">Denmark (DK)</option>
+                        <option value="FI">Finland (FI)</option>
+                        <option value="PL">Poland (PL)</option>
+                        <option value="CZ">Czech Republic (CZ)</option>
+                        <option value="IE">Ireland (IE)</option>
+                    </optgroup>
+                    
+                    <!-- Asia-Pacific -->
+                    <optgroup label="🌏 Asia-Pacific">
+                        <option value="AU">Australia (AU)</option>
+                        <option value="SG">Singapore (SG)</option>
+                        <option value="JP">Japan (JP)</option>
+                        <option value="HK">Hong Kong (HK)</option>
+                        <option value="NZ">New Zealand (NZ)</option>
+                        <option value="IN">India (IN)</option>
+                        <option value="TH">Thailand (TH)</option>
+                        <option value="MY">Malaysia (MY)</option>
+                        <option value="ID">Indonesia (ID)</option>
+                        <option value="PH">Philippines (PH)</option>
+                    </optgroup>
+                    
+                    <!-- Middle East & Africa -->
+                    <optgroup label="🌍 Middle East & Africa">
+                        <option value="AE">United Arab Emirates (AE)</option>
+                        <option value="SA">Saudi Arabia (SA)</option>
+                        <option value="KW">Kuwait (KW)</option>
+                        <option value="QA">Qatar (QA)</option>
+                        <option value="BH">Bahrain (BH)</option>
+                        <option value="ZA">South Africa (ZA)</option>
+                        <option value="EG">Egypt (EG)</option>
+                        <option value="MA">Morocco (MA)</option>
+                        <option value="NG">Nigeria (NG)</option>
+                        <option value="KE">Kenya (KE)</option>
+                    </optgroup>
+                    
+                    <!-- Latin America -->
+                    <optgroup label="🌎 Latin America">
+                        <option value="MX">Mexico (MX)</option>
+                        <option value="BR">Brazil (BR)</option>
+                        <option value="AR">Argentina (AR)</option>
+                        <option value="CL">Chile (CL)</option>
+                        <option value="CO">Colombia (CO)</option>
+                        <option value="PE">Peru (PE)</option>
+                        <option value="VE">Venezuela (VE)</option>
+                        <option value="EC">Ecuador (EC)</option>
+                    </optgroup>
+                </select>
+                <small class="form-text text-muted">Triggers customs if international</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pickup Location with Postal Code Validator (Optional for non-North America) -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="mb-3">
+                <label for="quotePickupZip" class="form-label">Pickup Postal Code <span id="pickupPostalRequired" style="color: red;">*</span></label>
+                <input type="text" class="form-control" id="quotePickupZip" name="pickupZip" placeholder="e.g., M5V 2L7 (CA) or 90210 (US)">
+                <small class="form-text text-muted">Required for North America. Optional for other regions.</small>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="mb-3">
+                <label for="quotePickupCity" class="form-label">Pickup City/Town <span style="color: red;">*</span></label>
+                <input type="text" class="form-control" id="quotePickupCity" name="pickupCity" placeholder="e.g., Toronto" required>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pickup Province/State (Shows conditionally for North America) -->
+    <div class="row" id="pickupProvinceRow">
+        <div class="col-md-6">
+            <div class="mb-3">
+                <label for="quotePickupProvince" class="form-label">Pickup Province/State <span style="color: red;">*</span></label>
+                <select class="form-control" id="quotePickupProvince" name="pickupProvince">
+                    <option value="">-- Select Province/State --</option>
+                    <!-- Canadian Provinces -->
+                    <optgroup label="🇨🇦 Canada">
+                        <option value="ON">Ontario (ON)</option>
+                        <option value="QC">Quebec (QC)</option>
+                        <option value="BC">British Columbia (BC)</option>
+                        <option value="AB">Alberta (AB)</option>
+                        <option value="MB">Manitoba (MB)</option>
+                        <option value="SK">Saskatchewan (SK)</option>
+                        <option value="NS">Nova Scotia (NS)</option>
+                        <option value="NB">New Brunswick (NB)</option>
+                        <option value="PE">Prince Edward Island (PE)</option>
+                        <option value="NL">Newfoundland & Labrador (NL)</option>
+                    </optgroup>
+                </select>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="mb-3">
+                <label for="quoteHub" class="form-label">Originating Hub (Optional)</label>
+                <select class="form-control" id="quoteHub" name="hub">
+                    <option value="">-- Auto-detect from postal code --</option>
+                    <option value="YYZ">Toronto (YYZ)</option>
+                    <option value="YVR">Vancouver (YVR)</option>
+                    <option value="YUL">Montreal (YUL)</option>
+                    <option value="YYC">Calgary (YYC)</option>
+                    <option value="YEG">Edmonton (YEG)</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delivery Location with Postal Code Validator -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="mb-3">
+                <label for="quoteDeliveryZip" class="form-label">Delivery Postal Code <span id="deliveryPostalRequired" style="color: red;">*</span></label>
+                <input type="text" class="form-control" id="quoteDeliveryZip" name="deliveryZip" placeholder="e.g., M5V 2L7 (CA) or 90210 (US)">
+                <small class="form-text text-muted">Required for North America. Optional for other regions.</small>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="mb-3">
+                <label for="quoteDeliveryCity" class="form-label">Delivery City/Town <span style="color: red;">*</span></label>
+                <input type="text" class="form-control" id="quoteDeliveryCity" name="deliveryCity" placeholder="e.g., Vancouver" required>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delivery Province/State (Shows conditionally for North America) -->
+    <div class="row" id="deliveryProvinceRow">
+        <div class="col-md-6">
+            <div class="mb-3">
+                <label for="quoteDeliveryProvince" class="form-label">Delivery Province/State <span style="color: red;">*</span></label>
+                <select class="form-control" id="quoteDeliveryProvince" name="deliveryProvince">
+                    <option value="">-- Select Province/State --</option>
+                    <!-- Canadian Provinces -->
+                    <optgroup label="🇨🇦 Canada">
+                        <option value="ON">Ontario (ON)</option>
+                        <option value="QC">Quebec (QC)</option>
+                        <option value="BC">British Columbia (BC)</option>
+                        <option value="AB">Alberta (AB)</option>
+                        <option value="MB">Manitoba (MB)</option>
+                        <option value="SK">Saskatchewan (SK)</option>
+                        <option value="NS">Nova Scotia (NS)</option>
+                        <option value="NB">New Brunswick (NB)</option>
+                        <option value="PE">Prince Edward Island (PE)</option>
+                        <option value="NL">Newfoundland & Labrador (NL)</option>
+                    </optgroup>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <!-- Weight with Metric-First Default & Imperial Toggle -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="mb-3">
+                <label for="quoteWeight" class="form-label">Package Weight<span style="color: red;">*</span></label>
+                <div style="display: flex; gap: 10px;">
+                    <input type="number" class="form-control" id="quoteWeight" name="weight" step="0.1" required placeholder="Enter weight" min="0.1" max="100">
+                    <select class="form-control" id="quoteWeightUnit" style="max-width: 100px;" onchange="convertWeightUnits()">
+                        <option value="kg" selected>kg</option>
+                        <option value="lbs">lbs</option>
+                    </select>
+                </div>
+                <small class="form-text text-muted">Global standard: kilograms (kg)</small>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="mb-3">
+                <label for="quoteService" class="form-label">Service Type<span style="color: red;">*</span></label>
+                <select class="form-control" id="quoteService" name="serviceType" required onchange="updateZonePricing()">
+                    <option value="">-- Select Service --</option>
+                    <option value="economy">Economy (5-7 days, -20%)</option>
+                    <option value="standard" selected>Standard (2-3 days)</option>
+                    <option value="express">Express (24 hours, +50%)</option>
+                    <option value="overnight">Overnight (+100%)</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <!-- Submit Button -->
+    <div class="row">
+        <div class="col-12">
+            <button type="submit" class="btn btn-primary btn-lg w-100" id="calculateBtn">
+                <i class="fas fa-calculator" style="margin-right: 8px;"></i>
+                Calculate Global Quote
+            </button>
+        </div>
+    </div>
+</form>
+
+<script>
+// Update postal code requirement based on country selection
+function updatePostalCodeRequired() {
+    const originCountry = document.getElementById('quoteOriginCountry').value;
+    const destCountry = document.getElementById('quoteDestinationCountry').value;
+    const isNorthAmerica = country => ['CA', 'US'].includes(country);
+    
+    // Show/hide province rows
+    document.getElementById('pickupProvinceRow').style.display = isNorthAmerica(originCountry) ? 'flex' : 'none';
+    document.getElementById('deliveryProvinceRow').style.display = isNorthAmerica(destCountry) ? 'flex' : 'none';
+    
+    // Toggle postal code requirement
+    const originPostalRequired = isNorthAmerica(originCountry);
+    const destPostalRequired = isNorthAmerica(destCountry);
+    
+    document.getElementById('quotePickupZip').required = originPostalRequired;
+    document.getElementById('quotePickupZip').setAttribute('pattern', originPostalRequired ? '^[A-Za-z]\\d[A-Za-z]\\s?\\d[A-Za-z]\\d$|^\\d{5}$' : '');
+    document.getElementById('pickupPostalRequired').textContent = originPostalRequired ? '*' : '';
+    
+    document.getElementById('quoteDeliveryZip').required = destPostalRequired;
+    document.getElementById('quoteDeliveryZip').setAttribute('pattern', destPostalRequired ? '^[A-Za-z]\\d[A-Za-z]\\s?\\d[A-Za-z]\\d$|^\\d{5}$' : '');
+    document.getElementById('deliveryPostalRequired').textContent = destPostalRequired ? '*' : '';
+}
+
+// Attach change listeners
+document.getElementById('quoteOriginCountry').addEventListener('change', updatePostalCodeRequired);
+document.getElementById('quoteDestinationCountry').addEventListener('change', updatePostalCodeRequired);
+
+// Initialize on load
+document.addEventListener('DOMContentLoaded', updatePostalCodeRequired);
+
+// Weight conversion
+function convertWeightUnits() {
+    const weight = parseFloat(document.getElementById('quoteWeight').value);
+    const unit = document.getElementById('quoteWeightUnit').value;
+    
+    if (unit === 'lbs' && weight > 0) {
+        const kg = weight * 0.453592;
+        document.getElementById('quoteWeight').value = kg.toFixed(2);
+        document.getElementById('quoteWeightUnit').value = 'kg';
+    }
+}
+</script>
+
+    <!-- Dimensions (Metric-First with Imperial Toggle) -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="mb-3">
+                <label for="quoteDimensions" class="form-label">Dimensions (Optional - for oversized packages)</label>
+                <div style="display: flex; gap: 8px; align-items: center;">
+                    <input type="number" class="form-control" placeholder="Length" style="flex: 1;">
+                    <span>×</span>
+                    <input type="number" class="form-control" placeholder="Width" style="flex: 1;">
+                    <span>×</span>
+                    <input type="number" class="form-control" placeholder="Height" style="flex: 1;">
+                    <select class="form-control" id="dimensionUnit" style="max-width: 90px;" onchange="convertDimensions()">
+                        <option value="cm" selected>cm</option>
+                        <option value="in">inches</option>
+                    </select>
+                </div>
+                <small class="form-text text-muted">Canada uses centimeters (cm). Leave blank for standard parcels.</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Item Type (for hazmat and regulatory screening) -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="mb-3">
+                <label for="quoteItemType" class="form-label">Item Type (for customs classification)</label>
+                <select class="form-control" id="quoteItemType" name="itemType" required>
+                    <option value="">-- Select Item Type --</option>
+                    <option value="documents">Documents</option>
+                    <option value="electronics">Electronics & Tech</option>
+                    <option value="fragile">Fragile Items</option>
+                    <option value="perishable">Perishable Goods</option>
+                    <option value="clothing">Clothing & Apparel</option>
+                    <option value="medical">Medical/Pharmaceutical</option>
+                    <option value="hazmat">Hazardous Materials</option>
+                    <option value="other">Other</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <!-- Submit Button -->
+    <button type="submit" class="btn btn-primary w-100" style="padding: 12px; font-weight: 600; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none;">
+        <i class="fas fa-calculator"></i> Get Instant Quote (CAD)
+    </button>
+</form>
+
+<!-- Quote Result Display with Customs Warning -->
+<div id="quoteResult" class="mt-4" style="display: none;">
+    <!-- Customs & Duties Warning (for international) -->
+    <div id="customsWarning" class="alert alert-warning" style="display: none; background: rgba(255, 193, 7, 0.1); border: 1px solid #ffc107; border-radius: 8px; padding: 12px; margin-bottom: 15px;">
+        <p style="margin: 0; color: #856404;"><i class="fas fa-shield-alt"></i> <strong>International Shipment Notice:</strong> Your quote may be subject to customs duties and taxes at the destination. Final charges will be calculated by customs authorities.</p>
+    </div>
+
+    <div class="alert alert-info" style="background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%); border: 1px solid #667eea; border-radius: 8px; padding: 15px;">
+        <h5 style="color: #667eea; margin-bottom: 12px;"><i class="fas fa-check-circle"></i> Quote Summary</h5>
+        
+        <div style="background: white; padding: 12px; border-radius: 6px; margin-bottom: 12px;">
+            <p style="margin: 0;"><strong>Route:</strong> <span id="quoteRoute">--</span></p>
+            <p style="margin: 5px 0 0;"><strong>Zone:</strong> <span id="quoteZone">--</span> | <strong>Tax Rate:</strong> <span id="quoteTaxRate">--</span></p>
+        </div>
+        
+        <div style="background: white; padding: 12px; border-radius: 6px; margin-bottom: 12px;">
+            <p style="margin: 0;"><strong>Base Rate:</strong> <span id="quoteBaseRate">$0.00</span></p>
+            <p style="margin: 5px 0 0;"><strong>Weight Surcharge:</strong> <span id="quoteWeightCharge">$0.00</span></p>
+            <p style="margin: 5px 0 0;"><strong>Fuel Surcharge:</strong> <span id="quoteFuelCharge">$0.00</span></p>
+            <p style="margin: 5px 0 0;"><strong>Distance Charge:</strong> <span id="quoteDistanceCharge">$0.00</span></p>
+            <p style="margin: 5px 0 0; color: #d9534f;"><strong id="taxLabel">GST/HST:</strong> <span id="quoteTaxes">$0.00</span></p>
+        </div>
+        
+        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px; border-radius: 6px; text-align: center;">
+            <p style="margin: 0; font-size: 0.9em; opacity: 0.9;">Total Estimated Cost (CAD)</p>
+            <h4 style="margin: 8px 0 0; font-size: 2em;"><span id="estimatedCost">$0.00</span></h4>
+        </div>
+        
+        <p id="quoteDetails" style="margin-top: 12px; font-size: 0.9em; color: #666;"></p>
+    </div>
+</div>

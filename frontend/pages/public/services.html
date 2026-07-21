@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Enterprise logistics services: customs brokerage, air freight, ocean freight, regional hubs. Canada-based global operations.">
+    <meta name="keywords" content="customs brokerage, air freight, ocean freight, Canadian logistics, CBSA, international shipping, intermodal">
+    <title>Enterprise Logistics Services - Georgensen Courier | Canada & Global</title>
+    
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="/assets/lib/bootstrap/css/bootstrap.min.css">
+    
+    <!-- FontAwesome (Local) -->
+    <link rel="stylesheet" href="/assets/lib/fontawesome/css/all.min.css">
+    
+    <!-- Main CSS -->
+    <link rel="stylesheet" href="/css/main.css">
+    
+    <style>
+        :root {
+            --primary-color: #667eea;
+            --secondary-color: #764ba2;
+            --accent-color: #ffc107;
+            --danger-color: #dc3545;
+            --success-color: #28a745;
+            --info-color: #17a2b8;
+            --warning-color: #ffc107;
+            --light-color: #f8f9fa;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+        }
+
+        .page-header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            padding: 50px 0;
+            margin-bottom: 50px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .page-header h1 {
+            font-weight: 700;
+            margin-bottom: 15px;
+            font-size: 2.5em;
+        }
+
+        .page-header .lead {
+            font-size: 1.2em;
+            opacity: 0.95;
+            margin-bottom: 12px;
+        }
+
+        .bilingual-badge {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            border-radius: 20px;
+            padding: 8px 16px;
+            display: inline-block;
+            font-size: 0.9em;
+            margin-top: 15px;
+        }
+
+        .bilingual-badge i {
+            margin-right: 8px;
+        }
+
+        /* Service Card Styling */
+        .service-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+            height: 100%;
+            border-left: 4px solid var(--primary-color);
+            overflow: hidden;
+        }
+
+        .service-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
+            border-left-color: var(--secondary-color);
+        }
+
+        .service-card .card-body {
+            padding: 28px;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .service-icon {
+            font-size: 2.5em;
+            color: var(--primary-color);
+            margin-bottom: 15px;
+        }
+
+        .service-card h5 {
+            color: #333;
+            font-weight: 700;
+            margin-bottom: 12px;
+            flex-grow: 1;
+        }
+
+        .service-card p {
+            color: #666;
+            font-size: 0.95em;
+            margin-bottom: 16px;
+            flex-grow: 1;
+        }
+
+        .service-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 0.75em;
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-bottom: 12px;
+        }
+
+        .btn-get-quote {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            font-weight: 600;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            margin-top: auto;
+        }
+
+        .btn-get-quote:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+            color: white;
+        }
+
+        /* Section Styling */
+        .section-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .section-header h2 {
+            color: var(--primary-color);
+            font-weight: 700;
+            margin-bottom: 12px;
+            font-size: 2em;
+        }
+
+        .section-header p {
+            color: #666;
+            font-size: 1.05em;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .section-divider {
+            margin: 60px 0;
+            padding: 60px 0;
+            border-top: 1px solid #e9ecef;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        /* Regional Hub Card */
+        .hub-card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+            border-bottom: 3px solid var(--primary-color);
+        }
+
+        .hub-card:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            border-bottom-color: var(--secondary-color);
+        }
+
+        .hub-icon {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        .hub-code {
+            font-weight: 700;
+            color: var(--primary-color);
+            font-size: 1.3em;
+            margin-bottom: 5px;
+        }
+
+        .hub-name {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .hub-specialty {
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        /* Specialty Section Cards */
+        .specialty-card {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+            border: 1px solid rgba(102, 126, 234, 0.2);
+            border-radius: 8px;
+            padding: 28px;
+            margin-bottom: 24px;
+        }
+
+        .specialty-card h3 {
+            color: var(--primary-color);
+            font-weight: 700;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .specialty-card i {
+            font-size: 1.3em;
+        }
+
+        .specialty-features {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .specialty-features li {
+            padding: 8px 0;
+            color: #555;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .specialty-features li:before {
+            content: "✓";
+            color: var(--success-color);
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+
+        /* Service Categories */
+        .service-category {
+            margin-bottom: 50px;
+        }
+
+        .category-title {
+            color: var(--primary-color);
+            font-weight: 700;
+            font-size: 1.5em;
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        .features-list {
+            background: white;
+            border-radius: 8px;
+            padding: 24px;
+            margin-top: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .features-list ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .features-list li {
+            padding: 12px 0;
+            color: #555;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .features-list li:last-child {
+            border-bottom: none;
+        }
+
+        .features-list li:before {
+            content: "→";
+            color: var(--primary-color);
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+
+        /* Compliance Badge */
+        .compliance-badge {
+            background: linear-gradient(135deg, rgba(40, 167, 69, 0.1) 0%, rgba(23, 162, 184, 0.1) 100%);
+            border: 1px solid var(--success-color);
+            border-radius: 6px;
+            padding: 12px 16px;
+            color: #155724;
+            font-size: 0.9em;
+            margin: 12px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .compliance-badge i {
+            color: var(--success-color);
+            font-size: 1.2em;
+        }
+
+        footer {
+            background: white;
+            border-top: 1px solid #e9ecef;
+            padding: 40px 0;
+            margin-top: 60px;
+        }
+
+        @media (max-width: 768px) {
+            .page-header {
+                padding: 30px 0;
+            }
+
+            .page-header h1 {
+                font-size: 1.8em;
+            }
+
+            .section-header h2 {
+                font-size: 1.5em;
+            }
+
+            .service-card .card-body {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <!-- Navbar (injected by main.js) -->
+        <div id="navbar-container"></div>
+
+        <!-- Page Header -->
+        <div class="page-header">
+            <div class="container">
+                <h1>
+                    <i class="fas fa-globe" style="margin-right: 12px;"></i>
+                    Enterprise Logistics Services
+                </h1>
+                <p class="lead">Canada-Based Global Operations with US & International Reach</p>
+                <div class="bilingual-badge">
+                    <i class="fas fa-language"></i> Official Bilingual Support (English • Français)
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <main class="container">
+            <!-- Domestic & Regional Services -->
+            <section class="service-category">
+                <div class="category-title">
+                    <i class="fas fa-truck"></i> Domestic & Regional Services
+                </div>
+                
+                <div class="row g-4">
+                    <!-- Zone 1: Intra-City -->
+                    <div class="col-md-6 col-lg-4">
+                        <div class="service-card">
+                            <div class="card-body">
+                                <span class="service-badge">Zone 1</span>
+                                <i class="fas fa-city service-icon"></i>
+                                <h5>Intra-City Courier</h5>
+                                <p>Same-day metro area delivery within Toronto, Vancouver, Montreal, Calgary, Edmonton. Maximum speed for local shipments.</p>
+                                <a href="/quote.html?service=local" class="btn-get-quote">
+                                    <i class="fas fa-calculator"></i> Get Quote (Zone 1)
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Zone 2: Regional -->
+                    <div class="col-md-6 col-lg-4">
+                        <div class="service-card">
+                            <div class="card-body">
+                                <span class="service-badge">Zone 2</span>
+                                <i class="fas fa-route service-icon"></i>
+                                <h5>Regional Trucking</h5>
+                                <p>2-3 day ground delivery across provinces. Full truck load (FTL) and less-than-truckload (LTL) options with hub consolidation.</p>
+                                <a href="/quote.html?service=regional" class="btn-get-quote">
+                                    <i class="fas fa-calculator"></i> Get Quote (Zone 2)
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Zone 3: Cross-Border/Continental -->
+                    <div class="col-md-6 col-lg-4">
+                        <div class="service-card">
+                            <div class="card-body">
+                                <span class="service-badge">Zone 3</span>
+                                <i class="fas fa-map service-icon"></i>
+                                <h5>Cross-Border & Continental</h5>
+                                <p>US/Canada trucking with customs-cleared docs. Coverage from coast to coast and deep into the United States with expedited clearances.</p>
+                                <a href="/quote.html?service=cross_border" class="btn-get-quote">
+                                    <i class="fas fa-calculator"></i> Get Quote (Zone 3)
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="features-list">
+                    <ul>
+                        <li>Full hub network across Canada (YYZ Toronto, YVR Vancouver, YUL Montreal, YYC Calgary, YEG Edmonton)</li>
+                        <li>Real-time GPS tracking and electronic proof of delivery</li>
+                        <li>Dedicated account management for volume shipments</li>
+                        <li>Fuel surcharge indexing (transparent, updated monthly)</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- Intermodal & Express Services -->
+            <section class="service-category">
+                <div class="category-title">
+                    <i class="fas fa-layer-group"></i> Intermodal & Express Services
+                </div>
+
+                <div class="row g-4">
+                    <!-- Zone 4: Air Freight -->
+                    <div class="col-md-6 col-lg-4">
+                        <div class="service-card">
+                            <div class="card-body">
+                                <span class="service-badge">Zone 4</span>
+                                <i class="fas fa-plane service-icon"></i>
+                                <h5>Global Express Air Freight</h5>
+                                <p>24-48 hour delivery worldwide. Partnered with major carriers (FedEx International, UPS, Air Canada Cargo). Time-critical international shipments.</p>
+                                <a href="/quote.html?service=air_freight" class="btn-get-quote">
+                                    <i class="fas fa-calculator"></i> Get Quote (Air)
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Zone 5: Ocean Freight -->
+                    <div class="col-md-6 col-lg-4">
+                        <div class="service-card">
+                            <div class="card-body">
+                                <span class="service-badge">Zone 5</span>
+                                <i class="fas fa-ship service-icon"></i>
+                                <h5>Ocean Freight (LCL/FCL)</h5>
+                                <p>Cost-effective international bulk shipping. Less-than-container (LCL) and full-container (FCL) loads. Major ports: Vancouver, Halifax, Montreal.</p>
+                                <a href="/quote.html?service=ocean_freight" class="btn-get-quote">
+                                    <i class="fas fa-calculator"></i> Get Quote (Ocean)
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Customs Brokerage -->
+                    <div class="col-md-6 col-lg-4">
+                        <div class="service-card">
+                            <div class="card-body">
+                                <span class="service-badge">Compliance</span>
+                                <i class="fas fa-shield-alt service-icon"></i>
+                                <h5>Customs Brokerage & Compliance</h5>
+                                <p>CBSA-certified brokers handle all cross-border documentation. US Customs expertise. Duty drawback and tariff optimization services.</p>
+                                <a href="/quote.html?service=customs" class="btn-get-quote">
+                                    <i class="fas fa-phone"></i> Consult
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="features-list">
+                    <ul>
+                        <li>CBSA-licensed customs brokers with 20+ years experience</li>
+                        <li>Automated HS code classification and duty pre-calculation</li>
+                        <li>Direct relationships with CBSA, US CBP, and port authorities</li>
+                        <li>Expedited release programs (RELEASED IN TRANSIT ready)</li>
+                        <li>Duty drawback and tariff optimization for repeated shipments</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- Specialty Services Divider -->
+            <div class="section-divider">
+                <div class="section-header">
+                    <h2>Specialized Solutions</h2>
+                    <p>Enterprise services tailored for specific industries and high-value operations</p>
+                </div>
+
+                <div class="row g-4">
+                    <div class="col-lg-6">
+                        <div class="specialty-card">
+                            <h3>
+                                <i class="fas fa-shield-virus"></i> Temperature-Controlled & Hazmat
+                            </h3>
+                            <ul class="specialty-features">
+                                <li>Pharma-grade refrigerated containers (-20°C to +25°C)</li>
+                                <li>Class A-9 hazmat certification with DOT/TDG compliance</li>
+                                <li>Real-time temperature monitoring with data logging</li>
+                                <li>Sterile/clean-room transfer protocols available</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-6">
+                        <div class="specialty-card">
+                            <h3>
+                                <i class="fas fa-diamond"></i> Valuable & Secure Shipments
+                            </h3>
+                            <ul class="specialty-features">
+                                <li>Armored vehicle transport with armed escorts</li>
+                                <li>Full-value insurance coverage up to $5M CAD</li>
+                                <li>Multi-point authentication and biometric tracking</li>
+                                <li>Dedicated secure vault at each regional hub</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-6">
+                        <div class="specialty-card">
+                            <h3>
+                                <i class="fas fa-box-open"></i> Fulfillment & Warehousing
+                            </h3>
+                            <ul class="specialty-features">
+                                <li>3PL warehousing at 5 major Canadian hubs</li>
+                                <li>Pick-and-pack operations for e-commerce</li>
+                                <li>Returns management and reverse logistics</li>
+                                <li>SKU-level inventory management and reporting</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-6">
+                        <div class="specialty-card">
+                            <h3>
+                                <i class="fas fa-industry"></i> White Glove & Installation
+                            </h3>
+                            <ul class="specialty-features">
+                                <li>Inside delivery, setup, and installation</li>
+                                <li>Furniture and appliance handling specialists</li>
+                                <li>Assembly services and debris removal</li>
+                                <li>Customer signature with photo documentation</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Regional Expertise & Hubs -->
+            <section>
+                <div class="section-header">
+                    <h2>Regional Hubs & Strategic Gateways</h2>
+                    <p>Strategic locations for Canadian-global trade optimization</p>
+                </div>
+
+                <div class="row g-4">
+                    <!-- Golden Horseshoe Hub -->
+                    <div class="col-md-6 col-lg-4">
+                        <div class="hub-card">
+                            <div class="hub-icon">🍁</div>
+                            <div class="hub-code">YYZ</div>
+                            <div class="hub-name">Toronto Logistics Hub</div>
+                            <div class="hub-specialty"><strong>North American Distribution</strong></div>
+                            <p style="font-size: 0.9em; color: #666; margin-top: 12px;">
+                                Primary hub for US cross-border. Serves Ontario, Quebec, and Northeast US. CBSA pre-clearance facility.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Pacific Gateway -->
+                    <div class="col-md-6 col-lg-4">
+                        <div class="hub-card">
+                            <div class="hub-icon">🌊</div>
+                            <div class="hub-code">YVR</div>
+                            <div class="hub-name">Vancouver Pacific Hub</div>
+                            <div class="hub-specialty"><strong>Asia-Pacific Gateway</strong></div>
+                            <p style="font-size: 0.9em; color: #666; margin-top: 12px;">
+                                Direct port authority partnerships. Air freight consolidation center. Prime routing for Asian imports/exports.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Atlantic Trade Hub -->
+                    <div class="col-md-6 col-lg-4">
+                        <div class="hub-card">
+                            <div class="hub-icon">⚓</div>
+                            <div class="hub-code">YUL</div>
+                            <div class="hub-name">Montreal Atlantic Hub</div>
+                            <div class="hub-specialty"><strong>Atlantic Trade Hub</strong></div>
+                            <p style="font-size: 0.9em; color: #666; margin-top: 12px;">
+                                French-language customer support. Direct access to Port of Montreal. EU/UK trade specialty.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Prairie Hub -->
+                    <div class="col-md-6 col-lg-4">
+                        <div class="hub-card">
+                            <div class="hub-icon">⚡</div>
+                            <div class="hub-code">YYC</div>
+                            <div class="hub-name">Calgary Prairie Hub</div>
+                            <div class="hub-specialty"><strong>Regional Consolidation</strong></div>
+                            <p style="font-size: 0.9em; color: #666; margin-top: 12px;">
+                                Alberta oil & gas logistics hub. Direct access to US Mountain states. FTL consolidation center.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Northern Gateway -->
+                    <div class="col-md-6 col-lg-4">
+                        <div class="hub-card">
+                            <div class="hub-icon">🏔️</div>
+                            <div class="hub-code">YEG</div>
+                            <div class="hub-name">Edmonton Northern Hub</div>
+                            <div class="hub-specialty"><strong>Mining & Resource Logistics</strong></div>
+                            <p style="font-size: 0.9em; color: #666; margin-top: 12px;">
+                                Specialist in oversized equipment and resource sector shipping. Direct access to Northern Canada routes.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Chicago Operations -->
+                    <div class="col-md-6 col-lg-4">
+                        <div class="hub-card">
+                            <div class="hub-icon">🇺🇸</div>
+                            <div class="hub-code">ORD</div>
+                            <div class="hub-name">Chicago US Hub</div>
+                            <div class="hub-specialty"><strong>Midwest Distribution</strong></div>
+                            <p style="font-size: 0.9em; color: #666; margin-top: 12px;">
+                                US customs pre-clearance facility. Midwest distribution center. Direct access to 30+ US states.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Compliance & Standards -->
+            <section style="margin-top: 60px;">
+                <div class="section-header">
+                    <h2>Compliance & Certifications</h2>
+                    <p>Meeting the highest standards for Canadian and international logistics</p>
+                </div>
+
+                <div class="row g-4">
+                    <div class="col-lg-6">
+                        <div class="compliance-badge">
+                            <i class="fas fa-check-double"></i>
+                            <span><strong>CBSA Licensed</strong> - Customs broker certification with active bonds</span>
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="compliance-badge">
+                            <i class="fas fa-check-double"></i>
+                            <span><strong>PIPEDA Compliant</strong> - Canadian privacy and data protection</span>
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="compliance-badge">
+                            <i class="fas fa-check-double"></i>
+                            <span><strong>Class A Hazmat</strong> - Department of Transport certified</span>
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="compliance-badge">
+                            <i class="fas fa-check-double"></i>
+                            <span><strong>ISO 9001:2015</strong> - Quality management system certified</span>
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="compliance-badge">
+                            <i class="fas fa-check-double"></i>
+                            <span><strong>AEO Program</strong> - Authorized Economic Operator status</span>
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="compliance-badge">
+                            <i class="fas fa-check-double"></i>
+                            <span><strong>C-TPAT Certified</strong> - US Customs-Trade Partnership scheme</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Footer (injected by main.js) -->
+        <div id="footer-container"></div>
+    </div>
+
+    <!-- Scripts in Proper Order -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/main.js"></script>
+    <script>
+        // Parse service type from URL parameter for quote pre-selection
+        function getServiceTypeFromURL() {
+            const params = new URLSearchParams(window.location.search);
+            return params.get('service') || 'standard';
+        }
+
+        // Store service type for use in quote calculator
+        window.selectedServiceType = getServiceTypeFromURL();
+
+        // Log available services for analytics
+        console.log('Services page loaded. Selected service:', window.selectedServiceType);
+    </script>
+</body>
+</html>

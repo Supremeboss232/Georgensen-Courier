@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Disputes - Georgensen Courier</title>
+    <link rel="stylesheet" href="/css/main.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .dispute-card {
+            border-left: 4px solid #ffc107;
+            border-radius: 4px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .dispute-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .dispute-card.open {
+            border-left-color: #ffc107;
+        }
+        .dispute-card.investigating {
+            border-left-color: #0dcaf0;
+        }
+        .dispute-card.resolved {
+            border-left-color: #28a745;
+        }
+        .status-badge {
+            font-size: 0.85rem;
+            padding: 0.35rem 0.65rem;
+        }
+        .dispute-form-container {
+            background: white;
+            border-radius: 8px;
+            padding: 30px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+        .form-section {
+            margin-bottom: 30px;
+        }
+        .form-section h6 {
+            color: #333;
+            font-weight: 600;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #e9ecef;
+        }
+        .shipment-select-item {
+            padding: 15px;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .shipment-select-item:hover {
+            border-color: #007bff;
+            background-color: #f8f9fa;
+        }
+        .shipment-select-item.selected {
+            border-color: #007bff;
+            background-color: #e7f3ff;
+        }
+        .shipment-info {
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+        .status-message {
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        .status-message.success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .status-message.error {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .status-message.info {
+            background-color: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+        .loading-state {
+            text-align: center;
+            padding: 40px 20px;
+        }
+        .spinner-border-sm {
+            width: 1.5rem;
+            height: 1.5rem;
+        }
+        .form-tabs {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #e9ecef;
+        }
+        .form-tabs button {
+            padding: 10px 20px;
+            border: none;
+            background: none;
+            color: #6c757d;
+            font-weight: 500;
+            border-bottom: 3px solid transparent;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .form-tabs button.active {
+            color: #007bff;
+            border-bottom-color: #007bff;
+        }
+        .form-tabs button:hover {
+            color: #0056b3;
+        }
+        .dispute-type-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+        .dispute-type-badge.delivery_failure {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        .dispute-type-badge.quality_issue {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        .dispute-type-badge.missing_items {
+            background-color: #d1ecf1;
+            color: #0c5460;
+        }
+        .dispute-type-badge.damage {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        .dispute-type-badge.other {
+            background-color: #e2e3e5;
+            color: #383d41;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <div id="navbar"></div>
+
+    <main class="container mt-5 mb-5">
+        <div class="row">
+            <div class="col-lg-12">
+                <h1 class="mb-4">Dispute Management</h1>
+
+                <!-- Tab Navigation -->
+                <div class="form-tabs" role="tablist">
+                    <button class="active" data-tab="new-dispute" role="tab">📝 File Dispute</button>
+                    <button data-tab="existing-disputes" role="tab">📋 My Disputes</button>
+                </div>
+
+                <!-- Tab Content -->
+
+                <!-- NEW DISPUTE FORM -->
+                <div id="new-dispute" class="tab-content active">
+                    <div class="dispute-form-container">
+                        <h4 class="mb-4">File a New Dispute</h4>
+
+                        <!-- Status Message -->
+                        <div id="newDisputeStatus"></div>
+
+                        <form id="disputeForm">
+                            <!-- Shipment Selection -->
+                            <div class="form-section">
+                                <h6>Select Shipment</h6>
+                                <div id="shipmentList" class="mb-3">
+                                    <div class="loading-state">
+                                        <div class="spinner-border text-primary spinner-border-sm mb-2" role="status"></div>
+                                        <p>Loading your shipments...</p>
+                                    </div>
+                                </div>
+                                <input type="hidden" id="selectedShipmentId" name="shipment_id" required>
+                            </div>
+
+                            <!-- Dispute Type -->
+                            <div class="form-section">
+                                <h6>Dispute Type</h6>
+                                <div class="mb-3">
+                                    <select class="form-select" id="disputeType" name="dispute_type" required>
+                                        <option value="">-- Select a dispute type --</option>
+                                        <option value="delivery_failure">📦 Delivery Failure (package not delivered)</option>
+                                        <option value="quality_issue">⚠️ Quality Issue (package damaged or poor condition)</option>
+                                        <option value="missing_items">📪 Missing Items (incomplete delivery)</option>
+                                        <option value="damage">🔨 Damage (significant damage to contents)</option>
+                                        <option value="other">❓ Other (not listed above)</option>
+                                    </select>
+                                    <small class="text-muted mt-2 d-block">Select the category that best describes your dispute</small>
+                                </div>
+                            </div>
+
+                            <!-- Dispute Title -->
+                            <div class="form-section">
+                                <h6>Dispute Title</h6>
+                                <input type="text" class="form-control" id="disputeTitle" name="title" placeholder="Brief summary of the issue" required maxlength="100">
+                                <small class="text-muted mt-2 d-block">Keep it short and descriptive</small>
+                            </div>
+
+                            <!-- Dispute Description -->
+                            <div class="form-section">
+                                <h6>Detailed Description</h6>
+                                <textarea class="form-control" id="disputeDescription" name="description" rows="5" placeholder="Please provide detailed information about the issue..." required></textarea>
+                                <small class="text-muted mt-2 d-block">Include relevant details to help us resolve your dispute</small>
+                            </div>
+
+                            <!-- Submit Button -->
+                            <div class="d-flex gap-2">
+                                <button type="submit" class="btn btn-primary px-5">
+                                    <span id="submitBtnText">Submit Dispute</span>
+                                    <span id="submitBtnSpinner" class="spinner-border spinner-border-sm ms-2" style="display: none;">
+                                        <span class="visually-hidden">Loading...</span>
+                                    </span>
+                                </button>
+                                <button type="reset" class="btn btn-outline-secondary px-5">Clear Form</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- EXISTING DISPUTES -->
+                <div id="existing-disputes" class="tab-content" style="display: none;">
+                    <h4 class="mb-4">My Disputes</h4>
+
+                    <!-- Disputes List -->
+                    <div id="disputesList">
+                        <div class="loading-state">
+                            <div class="spinner-border text-primary spinner-border-sm mb-2" role="status"></div>
+                            <p>Loading your disputes...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Dispute Detail Modal -->
+    <div class="modal fade" id="disputeDetailModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Dispute Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="disputeDetailContent">
+                        <div class="text-center p-4">
+                            <div class="spinner-border text-primary" role="status"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div id="footer"></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/main.js"></script>
+    <script src="/js/customer/disputes.js"></script>
+</body>
+</html>

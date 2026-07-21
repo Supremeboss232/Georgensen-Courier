@@ -1,0 +1,27 @@
+node_modules/
+dist/
+build/
+.env
+.env.local
+.DS_Store
+*.log
+npm-debug.log*
+.vscode/settings.json
+.idea/
+*.swp
+*.swo
+.env*.local
+
+# Python
+.venv/
+venv/
+__pycache__/
+*.pyc
+
+# Databases
+*.db
+*.sqlite
+
+# Production secrets
+.env.production
+.env.development

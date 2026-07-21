@@ -1,0 +1,860 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Active Deliveries - Global Network</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="/css/main.css">
+  <style>
+    .global-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+      padding: 1rem;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border-radius: 8px;
+    }
+
+    .region-badge, .location-badge, .shipment-type-badge {
+      display: inline-block;
+      padding: 0.4rem 0.8rem;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    .region-badge {
+      background: rgba(255, 255, 255, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .region-badge.active {
+      background: white;
+      color: #667eea;
+      border-color: white;
+    }
+
+    .region-badge:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    .unit-toggle {
+      display: flex;
+      gap: 0.25rem;
+      background: rgba(255, 255, 255, 0.1);
+      padding: 0.25rem;
+      border-radius: 6px;
+      align-items: center;
+    }
+
+    .unit-toggle button {
+      padding: 0.3rem 0.6rem;
+      border: none;
+      background: transparent;
+      color: white;
+      cursor: pointer;
+      border-radius: 4px;
+      font-size: 0.8rem;
+      transition: all 0.3s;
+    }
+
+    .unit-toggle button.active {
+      background: rgba(255, 255, 255, 0.3);
+    }
+
+    .language-selector {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      color: white;
+      padding: 0.3rem 0.6rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
+
+    .delivery-card {
+      padding: 1.5rem;
+      background: var(--white);
+      border-left: 4px solid var(--accent);
+      border-radius: 8px;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .delivery-header {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+      align-items: start;
+    }
+
+    .route-info h4 {
+      margin-bottom: 0.5rem;
+      font-size: 1.1rem;
+    }
+
+    .route-badges {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      margin-bottom: 0.5rem;
+    }
+
+    .shipment-type-badge {
+      background: #e3f2fd;
+      color: #1976d2;
+      border: 1px solid #90caf9;
+    }
+
+    .shipment-type-badge.air { background: #fff3e0; color: #f57c00; border-color: #ffb74d; }
+    .shipment-type-badge.ground { background: #f3e5f5; color: #7b1fa2; border-color: #ce93d8; }
+    .shipment-type-badge.sea { background: #e0f2f1; color: #00695c; border-color: #80cbc4; }
+    .shipment-type-badge.international { background: #fce4ec; color: #c2185b; border-color: #f48fb1; }
+
+    .meta-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 1rem;
+      font-size: 0.9rem;
+      margin-bottom: 1rem;
+    }
+
+    .meta-item small {
+      color: var(--gray-600);
+      display: block;
+      margin-bottom: 0.25rem;
+    }
+
+    .meta-item strong {
+      color: var(--primary);
+    }
+
+    .timeline-container {
+      background: var(--gray-50);
+      padding: 1.5rem;
+      border-radius: 8px;
+      margin-bottom: 1.5rem;
+    }
+
+    .timeline-step {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+      position: relative;
+    }
+
+    .timeline-step:not(:last-child)::after {
+      content: '';
+      position: absolute;
+      left: 20px;
+      top: 50px;
+      width: 2px;
+      height: 50px;
+      background: var(--gray-300);
+    }
+
+    .timeline-dot {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      color: white;
+      background: var(--gray-400);
+      flex-shrink: 0;
+      position: relative;
+      z-index: 1;
+    }
+
+    .timeline-dot.completed {
+      background: #4caf50;
+    }
+
+    .timeline-dot.current {
+      background: var(--accent);
+      animation: pulse 1.5s infinite;
+    }
+
+    .timeline-dot.pending {
+      background: var(--gray-400);
+    }
+
+    @keyframes pulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(255, 87, 34, 0.7); }
+      50% { box-shadow: 0 0 0 10px rgba(255, 87, 34, 0); }
+    }
+
+    .timeline-content {
+      flex: 1;
+      padding-top: 0.25rem;
+    }
+
+    .timeline-title {
+      font-weight: 600;
+      margin-bottom: 0.25rem;
+    }
+
+    .timeline-time {
+      font-size: 0.85rem;
+      color: var(--gray-600);
+    }
+
+    .timezone-badge {
+      display: inline-block;
+      background: #fff9c4;
+      color: #f57f17;
+      padding: 0.2rem 0.6rem;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      margin-left: 0.5rem;
+      font-weight: 600;
+    }
+
+    .compliance-section {
+      background: #f3e5f5;
+      border-left: 4px solid #7b1fa2;
+      padding: 1rem;
+      border-radius: 6px;
+      margin-bottom: 1rem;
+    }
+
+    .compliance-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      background: white;
+      padding: 0.4rem 0.8rem;
+      border-radius: 12px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      margin-right: 0.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .compliance-badge.vat { background: #e3f2fd; color: #1565c0; border: 1px solid #90caf9; }
+    .compliance-badge.customs { background: #fff3e0; color: #e65100; border: 1px solid #ffb74d; }
+    .compliance-badge.bol { background: #f3e5f5; color: #6a1b9a; border: 1px solid #ce93d8; }
+
+    .document-access {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      margin-top: 0.5rem;
+    }
+
+    .doc-button {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      padding: 0.4rem 0.8rem;
+      background: white;
+      border: 1px solid var(--gray-300);
+      border-radius: 6px;
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .doc-button:hover {
+      background: var(--gray-50);
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .action-buttons {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 1rem;
+      margin-top: 1.5rem;
+    }
+
+    .btn-primary, .btn-secondary {
+      padding: 0.8rem 1.2rem;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: #e64a19;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(255, 87, 34, 0.3);
+    }
+
+    .btn-secondary {
+      background: var(--gray-200);
+      color: var(--primary);
+    }
+
+    .btn-secondary:hover {
+      background: var(--gray-300);
+    }
+
+    .regional-contact {
+      background: #e8f5e9;
+      border-left: 4px solid #4caf50;
+      padding: 1rem;
+      border-radius: 6px;
+      margin-top: 1rem;
+    }
+
+    .contact-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.5rem;
+      font-size: 0.9rem;
+    }
+
+    .contact-item:last-child {
+      margin-bottom: 0;
+    }
+
+    .active-count{
+      font-size: 2em;
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    .filter-controls {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+  </style>
+</head>
+<body>
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <div class="container">
+      <div class="logo">Georgensen Partners</div>
+      
+      <button class="menu-toggle" id="menuToggle">☰</button>
+      
+      <ul id="navMenu">
+        <li><a href="dashboard.html" data-i18n="dashboard">Dashboard</a></li>
+        <li><a href="available-jobs.html" data-i18n="available-jobs">Available Jobs</a></li>
+        <li><a href="active-deliveries.html" style="color: var(--accent);" data-i18n="active">Active</a></li>
+        <li><a href="earnings.html" data-i18n="earnings">Earnings</a></li>
+        <li><a href="settings.html" data-i18n="settings">Settings</a></li>
+        <li class="auth-buttons">
+          <span id="partnerName" style="color: var(--white);"></span>
+          <button class="btn btn-sm btn-outline" onclick="logout()" data-i18n="logout">Logout</button>
+        </li>
+      </ul>
+    </div>
+  </nav>
+  
+  <!-- PAGE HEADER -->
+  <section style="background: var(--gray-50); padding: 2rem 1rem; border-bottom: 1px solid var(--gray-200);">
+    <div class="container">
+      <h1 data-i18n="active-deliveries">Active Deliveries</h1>
+      <p style="color: var(--gray-600); margin-top: 0.5rem;" data-i18n="update-status">Update status and track your current jobs globally</p>
+    </div>
+  </section>
+  
+  <!-- GLOBAL CONTROLS -->
+  <section style="background: white; padding: 1.5rem 1rem; border-bottom: 1px solid var(--gray-200);">
+    <div class="container">
+      <div class="global-header">
+        <div class="filter-controls">
+          <span style="font-size: 0.9rem; font-weight: 600;">Regions:</span>
+          <button class="region-badge active" data-region="NA" onclick="filterByRegion('NA')">🇨🇦🇺🇸 NA</button>
+          <button class="region-badge" data-region="EU" onclick="filterByRegion('EU')">🇪🇺 EU</button>
+          <button class="region-badge" data-region="APAC" onclick="filterByRegion('APAC')">🌏 APAC</button>
+          <button class="region-badge" data-region="LATAM" onclick="filterByRegion('LATAM')">🌎 LATAM</button>
+          <button class="region-badge" data-region="MEA" onclick="filterByRegion('MEA')">🌍 MEA</button>
+          <button class="region-badge" data-region="ALL" onclick="filterByRegion('ALL')" data-i18n="all">All</button>
+        </div>
+        <div class="unit-toggle">
+          <button class="active" onclick="setDistanceUnit('metric')" title="Kilometers">km</button>
+          <button onclick="setDistanceUnit('imperial')" title="Miles">mi</button>
+        </div>
+        <select class="language-selector" id="languageSelector" onchange="changeLanguage(this.value)">
+          <option value="en">English</option>
+          <option value="es">Español</option>
+          <option value="fr">Français</option>
+          <option value="pt">Português</option>
+        </select>
+      </div>
+    </div>
+  </section>
+  
+  <!-- MAIN CONTENT -->
+  <main style="flex: 1; padding: 2rem 1rem;">
+    <div class="container">
+      <!-- ACTIVE COUNT -->
+      <div style="background: rgba(255,87,34,0.1); padding: 1.5rem; border-radius: 8px; margin-bottom: 1.5rem; text-align: center;">
+        <div class="active-count" id="activeCount">0</div>
+        <small style="color: var(--gray-600);" data-i18n="active-today">Active Deliveries Today</small>
+      </div>
+      
+      <!-- DELIVERIES LIST -->
+      <div id="deliveriesList">
+        <div class="alert alert-info" data-i18n="loading">Loading active deliveries...</div>
+      </div>
+    </div>
+  </main>
+  
+  <!-- FOOTER -->
+  <footer style="background-color: var(--primary); color: var(--white); padding: 2rem 1rem; margin-top: auto;">
+    <div class="container" style="text-align: center; color: var(--gray-300);">
+      <p>&copy; 2026 Georgensen Global - Partners Network</p>
+    </div>
+  </footer>
+  
+  <script src="/js/core/api.js"></script>
+  <script src="/js/core/auth.js"></script>
+  <script src="/js/core/guards.js"></script>
+  
+  <script>
+    if (!isAuthenticated()) location.href = '../pages/index.html';
+    
+    const user = getCurrentUser();
+    document.getElementById('partnerName').textContent = user.first_name || 'Partner';
+
+    // Global State
+    const appState = {
+      currentRegion: 'NA',
+      distanceUnit: 'metric',
+      language: 'en',
+      deliveries: []
+    };
+
+    // Regional Configuration
+    const REGIONS = {
+      NA: { name: 'North America', currencies: ['CAD', 'USD'], timezones: ['America/Toronto', 'America/New_York', 'America/Denver', 'America/Los_Angeles'] },
+      EU: { name: 'Europe', currencies: ['EUR', 'GBP'], timezones: ['Europe/London', 'Europe/Paris', 'Europe/Berlin'] },
+      APAC: { name: 'Asia-Pacific', currencies: ['AUD', 'SGD', 'JPY'], timezones: ['Asia/Singapore', 'Asia/Tokyo', 'Australia/Sydney'] },
+      LATAM: { name: 'Latin America', currencies: ['MXN', 'BRL', 'ARS'], timezones: ['America/Mexico_City', 'America/Sao_Paulo'] },
+      MEA: { name: 'Middle East & Africa', currencies: ['AED', 'SAR', 'ZAR'], timezones: ['Asia/Dubai', 'Africa/Johannesburg'] }
+    };
+
+    // Regional Status Flows (Dynamic Milestones)
+    const REGIONAL_STATUSES = {
+      local: ['Pickup Ready', 'At Pickup', 'In Transit', 'Delivery Ready', 'Delivered'],
+      international: ['Pickup Ready', 'At Origin Hub', 'At Export Hub', 'Customs Clearing', 'At Destination Hub', 'Delivery Ready', 'Delivered'],
+      air: ['Pickup Ready', 'Awaiting Air Transport', 'In Air', 'Landed', 'Customs Clearing', 'Delivery Ready', 'Delivered'],
+      sea: ['Pickup Ready', 'At Port', 'Port Processing', 'In Transit (Sea)', 'Port of Destination', 'Customs Clearing', 'Delivery Ready', 'Delivered']
+    };
+
+    // Status Mappings
+    const STATUS_MAP = {
+      'pickup_ready': 0,
+      'at_pickup': 1,
+      'at_origin_hub': 2,
+      'at_export_hub': 3,
+      'customs_clearing': 4,
+      'at_destination_hub': 5,
+      'delivery_ready': 6,
+      'in_transit': 2,
+      'in_air': 2,
+      'landed': 4,
+      'at_port': 1,
+      'port_processing': 2,
+      'in_transit_sea': 3,
+      'port_destination': 4,
+      'delivered': 7
+    };
+
+    // i18n Translations
+    const i18n = {
+      en: {
+        'active-deliveries': 'Active Deliveries',
+        'update-status': 'Update status and track your current jobs globally',
+        'dashboard': 'Dashboard',
+        'available-jobs': 'Available Jobs',
+        'active': 'Active',
+        'earnings': 'Earnings',
+        'settings': 'Settings',
+        'logout': 'Logout',
+        'active-today': 'Active Deliveries Today',
+        'loading': 'Loading active deliveries...',
+        'all': 'All Regions',
+        'next-step': 'Next Step',
+        'view-map': 'View Map',
+        'contact-support': 'Contact Support',
+        'commercial-invoice': 'Commercial Invoice',
+        'bill-of-lading': 'Bill of Lading',
+        'customs-agent': 'Contact Customs Agent',
+        'regional-support': 'Regional Support',
+        'distance': 'Distance',
+        'shipment-type': 'Shipment Type'
+      },
+      es: {
+        'active-deliveries': 'Entregas Activas',
+        'update-status': 'Actualizar estado y rastrear tus trabajos a nivel mundial',
+        'dashboard': 'Panel de Control',
+        'available-jobs': 'Trabajos Disponibles',
+        'active': 'Activo',
+        'earnings': 'Ganancias',
+        'settings': 'Configuración',
+        'logout': 'Cerrar Sesión',
+        'active-today': 'Entregas Activas Hoy',
+        'loading': 'Cargando entregas activas...',
+        'all': 'Todas las Regiones',
+        'next-step': 'Siguiente Paso',
+        'view-map': 'Ver Mapa',
+        'contact-support': 'Contactar Soporte',
+        'commercial-invoice': 'Factura Comercial',
+        'bill-of-lading': 'Conocimiento de Embarque',
+        'customs-agent': 'Contactar Aduanas',
+        'regional-support': 'Soporte Regional'
+      },
+      fr: {
+        'active-deliveries': 'Livraisons Actives',
+        'update-status': 'Mettre à jour le statut et suivre vos travaux mondialement',
+        'dashboard': 'Tableau de Bord',
+        'available-jobs': 'Emplois Disponibles',
+        'active': 'Actif',
+        'earnings': 'Gains',
+        'settings': 'Paramètres',
+        'logout': 'Déconnexion',
+        'active-today': 'Livraisons Actives Aujourd\'hui',
+        'loading': 'Chargement des livraisons actives...',
+        'all': 'Toutes les Régions',
+        'next-step': 'Étape Suivante',
+        'view-map': 'Voir Carte',
+        'contact-support': 'Contacter Support',
+        'commercial-invoice': 'Facture Commerciale',
+        'bill-of-lading': 'Connaissement',
+        'customs-agent': 'Contacter Douanes',
+        'regional-support': 'Support Régional'
+      },
+      pt: {
+        'active-deliveries': 'Entregas Ativas',
+        'update-status': 'Atualizar status e rastrear seus trabalhos globalmente',
+        'dashboard': 'Painel de Controle',
+        'available-jobs': 'Trabalhos Disponíveis',
+        'active': 'Ativo',
+        'earnings': 'Ganhos',
+        'settings': 'Configurações',
+        'logout': 'Sair',
+        'active-today': 'Entregas Ativas Hoje',
+        'loading': 'Carregando entregas ativas...',
+        'all': 'Todas as Regiões',
+        'next-step': 'Próxima Etapa',
+        'view-map': 'Ver Mapa',
+        'contact-support': 'Contatar Suporte',
+        'commercial-invoice': 'Fatura Comercial',
+        'bill-of-lading': 'Conhecimento de Embarque',
+        'customs-agent': 'Contatar Aduaneiro',
+        'regional-support': 'Suporte Regional'
+      }
+    };
+
+    // Helper Functions
+    function getTranslation(key) {
+      return (i18n[appState.language] && i18n[appState.language][key]) || (i18n.en[key] || key);
+    }
+
+    function updatePageTranslations() {
+      document.querySelectorAll('[data-i18n]').forEach(elem => {
+        const key = elem.getAttribute('data-i18n');
+        elem.textContent = getTranslation(key);
+      });
+    }
+
+    function filterByRegion(region) {
+      appState.currentRegion = region;
+      document.querySelectorAll('.region-badge').forEach(btn => btn.classList.remove('active'));
+      if (region === 'ALL') {
+        document.querySelector('[data-region="ALL"]').classList.add('active');
+      } else {
+        document.querySelector(`[data-region="${region}"]`).classList.add('active');
+      }
+      loadDeliveries();
+    }
+
+    function setDistanceUnit(unit) {
+      appState.distanceUnit = unit;
+      document.querySelectorAll('.unit-toggle button').forEach(btn => btn.classList.remove('active'));
+      event.target.classList.add('active');
+      loadDeliveries();
+    }
+
+    function changeLanguage(lang) {
+      appState.language = lang;
+      updatePageTranslations();
+    }
+
+    function getShipmentType(shipment) {
+      if (shipment.service_type === 'air') return 'air';
+      if (shipment.service_type === 'sea') return 'sea';
+      if (shipment.is_international) return 'international';
+      return 'ground';
+    }
+
+    function getStatusFlow(shipment) {
+      const type = getShipmentType(shipment);
+      return REGIONAL_STATUSES[type] || REGIONAL_STATUSES.local;
+    }
+
+    function getRegionalContact(shipment) {
+      const region = shipment.destination_region;
+      const contacts = {
+        NA: { name: 'North America Support', phone: '+1-888-DELIVER', email: 'support-na@georgensen.com' },
+        EU: { name: 'European Customs', phone: '+44-20-7946-0522', email: 'customs-eu@georgensen.com' },
+        APAC: { name: 'Asia-Pacific Hub', phone: '+65-6732-9700', email: 'support-apac@georgensen.com' },
+        LATAM: { name: 'LATAM Regional', phone: '+55-11-3555-8000', email: 'support-latam@georgensen.com' },
+        MEA: { name: 'Middle East Hub', phone: '+971-4-308-8888', email: 'support-mea@georgensen.com' }
+      };
+      return contacts[region] || contacts.NA;
+    }
+
+    function formatETAWithTimezone(eta, timezone) {
+      const date = new Date(eta);
+      const formatter = new Intl.DateTimeFormat('en-US', {
+        timeZone: timezone,
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true
+      });
+      return formatter.format(date);
+    }
+
+    function calculateDistance(distance_km) {
+      if (appState.distanceUnit === 'imperial') {
+        return (distance_km * 0.621371).toFixed(1) + ' mi';
+      }
+      return distance_km.toFixed(1) + ' km';
+    }
+
+    function getComplianceBadges(shipment) {
+      let badges = '';
+      if (shipment.requires_vat) {
+        badges += `<span class="compliance-badge vat"><i class="fas fa-file"></i> VAT Filing</span>`;
+      }
+      if (shipment.requires_customs) {
+        badges += `<span class="compliance-badge customs"><i class="fas fa-passport"></i> Customs Required</span>`;
+      }
+      if (shipment.requires_bol) {
+        badges += `<span class="compliance-badge bol"><i class="fas fa-ship"></i> BOL Required</span>`;
+      }
+      return badges;
+    }
+
+    function getDocumentLinks(shipment) {
+      let docs = '';
+      if (shipment.requires_customs || shipment.is_international) {
+        docs += `<button class="doc-button" onclick="downloadDocument('${shipment.id}', 'invoice')"><i class="fas fa-file-pdf"></i> ${getTranslation('commercial-invoice')}</button>`;
+      }
+      if (shipment.requires_bol) {
+        docs += `<button class="doc-button" onclick="downloadDocument('${shipment.id}', 'bol')"><i class="fas fa-file-pdf"></i> ${getTranslation('bill-of-lading')}</button>`;
+      }
+      return docs;
+    }
+
+    async function loadDeliveries() {
+      try {
+        const response = await apiCall('/orders/');
+        const orders = response.orders || response;
+        appState.deliveries = orders;
+        
+        // Filter by region
+        let filtered = orders;
+        if (appState.currentRegion !== 'ALL') {
+          filtered = orders.filter(o => o.destination_region === appState.currentRegion);
+        }
+        
+        // Get active deliveries
+        const active = filtered.filter(o => ['confirmed', 'picked_up', 'in_transit', 'at_origin_hub', 'at_export_hub', 'customs_clearing', 'at_destination_hub', 'delivery_ready'].includes(o.status));
+        
+        document.getElementById('activeCount').textContent = active.length;
+        
+        const deliveriesList = document.getElementById('deliveriesList');
+        if (active.length === 0) {
+          deliveriesList.innerHTML = `<div class="alert alert-info">${getTranslation('loading')}</div>`;
+          return;
+        }
+        
+        deliveriesList.innerHTML = active.map((delivery, idx) => {
+          const statusFlow = getStatusFlow(delivery);
+          const currentStep = STATUS_MAP[delivery.status] || 0;
+          const shipmentType = getShipmentType(delivery);
+          const contact = getRegionalContact(delivery);
+          const eta = formatETAWithTimezone(delivery.eta, contact.timezone || 'America/Toronto');
+
+          return `
+            <div class="delivery-card">
+              <!-- Header with Route and Type -->
+              <div class="delivery-header">
+                <div class="route-info">
+                  <h4>📍 ${delivery.pickup_city} → ${delivery.delivery_city}</h4>
+                  <div class="route-badges">
+                    <span class="shipment-type-badge ${shipmentType}">
+                      ${shipmentType === 'air' ? '✈️ Air' : shipmentType === 'sea' ? '🚢 Sea' : shipmentType === 'international' ? '🌐 International' : '🚚 Ground'}
+                    </span>
+                    ${delivery.is_international ? '<span class="shipment-type-badge international">⚠️ Cross-Border</span>' : ''}
+                  </div>
+                </div>
+                <div style="text-align: right;">
+                  <div style="font-size: 1.3em; font-weight: 700; color: var(--accent);">${getCurrencySymbol(delivery.currency)}${(delivery.total_price * 0.3).toFixed(2)}</div>
+                  <small style="color: var(--gray-600);">Partner Payout</small>
+                </div>
+              </div>
+
+              <!-- Meta Information -->
+              <div class="meta-grid">
+                <div class="meta-item">
+                  <small>${getTranslation('distance')}</small>
+                  <strong>${calculateDistance(delivery.estimated_distance_km || 50)}</strong>
+                </div>
+                <div class="meta-item">
+                  <small>Order #</small>
+                  <strong>${delivery.tracking_number}</strong>
+                </div>
+                <div class="meta-item">
+                  <small>Weight</small>
+                  <strong>${delivery.weight}kg</strong>
+                </div>
+                <div class="meta-item">
+                  <small>ETA</small>
+                  <strong>${eta}<span class="timezone-badge">${contact.timezone || 'Local'}</span></strong>
+                </div>
+              </div>
+
+              <!-- Compliance & Regulatory -->
+              ${delivery.is_international ? `
+                <div class="compliance-section">
+                  <strong style="display: block; margin-bottom: 0.5rem;">📋 Compliance & Regulatory</strong>
+                  <div>${getComplianceBadges(delivery)}</div>
+                  <div class="document-access">
+                    ${getDocumentLinks(delivery)}
+                  </div>
+                </div>
+              ` : ''}
+
+              <!-- Timeline / Milestones -->
+              <div class="timeline-container">
+                <strong style="display: block; margin-bottom: 1rem;">📍 ${getTranslation('active')} Milestones</strong>
+                ${statusFlow.map((step, i) => `
+                  <div class="timeline-step">
+                    <div class="timeline-dot ${i < currentStep ? 'completed' : i === currentStep ? 'current' : 'pending'}">
+                      ${i < currentStep ? '✓' : i === currentStep ? '●' : i + 1}
+                    </div>
+                    <div class="timeline-content">
+                      <div class="timeline-title">${step}</div>
+                      ${i === currentStep ? '<div class="timeline-time" style="color: var(--accent); font-weight: 600;">Currently Here</div>' : ''}
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+
+              <!-- Regional Contact -->
+              <div class="regional-contact">
+                <strong>📞 Regional Support</strong>
+                <div class="contact-item">
+                  <span>${contact.name}</span>
+                  <span>${contact.phone}</span>
+                </div>
+                ${delivery.requires_customs ? `
+                  <div class="contact-item" style="margin-top: 0.5rem; color: var(--accent); font-weight: 600;">
+                    ⚠️ ${getTranslation('customs-agent')}
+                  </div>
+                ` : ''}
+              </div>
+
+              <!-- Action Buttons -->
+              <div class="action-buttons">
+                <button class="btn-primary" onclick="updateStatus('${delivery.id}', 'next', ${idx})">
+                  ✅ ${getTranslation('next-step')}
+                </button>
+                <button class="btn-secondary" onclick="viewMap('${delivery.id}')">
+                  🗺️ ${getTranslation('view-map')}
+                </button>
+                <button class="btn-secondary" onclick="contactSupport('${delivery.id}')">
+                  💬 ${getTranslation('regional-support')}
+                </button>
+              </div>
+            </div>
+          `;
+        }).join('');
+      } catch (error) {
+        document.getElementById('deliveriesList').innerHTML = `<div class="alert alert-error">Error: ${error.message}</div>`;
+      }
+    }
+
+    function getCurrencySymbol(currency) {
+      const symbols = {
+        'CAD': 'C$', 'USD': '$', 'EUR': '€', 'GBP': '£',
+        'AUD': 'A$', 'SGD': 'S$', 'JPY': '¥', 'MXN': '$',
+        'BRL': 'R$', 'ARS': '$', 'AED': 'د.إ', 'SAR': 'ر.س', 'ZAR': 'R'
+      };
+      return symbols[currency] || currency;
+    }
+
+    async function updateStatus(deliveryId, action, idx) {
+      try {
+        const delivery = appState.deliveries[idx];
+        const statusFlow = getStatusFlow(delivery);
+        const currentStep = STATUS_MAP[delivery.status] || 0;
+        
+        if (currentStep < statusFlow.length - 1) {
+          // Call backend to update status
+          await apiCall(`/orders/${deliveryId}/status`, 'PATCH', { status: 'next' });
+          showNotification(`✅ ${statusFlow[currentStep + 1]} - ${getTranslation('active-deliveries')} updated!`, 'success');
+          setTimeout(() => loadDeliveries(), 1000);
+        }
+      } catch (error) {
+        showNotification(`Error: ${error.message}`, 'error');
+      }
+    }
+
+    async function downloadDocument(deliveryId, docType) {
+      try {
+        const url = `/api/documents/${deliveryId}/${docType}`;
+        window.open(url, '_blank');
+        showNotification(`Downloading ${docType === 'invoice' ? 'Commercial Invoice' : 'Bill of Lading'}...`, 'success');
+      } catch (error) {
+        showNotification(`Error downloading document: ${error.message}`, 'error');
+      }
+    }
+
+    function viewMap(deliveryId) {
+      showNotification('Opening delivery route map...', 'info');
+      window.open(`/map/${deliveryId}`, '_blank');
+    }
+
+    function contactSupport(deliveryId) {
+      const delivery = appState.deliveries.find(d => d.id === deliveryId);
+      if (delivery) {
+        const contact = getRegionalContact(delivery);
+        showNotification(`📞 Calling ${contact.name}...`, 'success');
+      }
+    }
+
+    document.getElementById('menuToggle').addEventListener('click', () => {
+      document.getElementById('navMenu').classList.toggle('mobile-menu-open');
+    });
+
+    // Initialize
+    updatePageTranslations();
+    loadDeliveries();
+    // Refresh every 30 seconds
+    setInterval(loadDeliveries, 30000);
+  </script>
+</body>
+</html>

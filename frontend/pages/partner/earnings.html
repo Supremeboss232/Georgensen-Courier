@@ -1,0 +1,952 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Earnings - Georgensen Partners</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/main.css">
+  <style>
+    .region-selector {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+    .region-btn {
+      padding: 8px 16px;
+      border: 2px solid var(--gray-300);
+      background: var(--white);
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      font-size: 0.9em;
+    }
+    .region-btn.active {
+      background: #4caf50;
+      color: var(--white);
+      border-color: #4caf50;
+    }
+    .region-btn:hover {
+      border-color: #4caf50;
+    }
+    .language-selector {
+      display: flex;
+      gap: 8px;
+      margin-left: auto;
+    }
+    .lang-btn {
+      padding: 6px 12px;
+      border: 1px solid var(--gray-300);
+      background: var(--white);
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.85em;
+      transition: all 0.3s ease;
+    }
+    .lang-btn.active {
+      background: #2196f3;
+      color: var(--white);
+      border-color: #2196f3;
+    }
+    .wallet-card {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: var(--white);
+      padding: 20px;
+      border-radius: 12px;
+      margin-bottom: 12px;
+      position: relative;
+      overflow: hidden;
+    }
+    .wallet-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 100px;
+      height: 100px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 50%;
+      transform: translate(30px, -30px);
+    }
+    .wallet-card h5 {
+      margin: 0 0 8px 0;
+      opacity: 0.9;
+      font-weight: 600;
+    }
+    .wallet-amount {
+      font-size: 1.8em;
+      font-weight: 700;
+      margin-bottom: 12px;
+      position: relative;
+      z-index: 1;
+    }
+    .wallet-meta {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.85em;
+      opacity: 0.9;
+      position: relative;
+      z-index: 1;
+    }
+    .tax-info {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px;
+      background: rgba(255,193,7,0.1);
+      border-radius: 4px;
+      margin-bottom: 8px;
+    }
+    .tax-info small {
+      cursor: help;
+      text-decoration: underline dotted;
+    }
+    .tooltip {
+      position: relative;
+      display: inline-block;
+    }
+    .tooltip:hover::after {
+      content: attr(data-tooltip);
+      position: absolute;
+      background: #333;
+      color: var(--white);
+      padding: 8px 12px;
+      border-radius: 4px;
+      font-size: 0.8em;
+      white-space: nowrap;
+      bottom: 125%;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 100;
+      pointer-events: none;
+    }
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.5);
+    }
+    .modal.active {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-content {
+      background-color: var(--white);
+      padding: 24px;
+      border-radius: 12px;
+      max-width: 500px;
+      width: 90%;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      border-bottom: 1px solid var(--gray-200);
+      padding-bottom: 12px;
+    }
+    .modal-header h3 {
+      margin: 0;
+    }
+    .close-btn {
+      background: none;
+      border: none;
+      font-size: 1.5em;
+      cursor: pointer;
+      color: var(--gray-600);
+    }
+    .conversion-form {
+      display: grid;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .form-group {
+      display: grid;
+      gap: 6px;
+    }
+    .form-group label {
+      font-weight: 600;
+      font-size: 0.9em;
+    }
+    .form-group input, .form-group select {
+      padding: 10px;
+      border: 1px solid var(--gray-300);
+      border-radius: 6px;
+      font-size: 0.9em;
+    }
+    .payout-method-selector {
+      display: grid;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .payout-option {
+      padding: 12px;
+      border: 2px solid var(--gray-300);
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .payout-option:hover {
+      border-color: #4caf50;
+      background: rgba(76,175,80,0.05);
+    }
+    .payout-option.selected {
+      border-color: #4caf50;
+      background: rgba(76,175,80,0.1);
+    }
+    .payout-option input[type="radio"] {
+      margin: 0;
+    }
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .stat-card {
+      background: var(--gray-50);
+      padding: 12px;
+      border-radius: 6px;
+      text-align: center;
+    }
+    .stat-card h5 {
+      margin: 0 0 6px 0;
+      font-size: 0.85em;
+      color: var(--gray-600);
+    }
+    .stat-value {
+      font-size: 1.3em;
+      font-weight: 700;
+      color: #4caf50;
+    }
+    .download-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 12px;
+      background: #f57c00;
+      color: var(--white);
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.85em;
+      transition: all 0.3s ease;
+    }
+    .download-btn:hover {
+      background: #e65100;
+    }
+    .header-controls {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+  </style>
+</head>
+<body>
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <div class="container">
+      <div class="logo">Georgensen Partners</div>
+      
+      <button class="menu-toggle" id="menuToggle">☰</button>
+      
+      <ul id="navMenu">
+        <li><a href="partner-dashboard.html" data-i18n="nav_dashboard">Dashboard</a></li>
+        <li><a href="available-jobs.html" data-i18n="nav_jobs">Available Jobs</a></li>
+        <li><a href="active-deliveries.html" data-i18n="nav_deliveries">Active</a></li>
+        <li><a href="earnings.html" style="color: var(--accent);" data-i18n="nav_earnings">Earnings</a></li>
+        <li><a href="partner-settings.html" data-i18n="nav_settings">Settings</a></li>
+        <li class="auth-buttons">
+          <span id="partnerName" style="color: var(--white);"></span>
+          <button class="btn btn-sm btn-outline" onclick="logout()" data-i18n="btn_logout">Logout</button>
+        </li>
+      </ul>
+    </div>
+  </nav>
+  
+  <!-- PAGE HEADER -->
+  <section style="background: linear-gradient(135deg, #4caf50 0%, #388e3c 100%); color: var(--white); padding: var(--spacing-xl) var(--spacing-md);">
+    <div class="container">
+      <h1 data-i18n="earnings_title">Your Earnings</h1>
+      <p style="color: rgba(255,255,255,0.9); margin-top: var(--spacing-sm);" data-i18n="earnings_subtitle">Track your income, payments, and tax information</p>
+    </div>
+  </section>
+  
+  <!-- MAIN CONTENT -->
+  <main style="flex: 1; padding: var(--spacing-xl) var(--spacing-md);">
+    <div class="container">
+      <!-- CONTROLS HEADER -->
+      <div class="header-controls">
+        <div class="region-selector" id="regionSelector">
+          <!-- Generated by JS -->
+        </div>
+        <div class="language-selector" id="languageSelector">
+          <button class="lang-btn active" onclick="changeLanguage('en')">EN</button>
+          <button class="lang-btn" onclick="changeLanguage('es')">ES</button>
+          <button class="lang-btn" onclick="changeLanguage('fr')">FR</button>
+          <button class="lang-btn" onclick="changeLanguage('pt')">PT</button>
+        </div>
+      </div>
+
+      <!-- MULTI-CURRENCY WALLET -->
+      <div style="margin-bottom: 24px;">
+        <h3 data-i18n="wallet_title">Multi-Currency Wallet</h3>
+        <div id="walletContainer">
+          <div class="alert alert-info" data-i18n="loading">Loading...</div>
+        </div>
+      </div>
+
+      <!-- TAX INFORMATION & SUMMARY -->
+      <div class="grid cols-2 gap-lg mb-xl">
+        <div class="card">
+          <h3 data-i18n="tax_title">Tax & Deductions</h3>
+          <div id="taxSummary">
+            <div class="alert alert-info" data-i18n="loading">Loading...</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3 data-i18n="payout_method">Payout Method</h3>
+          <div id="payoutMethodContainer">
+            <div class="alert alert-info" data-i18n="loading">Loading...</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CURRENCY CONVERSION TOOL -->
+      <div class="card" style="margin-bottom: 24px;">
+        <h3 data-i18n="currency_conversion">Currency Conversion Tool</h3>
+        <div class="conversion-form">
+          <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; align-items: flex-end;">
+            <div class="form-group">
+              <label data-i18n="from_amount">Amount</label>
+              <input type="number" id="conversionAmount" placeholder="0.00" step="0.01" min="0">
+            </div>
+            <div class="form-group">
+              <label data-i18n="from_currency">From Currency</label>
+              <select id="fromCurrency">
+                <!-- Populated by JS -->
+              </select>
+            </div>
+            <div class="form-group">
+              <label data-i18n="to_currency">To Currency</label>
+              <select id="toCurrency">
+                <!-- Populated by JS -->
+              </select>
+            </div>
+          </div>
+          <div style="margin-top: 12px; padding: 12px; background: var(--gray-50); border-radius: 6px; display: none;" id="conversionResult">
+            <div style="font-size: 0.9em; color: var(--gray-600);" data-i18n="result">Result</div>
+            <div style="font-size: 1.5em; font-weight: 700; color: #4caf50;" id="conversionOutput">0.00</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TRANSACTION HISTORY WITH TAX BREAKDOWN -->
+      <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--spacing-lg);">
+          <h3 style="margin: 0;" data-i18n="transactions_title">Transaction History</h3>
+          <button class="download-btn" onclick="downloadTaxSlips()" id="downloadBtn" style="display: none;">
+            📥 <span data-i18n="download_tax_slip">Download Tax Slip</span>
+          </button>
+        </div>
+        
+        <div id="transactionsList">
+          <div class="alert alert-info" data-i18n="loading">Loading...</div>
+        </div>
+      </div>
+    </div>
+  </main>
+  
+  <!-- MODAL: PAYOUT METHOD SELECTION -->
+  <div id="payoutModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 data-i18n="select_payout">Select Payout Method</h3>
+        <button class="close-btn" onclick="closePayoutModal()">×</button>
+      </div>
+      <div id="payoutOptions" class="payout-method-selector">
+        <!-- Populated by JS -->
+      </div>
+      <div style="display: flex; gap: 12px; margin-top: 16px;">
+        <button class="btn btn-primary" onclick="savePayout()" data-i18n="btn_save">Save</button>
+        <button class="btn btn-ghost" onclick="closePayoutModal()" data-i18n="btn_cancel">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer style="background-color: var(--primary); color: var(--white); padding: var(--spacing-xl) var(--spacing-md); margin-top: auto;">
+    <div class="container" style="text-align: center; color: var(--gray-300);">
+      <p>&copy; 2026 Georgensen Partners</p>
+    </div>
+  </footer>
+  
+  <script src="/js/core/api.js"></script>
+  <script src="/js/core/auth.js"></script>
+  <script src="/js/core/guards.js"></script>
+  
+  <script>
+    if (!isAuthenticated()) location.href = '../pages/index.html';
+    
+    // REGIONS & CURRENCIES
+    const REGIONS = {
+      NA: { label: 'North America', countries: ['US', 'CA', 'MX'], currencies: ['USD', 'CAD', 'MXN'] },
+      EU: { label: 'Europe', countries: ['GB', 'FR', 'DE', 'IT', 'ES', 'NL', 'BE', 'AT', 'PL'], currencies: ['EUR', 'GBP'] },
+      APAC: { label: 'Asia-Pacific', countries: ['AU', 'NZ', 'SG', 'MY', 'TH', 'JP', 'CN', 'IN'], currencies: ['AUD', 'SGD', 'JPY', 'INR'] },
+      LATAM: { label: 'Latin America', countries: ['BR', 'AR', 'CL', 'CO'], currencies: ['BRL', 'ARS', 'CLP', 'COP'] },
+      MEA: { label: 'Middle East & Africa', countries: ['AE', 'SA', 'EG', 'ZA', 'NG'], currencies: ['AED', 'SAR', 'EGP', 'ZAR', 'NGN'] }
+    };
+
+    const CURRENCY_SYMBOLS = {
+      USD: '$', CAD: 'C$', MXN: 'Mex$',
+      EUR: '€', GBP: '£',
+      AUD: 'A$', SGD: 'S$', JPY: '¥', INR: '₹',
+      BRL: 'R$', ARS: 'ARS$', CLP: 'CLP$', COP: 'COP$',
+      AED: 'د.إ', SAR: 'SR', EGP: 'EGP', ZAR: 'R', NGN: '₦'
+    };
+
+    const CURRENCY_RATES = {
+      'USD-CAD': 1.36, 'USD-MXN': 20.15, 'USD-EUR': 0.92, 'USD-GBP': 0.79,
+      'USD-AUD': 1.55, 'USD-SGD': 1.34, 'USD-JPY': 149.50, 'USD-INR': 83.12,
+      'USD-BRL': 4.95, 'USD-ARS': 38.50, 'USD-CLP': 950, 'USD-COP': 3200,
+      'USD-AED': 3.67, 'USD-SAR': 3.75, 'USD-EGP': 30.90, 'USD-ZAR': 18.50, 'USD-NGN': 1550.00
+    };
+
+    const REGIONAL_PAYOUT_METHODS = {
+      NA: ['Interac Transfer', 'Direct Deposit', 'Check'],
+      EU: ['SEPA Transfer', 'Bank Transfer', 'Check'],
+      APAC: ['PayNow (Singapore)', 'Bank Transfer', 'Wise'],
+      LATAM: ['Bank Transfer', 'Check', 'Wire Transfer'],
+      MEA: ['Bank Transfer', 'Wire Transfer', 'Check']
+    };
+
+    const REGIONAL_TAX_RATES = {
+      NA: { rate: 0.07, label: 'GST/HST (7-13%)', type: 'GST' },
+      EU: { rate: 0.19, label: 'VAT (15-27%)', type: 'VAT' },
+      APAC: { rate: 0.10, label: 'GST (0-10%)', type: 'GST' },
+      LATAM: { rate: 0.17, label: 'VAT/IVA (15-19%)', type: 'VAT' },
+      MEA: { rate: 0.05, label: 'VAT (0-15%)', type: 'VAT' }
+    };
+
+    // i18n Translations
+    const i18n = {
+      en: {
+        nav_dashboard: 'Dashboard',
+        nav_jobs: 'Available Jobs',
+        nav_deliveries: 'Active',
+        nav_earnings: 'Earnings',
+        nav_settings: 'Settings',
+        btn_logout: 'Logout',
+        btn_save: 'Save',
+        btn_cancel: 'Cancel',
+        earnings_title: 'Your Earnings',
+        earnings_subtitle: 'Track your income, payments, and tax information',
+        wallet_title: 'Multi-Currency Wallet',
+        tax_title: 'Tax & Deductions',
+        payout_method: 'Payout Method',
+        currency_conversion: 'Currency Conversion Tool',
+        from_amount: 'Amount',
+        from_currency: 'From Currency',
+        to_currency: 'To Currency',
+        result: 'Result',
+        transactions_title: 'Transaction History',
+        download_tax_slip: 'Download Tax Slip',
+        select_payout: 'Select Payout Method',
+        loading: 'Loading...',
+        date: 'Date',
+        order_id: 'Order ID',
+        delivery: 'Delivery',
+        gross_amount: 'Gross',
+        tax_withheld: 'Tax',
+        payout_amount: 'Payout',
+        status: 'Status'
+      },
+      es: {
+        nav_dashboard: 'Panel de Control',
+        nav_jobs: 'Trabajos Disponibles',
+        nav_deliveries: 'Activos',
+        nav_earnings: 'Ganancias',
+        nav_settings: 'Configuración',
+        btn_logout: 'Cerrar Sesión',
+        btn_save: 'Guardar',
+        btn_cancel: 'Cancelar',
+        earnings_title: 'Tus Ganancias',
+        earnings_subtitle: 'Sigue tus ingresos, pagos e información fiscal',
+        wallet_title: 'Cartera Multimoneda',
+        tax_title: 'Impuestos y Deducciones',
+        payout_method: 'Método de Pago',
+        currency_conversion: 'Herramienta de Conversión de Divisas',
+        from_amount: 'Cantidad',
+        from_currency: 'De Moneda',
+        to_currency: 'A Moneda',
+        result: 'Resultado',
+        transactions_title: 'Historial de Transacciones',
+        download_tax_slip: 'Descargar Comprobante de Impuestos',
+        select_payout: 'Seleccionar Método de Pago',
+        loading: 'Cargando...',
+        date: 'Fecha',
+        order_id: 'ID de Pedido',
+        delivery: 'Entrega',
+        gross_amount: 'Bruto',
+        tax_withheld: 'Impuesto',
+        payout_amount: 'Pago',
+        status: 'Estado'
+      },
+      fr: {
+        nav_dashboard: 'Tableau de Bord',
+        nav_jobs: 'Emplois Disponibles',
+        nav_deliveries: 'Actifs',
+        nav_earnings: 'Gains',
+        nav_settings: 'Paramètres',
+        btn_logout: 'Déconnexion',
+        btn_save: 'Enregistrer',
+        btn_cancel: 'Annuler',
+        earnings_title: 'Vos Gains',
+        earnings_subtitle: 'Suivez vos revenus, paiements et informations fiscales',
+        wallet_title: 'Portefeuille Multidevises',
+        tax_title: 'Taxes et Déductions',
+        payout_method: 'Mode de Paiement',
+        currency_conversion: 'Outil de Conversion de Devises',
+        from_amount: 'Montant',
+        from_currency: 'De la Devise',
+        to_currency: 'Vers la Devise',
+        result: 'Résultat',
+        transactions_title: 'Historique des Transactions',
+        download_tax_slip: 'Télécharger le Justificatif Fiscal',
+        select_payout: 'Sélectionner le Mode de Paiement',
+        loading: 'Chargement...',
+        date: 'Date',
+        order_id: 'Numéro de Commande',
+        delivery: 'Livraison',
+        gross_amount: 'Brut',
+        tax_withheld: 'Impôt',
+        payout_amount: 'Paiement',
+        status: 'Statut'
+      },
+      pt: {
+        nav_dashboard: 'Painel de Controle',
+        nav_jobs: 'Trabalhos Disponíveis',
+        nav_deliveries: 'Ativos',
+        nav_earnings: 'Ganhos',
+        nav_settings: 'Configurações',
+        btn_logout: 'Sair',
+        btn_save: 'Salvar',
+        btn_cancel: 'Cancelar',
+        earnings_title: 'Seus Ganhos',
+        earnings_subtitle: 'Acompanhe sua renda, pagamentos e informações fiscais',
+        wallet_title: 'Carteira Multimáquina',
+        tax_title: 'Impostos e Deduções',
+        payout_method: 'Método de Pagamento',
+        currency_conversion: 'Ferramenta de Conversão de Moeda',
+        from_amount: 'Quantia',
+        from_currency: 'De Moeda',
+        to_currency: 'Para Moeda',
+        result: 'Resultado',
+        transactions_title: 'Histórico de Transações',
+        download_tax_slip: 'Baixar Comprovante Fiscal',
+        select_payout: 'Selecionar Método de Pagamento',
+        loading: 'Carregando...',
+        date: 'Data',
+        order_id: 'ID do Pedido',
+        delivery: 'Entrega',
+        gross_amount: 'Bruto',
+        tax_withheld: 'Imposto',
+        payout_amount: 'Pagamento',
+        status: 'Status'
+      }
+    };
+
+    // STATE
+    let appState = {
+      currentLanguage: 'en',
+      currentRegion: 'NA',
+      transactions: [],
+      walletsData: {}
+    };
+
+    // UTILITY FUNCTIONS
+    function getCurrencySymbol(currency) {
+      return CURRENCY_SYMBOLS[currency] || currency;
+    }
+
+    function formatCurrency(amount, currency = null) {
+      if (!amount && amount !== 0) return '0.00';
+      const formatted = parseFloat(amount).toFixed(2);
+      if (currency) return getCurrencySymbol(currency) + formatted;
+      return formatted;
+    }
+
+    function formatDate(dateStr) {
+      return new Date(dateStr).toLocaleDateString(appState.currentLanguage === 'en' ? 'en-US' : 'de-DE');
+    }
+
+    function translate(key) {
+      return i18n[appState.currentLanguage][key] || key;
+    }
+
+    function updateTranslations() {
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        el.textContent = translate(key);
+      });
+    }
+
+    function changeLanguage(lang) {
+      appState.currentLanguage = lang;
+      document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.remove('active'));
+      event.target.classList.add('active');
+      updateTranslations();
+    }
+
+    function convertCurrency(amount, from, to) {
+      if (from === to) return amount;
+      if (from === 'USD') return amount * (CURRENCY_RATES[`USD-${to}`] || 1);
+      if (to === 'USD') return amount / (CURRENCY_RATES[`USD-${from}`] || 1);
+      const toUSD = amount / (CURRENCY_RATES[`USD-${from}`] || 1);
+      return toUSD * (CURRENCY_RATES[`USD-${to}`] || 1);
+    }
+
+    function getCurrencySymbol(currency) {
+      return CURRENCY_SYMBOLS[currency] || currency;
+    }
+
+    // REGION SELECTOR
+    function initializeRegionSelector() {
+      const selector = document.getElementById('regionSelector');
+      Object.entries(REGIONS).forEach(([code, region]) => {
+        const btn = document.createElement('button');
+        btn.className = `region-btn ${code === appState.currentRegion ? 'active' : ''}`;
+        btn.textContent = region.label;
+        btn.onclick = () => selectRegion(code);
+        selector.appendChild(btn);
+      });
+    }
+
+    function selectRegion(regionCode) {
+      appState.currentRegion = regionCode;
+      document.querySelectorAll('.region-btn').forEach(btn => btn.classList.remove('active'));
+      event.target.classList.add('active');
+      loadEarnings();
+    }
+
+    // WALLET RENDERING
+    async function renderWallet() {
+      const region = REGIONS[appState.currentRegion];
+      const container = document.getElementById('walletContainer');
+      
+      try {
+        const response = await apiCall(`/partners/earnings-summary?region=${appState.currentRegion}&period=month`);
+        const earningsByCurrency = response.earnings_by_currency || {};
+        
+        if (Object.keys(earningsByCurrency).length === 0) {
+          container.innerHTML = '<div class="alert alert-info" data-i18n="loading">No earnings data</div>';
+          return;
+        }
+
+        let html = '<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px;">';
+        
+        Object.entries(earningsByCurrency).forEach(([currency, data]) => {
+          const gradient = ['#667eea 0%, #764ba2', '#f093fb 0%, #f5576c', '#4facfe 0%, #00f2fe', '#43e97b 0%, #38f9d7', '#fa709a 0%, #fee140'];
+          const gradientIndex = Object.keys(earningsByCurrency).indexOf(currency) % gradient.length;
+          const colors = gradient[gradientIndex].split(', ').map(c => c.split(' ')[0]);
+          
+          html += `
+            <div class="wallet-card" style="background: linear-gradient(135deg, ${gradient[gradientIndex]});">
+              <h5>${getCurrencySymbol(currency)} ${currency}</h5>
+              <div class="wallet-amount">${formatCurrency(data.total, currency)}</div>
+              <div class="wallet-meta">
+                <span>${data.count || 0} ${translate('transactions_title').toLowerCase()}</span>
+                <span>Avg: ${formatCurrency(data.average, currency)}</span>
+              </div>
+            </div>
+          `;
+        });
+        
+        html += '</div>';
+        container.innerHTML = html;
+      } catch (error) {
+        container.innerHTML = `<div class="alert alert-error">${error.message}</div>`;
+      }
+    }
+
+    // TAX SUMMARY
+    async function renderTaxSummary() {
+      const container = document.getElementById('taxSummary');
+      const taxInfo = REGIONAL_TAX_RATES[appState.currentRegion];
+      
+      try {
+        const response = await apiCall(`/partners/earnings-transactions?region=${appState.currentRegion}&period=month`);
+        const transactions = response.transactions || [];
+        
+        const totalGross = transactions.reduce((sum, t) => sum + (t.amount || 0), 0);
+        const totalTax = transactions.reduce((sum, t) => sum + (t.tax_amount || 0), 0);
+        const totalPayout = transactions.reduce((sum, t) => sum + (t.payout_amount || 0), 0);
+        
+        container.innerHTML = `
+          <div class="stats-grid">
+            <div class="stat-card">
+              <h5>${translate('gross_amount')}</h5>
+              <div class="stat-value">${formatCurrency(totalGross)}</div>
+            </div>
+            <div class="stat-card">
+              <h5>${translate('tax_withheld')}</h5>
+              <div class="stat-value">${formatCurrency(totalTax)}</div>
+            </div>
+            <div class="stat-card">
+              <h5>${translate('payout_amount')}</h5>
+              <div class="stat-value">${formatCurrency(totalPayout)}</div>
+            </div>
+          </div>
+          <div class="tax-info">
+            <span class="tooltip" data-tooltip="${taxInfo.label}">${taxInfo.label}</span>
+          </div>
+          <div style="font-size: 0.9em; color: var(--gray-600); margin-top: 12px;">
+            <div>Tax Rate: ${(taxInfo.rate * 100).toFixed(1)}%</div>
+            <div>Total Transactions: ${transactions.length}</div>
+          </div>
+        `;
+      } catch (error) {
+        container.innerHTML = `<div class="alert alert-error">${error.message}</div>`;
+      }
+    }
+
+    // PAYOUT METHOD
+    async function renderPayoutMethod() {
+      const container = document.getElementById('payoutMethodContainer');
+      const methods = REGIONAL_PAYOUT_METHODS[appState.currentRegion] || [];
+      
+      try {
+        const response = await apiCall(`/partners/profile?region=${appState.currentRegion}`);
+        const selectedMethod = response.preferred_payout_method || methods[0];
+        
+        container.innerHTML = `
+          <div style="background: var(--gray-50); padding: var(--spacing-lg); border-radius: var(--radius-md); margin-bottom: var(--spacing-lg);">
+            <div style="font-weight: 600; margin-bottom: var(--spacing-sm);">💳 ${selectedMethod}</div>
+            <div style="color: var(--gray-600); font-size: 0.9em; margin-bottom: var(--spacing-md);">Active in ${REGIONS[appState.currentRegion].label}</div>
+            <button class="btn btn-sm btn-ghost" onclick="openPayoutModal()">Change</button>
+          </div>
+          <div style="background: rgba(76,175,80,0.1); padding: var(--spacing-lg); border-radius: var(--radius-md);">
+            <div style="display: flex; align-items: center; gap: var(--spacing-md); margin-bottom: var(--spacing-md);">
+              <div style="font-size: 1.5em;">✓</div>
+              <div>
+                <div style="font-weight: 600;">Next Payout</div>
+                <small style="color: var(--gray-600);">Usually within 5-7 business days</small>
+              </div>
+            </div>
+          </div>
+        `;
+      } catch (error) {
+        container.innerHTML = `<div class="alert alert-error">${error.message}</div>`;
+      }
+    }
+
+    // PAYOUT MODAL
+    function openPayoutModal() {
+      const methods = REGIONAL_PAYOUT_METHODS[appState.currentRegion] || [];
+      const optionsContainer = document.getElementById('payoutOptions');
+      
+      optionsContainer.innerHTML = methods.map((method, idx) => `
+        <label class="payout-option" style="cursor: pointer;">
+          <input type="radio" name="payoutMethod" value="${method}" ${idx === 0 ? 'checked' : ''}>
+          <div style="flex: 1;">
+            <div style="font-weight: 600;">${method}</div>
+            <small style="color: var(--gray-600);">Selected for ${REGIONS[appState.currentRegion].label}</small>
+          </div>
+        </label>
+      `).join('');
+      
+      document.querySelectorAll('.payout-option').forEach(option => {
+        option.addEventListener('change', () => {
+          document.querySelectorAll('.payout-option').forEach(o => o.classList.remove('selected'));
+          option.classList.add('selected');
+        });
+      });
+      
+      document.getElementById('payoutModal').classList.add('active');
+    }
+
+    function closePayoutModal() {
+      document.getElementById('payoutModal').classList.remove('active');
+    }
+
+    async function savePayout() {
+      const selected = document.querySelector('input[name="payoutMethod"]:checked');
+      if (!selected) return alert('Please select a payout method');
+      
+      try {
+        await apiCall(`/partners/update-payout-method`, 'POST', {
+          region: appState.currentRegion,
+          method: selected.value
+        });
+        closePayoutModal();
+        renderPayoutMethod();
+      } catch (error) {
+        alert('Error: ' + error.message);
+      }
+    }
+
+    // CURRENCY CONVERSION
+    function initializeCurrencyConversion() {
+      const region = REGIONS[appState.currentRegion];
+      const fromSelect = document.getElementById('fromCurrency');
+      const toSelect = document.getElementById('toCurrency');
+      
+      region.currencies.forEach(curr => {
+        fromSelect.appendChild(new Option(curr, curr));
+        toSelect.appendChild(new Option(curr, curr));
+      });
+      
+      if (region.currencies.length > 1) {
+        toSelect.value = region.currencies[1];
+      }
+
+      document.getElementById('conversionAmount').addEventListener('input', performConversion);
+      fromSelect.addEventListener('change', performConversion);
+      toSelect.addEventListener('change', performConversion);
+    }
+
+    function performConversion() {
+      const amount = parseFloat(document.getElementById('conversionAmount').value) || 0;
+      const from = document.getElementById('fromCurrency').value;
+      const to = document.getElementById('toCurrency').value;
+      
+      if (amount <= 0) {
+        document.getElementById('conversionResult').style.display = 'none';
+        return;
+      }
+      
+      const result = convertCurrency(amount, from, to);
+      document.getElementById('conversionOutput').textContent = formatCurrency(result, to);
+      document.getElementById('conversionResult').style.display = 'block';
+    }
+
+    // TRANSACTION HISTORY
+    async function renderTransactions() {
+      const container = document.getElementById('transactionsList');
+      
+      try {
+        const response = await apiCall(`/partners/earnings-transactions?region=${appState.currentRegion}&period=month`);
+        const transactions = response.transactions || [];
+        
+        if (transactions.length === 0) {
+          container.innerHTML = '<div class="alert alert-info">No transactions this period</div>';
+          return;
+        }
+
+        appState.transactions = transactions;
+        document.getElementById('downloadBtn').style.display = 'inline-flex';
+
+        const tableHtml = `
+          <table style="width: 100%; border-collapse: collapse;">
+            <thead style="border-bottom: 2px solid var(--gray-200);">
+              <tr>
+                <th style="text-align: left; padding: var(--spacing-md);">${translate('date')}</th>
+                <th style="text-align: left; padding: var(--spacing-md);">${translate('order_id')}</th>
+                <th style="text-align: left; padding: var(--spacing-md);">${translate('delivery')}</th>
+                <th style="text-align: right; padding: var(--spacing-md);">${translate('gross_amount')}</th>
+                <th style="text-align: right; padding: var(--spacing-md);">${translate('tax_withheld')}</th>
+                <th style="text-align: right; padding: var(--spacing-md);">${translate('payout_amount')}</th>
+                <th style="text-align: center; padding: var(--spacing-md);">${translate('status')}</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${transactions.map((t) => `
+                <tr style="border-bottom: 1px solid var(--gray-100);">
+                  <td style="padding: var(--spacing-md);">${formatDate(t.date)}</td>
+                  <td style="padding: var(--spacing-md); font-weight: 600;">${t.order_id}</td>
+                  <td style="padding: var(--spacing-md);">${t.origin} → ${t.destination}</td>
+                  <td style="padding: var(--spacing-md); text-align: right; font-weight: 600;">${formatCurrency(t.amount, t.currency)}</td>
+                  <td style="padding: var(--spacing-md); text-align: right; color: #f57c00;">-${formatCurrency(t.tax_amount, t.currency)}</td>
+                  <td style="padding: var(--spacing-md); text-align: right; font-weight: 600; color: #4caf50;">+${formatCurrency(t.payout_amount, t.currency)}</td>
+                  <td style="padding: var(--spacing-md); text-align: center;">
+                    <span style="background: ${t.status === 'pending' ? 'rgba(255,152,0,0.2)' : 'rgba(76,175,80,0.2)'}; padding: 4px 8px; border-radius: 4px; font-size: 0.85em;">
+                      ${t.status}
+                    </span>
+                  </td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        `;
+        container.innerHTML = tableHtml;
+      } catch (error) {
+        container.innerHTML = `<div class="alert alert-error">${error.message}</div>`;
+      }
+    }
+
+    // TAX SLIP DOWNLOAD
+    async function downloadTaxSlips() {
+      if (appState.transactions.length === 0) {
+        alert('No transactions to download');
+        return;
+      }
+
+      try {
+        const taxInfo = REGIONAL_TAX_RATES[appState.currentRegion];
+        const region = REGIONS[appState.currentRegion];
+        
+        const totalGross = appState.transactions.reduce((sum, t) => sum + (t.amount || 0), 0);
+        const totalTax = appState.transactions.reduce((sum, t) => sum + (t.tax_amount || 0), 0);
+        
+        let csvContent = 'data:text/csv;charset=utf-8,';
+        csvContent += `Tax Slip Report - ${region.label}\n`;
+        csvContent += `Tax Type: ${taxInfo.type}\nTax Rate: ${(taxInfo.rate * 100).toFixed(1)}%\n\n`;
+        csvContent += 'Date,Order ID,Gross Amount,Tax Amount,Tax Type\n';
+        
+        appState.transactions.forEach(t => {
+          csvContent += `${t.date},${t.order_id},${t.amount},${t.tax_amount},${taxInfo.type}\n`;
+        });
+        
+        csvContent += `\nTOTAL GROSS,${totalGross.toFixed(2)}\nTOTAL TAX,${totalTax.toFixed(2)}\n`;
+        
+        const link = document.createElement('a');
+        link.setAttribute('href', encodeURI(csvContent));
+        link.setAttribute('download', `tax-slip-${appState.currentRegion}-${new Date().toISOString().split('T')[0]}.csv`);
+        link.click();
+      } catch (error) {
+        alert('Error downloading tax slip: ' + error.message);
+      }
+    }
+
+    // MAIN LOAD
+    async function loadEarnings() {
+      await Promise.all([
+        renderWallet(),
+        renderTaxSummary(),
+        renderPayoutMethod(),
+        renderTransactions()
+      ]);
+      initializeCurrencyConversion();
+    }
+
+    // INITIALIZATION
+    const user = getCurrentUser();
+    document.getElementById('partnerName').textContent = user.first_name || 'Partner';
+    
+    initializeRegionSelector();
+    updateTranslations();
+    loadEarnings();
+    
+    document.getElementById('menuToggle').addEventListener('click', () => {
+      document.getElementById('navMenu').classList.toggle('mobile-menu-open');
+    });
+  </script>
+</body>
+</html>

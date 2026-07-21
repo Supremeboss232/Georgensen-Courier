@@ -1,0 +1,432 @@
+version: '3.8'
+
+# ============================================================================
+# PRODUCTION DEPLOYMENT - docker-compose.prod.yml
+# ============================================================================
+# Usage: docker-compose -f docker-compose.prod.yml up -d
+# Optimized for production environments with proper resource limits,
+# health checks, restart policies, and security hardening
+
+services:
+  # PostgreSQL Database (Production)
+  db:
+    image: postgres:15-alpine
+    container_name: georgensen-db-prod
+    restart: always
+    environment:
+      POSTGRES_USER: ${DB_USER:-georgensen}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?error - set DB_PASSWORD}
+      POSTGRES_DB: georgensen_prod
+      # Production optimizations
+      POSTGRES_INITDB_ARGS: >
+        -c shared_buffers=256MB
+        -c effective_cache_size=1GB
+        -c maintenance_work_mem=64MB
+        -c checkpoint_completion_target=0.9
+        -c wal_buffers=16MB
+        -c default_statistics_target=100
+        -c random_page_cost=1.1
+        -c effective_io_concurrency=200
+        -c work_mem=16MB
+        -c min_wal_size=1GB
+        -c max_wal_size=4GB
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data_prod:/var/lib/postgresql/data
+      - ./infra/backup:/backup:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-georgensen} -d georgensen_prod"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    networks:
+      - georgensen-prod
+    labels:
+      - "com.georgensen.component=database"
+
+  # Redis (Message Broker & Cache)
+  redis:
+    image: redis:7-alpine
+    container_name: georgensen-redis-prod
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data_prod:/data
+    command: >
+      redis-server
+      --appendonly yes
+      --appendfsync everysec
+      --maxmemory 1gb
+      --maxmemory-policy allkeys-lru
+      --requirepass ${REDIS_PASSWORD:?error - set REDIS_PASSWORD}
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    networks:
+      - georgensen-prod
+    labels:
+      - "com.georgensen.component=cache"
+
+  # FastAPI Backend (Production)
+  backend:
+    build:
+      context: .
+      dockerfile: infra/docker/Dockerfile.backend
+      args:
+        - PYTHON_VERSION=3.11
+    image: georgensen/backend:latest
+    container_name: georgensen-backend-prod
+    restart: always
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      # Application
+      DEBUG: "False"
+      ENVIRONMENT: production
+      PROJECT_NAME: "Georgensen Courier API"
+      
+      # Database
+      DATABASE_URL: postgresql://${DB_USER:-georgensen}:${DB_PASSWORD:?error}@db:5432/georgensen_prod
+      DATABASE_POOL_SIZE: 20
+      DATABASE_POOL_TIMEOUT: 30
+      
+      # Security
+      SECRET_KEY: ${SECRET_KEY:?error - set SECRET_KEY}
+      JWT_ALGORITHM: HS256
+      
+      # Celery & Redis
+      CELERY_BROKER_URL: redis://:${REDIS_PASSWORD:?error}@redis:6379/0
+      CELERY_RESULT_BACKEND: redis://:${REDIS_PASSWORD:?error}@redis:6379/1
+      
+      # Observability
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      LOG_FORMAT: json
+      SENTRY_DSN: ${SENTRY_DSN:-}
+      SENTRY_ENVIRONMENT: production
+      SENTRY_TRACES_SAMPLE_RATE: 0.1
+      
+      # Email
+      MAIL_PROVIDER: ${MAIL_PROVIDER:-sendgrid}
+      MAIL_FROM: ${MAIL_FROM:-noreply@georgensen.com}
+      
+      # Payment
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:?error}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:?error}
+      
+      # CORS
+      CORS_ORIGINS: ${CORS_ORIGINS:-["https://georgensen.com"]}
+    
+    ports:
+      - "8000:8000"
+    
+    volumes:
+      - ./logs:/app/logs
+    
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    
+    # Resource limits
+    deploy:
+      replicas: ${REPLICAS:-1}
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '1'
+          memory: 1G
+    
+    networks:
+      - georgensen-prod
+    
+    labels:
+      - "com.georgensen.component=api"
+    
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+        labels: "com.georgensen.service=backend"
+
+  # Celery Worker (Background Jobs)
+  celery_worker:
+    build:
+      context: .
+      dockerfile: infra/docker/Dockerfile.backend
+    image: georgensen/backend:latest
+    container_name: georgensen-celery-worker-prod
+    restart: always
+    depends_on:
+      - redis
+      - db
+    environment:
+      DEBUG: "False"
+      ENVIRONMENT: production
+      DATABASE_URL: postgresql://${DB_USER:-georgensen}:${DB_PASSWORD:?error}@db:5432/georgensen_prod
+      CELERY_BROKER_URL: redis://:${REDIS_PASSWORD:?error}@redis:6379/0
+      CELERY_RESULT_BACKEND: redis://:${REDIS_PASSWORD:?error}@redis:6379/1
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      SENTRY_DSN: ${SENTRY_DSN:-}
+      MAIL_PROVIDER: ${MAIL_PROVIDER:-sendgrid}
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:?error}
+    
+    command: celery -A app.celery_app worker --loglevel=info --concurrency=8 --prefetch-multiplier=1
+    
+    deploy:
+      replicas: 2
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '1'
+          memory: 1G
+    
+    networks:
+      - georgensen-prod
+    
+    labels:
+      - "com.georgensen.component=worker"
+    
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Celery Beat (Task Scheduler)
+  celery_beat:
+    build:
+      context: .
+      dockerfile: infra/docker/Dockerfile.backend
+    image: georgensen/backend:latest
+    container_name: georgensen-celery-beat-prod
+    restart: always
+    depends_on:
+      - redis
+      - db
+    environment:
+      DEBUG: "False"
+      ENVIRONMENT: production
+      DATABASE_URL: postgresql://${DB_USER:-georgensen}:${DB_PASSWORD:?error}@db:5432/georgensen_prod
+      CELERY_BROKER_URL: redis://:${REDIS_PASSWORD:?error}@redis:6379/0
+      CELERY_RESULT_BACKEND: redis://:${REDIS_PASSWORD:?error}@redis:6379/1
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+    
+    command: celery -A app.celery_app beat --loglevel=info --scheduler django_celery_beat.schedulers:DatabaseScheduler
+    
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+        reservations:
+          cpus: '0.5'
+          memory: 256M
+    
+    networks:
+      - georgensen-prod
+    
+    labels:
+      - "com.georgensen.component=scheduler"
+
+  # Flower (Celery Monitoring)
+  flower:
+    build:
+      context: .
+      dockerfile: infra/docker/Dockerfile.backend
+    image: georgensen/backend:latest
+    container_name: georgensen-flower-prod
+    restart: always
+    depends_on:
+      - celery_worker
+    environment:
+      CELERY_BROKER_URL: redis://:${REDIS_PASSWORD:?error}@redis:6379/0
+      CELERY_RESULT_BACKEND: redis://:${REDIS_PASSWORD:?error}@redis:6379/1
+      FLOWER_PERSISTENT: "true"
+    
+    command: celery -A app.celery_app flower --port=5555 --persistent=True --db=/flower/flower.db --basic_auth=admin:${FLOWER_PASSWORD:?error}
+    
+    volumes:
+      - flower_data:/flower
+    
+    ports:
+      - "5555:5555"
+    
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+    
+    networks:
+      - georgensen-prod
+    
+    labels:
+      - "com.georgensen.component=monitoring"
+
+  # Prometheus (Metrics Collection)
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: georgensen-prometheus-prod
+    restart: always
+    user: "65534"
+    
+    ports:
+      - "9090:9090"
+    
+    volumes:
+      - ./infra/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./infra/prometheus/alert_rules.yml:/etc/prometheus/alert_rules.yml:ro
+      - prometheus_data_prod:/prometheus
+    
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=90d'
+      - '--storage.tsdb.retention.size=50GB'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+      - '--web.enable-lifecycle'
+    
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '1'
+          memory: 1G
+    
+    networks:
+      - georgensen-prod
+    
+    labels:
+      - "com.georgensen.component=metrics"
+
+  # Grafana (Dashboards)
+  grafana:
+    image: grafana/grafana:latest
+    container_name: georgensen-grafana-prod
+    restart: always
+    
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:?error}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_SERVER_DOMAIN: ${GRAFANA_DOMAIN:-monitoring.georgensen.com}
+      GF_SERVER_ROOT_URL: https://${GRAFANA_DOMAIN:-monitoring.georgensen.com}
+      GF_SECURITY_COOKIE_SECURE: "true"
+      GF_SECURITY_COOKIE_HTTPONLY: "true"
+      GF_SECURITY_COOKIE_SAMESITE: "Strict"
+      GF_SMTP_ENABLED: "true"
+      GF_SMTP_HOST: ${SMTP_HOST:-smtp.sendgrid.net}
+      GF_SMTP_USER: ${SMTP_USER:-apikey}
+      GF_SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      GF_SMTP_FROM_ADDRESS: ${MAIL_FROM:-noreply@georgensen.com}
+    
+    ports:
+      - "3000:3000"
+    
+    volumes:
+      - grafana_data_prod:/var/lib/grafana
+      - ./infra/grafana/provisioning:/etc/grafana/provisioning:ro
+    
+    depends_on:
+      - prometheus
+    
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+    
+    networks:
+      - georgensen-prod
+    
+    labels:
+      - "com.georgensen.component=visualization"
+
+  # Nginx Reverse Proxy with SSL/TLS
+  nginx:
+    image: nginx:alpine
+    container_name: georgensen-nginx-prod
+    restart: always
+    
+    ports:
+      - "80:80"
+      - "443:443"
+    
+    volumes:
+      - ./infra/nginx/nginx.prod.conf:/etc/nginx/nginx.conf:ro
+      - ./infra/nginx/ssl:/etc/nginx/ssl:ro
+      - ./infra/nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./logs/nginx:/var/log/nginx
+      - nginx_cache:/var/cache/nginx
+    
+    depends_on:
+      - backend
+    
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    
+    deploy:
+      replicas: 2
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+        reservations:
+          cpus: '0.5'
+          memory: 256M
+    
+    networks:
+      - georgensen-prod
+    
+    labels:
+      - "com.georgensen.component=reverse-proxy"
+
+# ============================================================================
+# VOLUMES (Persistent Data)
+# ============================================================================
+volumes:
+  postgres_data_prod:
+    driver: local
+  redis_data_prod:
+    driver: local
+  prometheus_data_prod:
+    driver: local
+  grafana_data_prod:
+    driver: local
+  flower_data:
+    driver: local
+  nginx_cache:
+    driver: local
+
+# ============================================================================
+# NETWORKS
+# ============================================================================
+networks:
+  georgensen-prod:
+    name: georgensen-prod-network
+    driver: bridge
+    # Remove external access to internal services
+    driver_opts:
+      com.docker.network.bridge.enable_icc: "true"

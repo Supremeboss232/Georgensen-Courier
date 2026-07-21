@@ -1,0 +1,53 @@
+<!-- Dynamic Navbar - switches based on authentication -->
+<nav class="navbar navbar-expand-lg navbar-light bg-light" id="dynamic-navbar">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="/">🚚 Georgensen Courier</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="/">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/services">Services</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/quote">Get Quote</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/tracking">Track</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/about">About</a>
+                </li>
+                <li class="nav-item auth-buttons">
+                    <a class="nav-link" href="/auth/login" class="btn btn-primary ms-2" id="loginBtn">Login</a>
+                    <a class="nav-link" href="/auth/register" class="btn btn-outline-primary ms-2" id="registerBtn">Register</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<script>
+// Load navbar based on auth state
+document.addEventListener('DOMContentLoaded', function() {
+    const token = localStorage.getItem('authToken');
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    
+    if (token && user.email) {
+        // User is authenticated - show logout button
+        const authButtons = document.querySelector('.auth-buttons');
+        if (authButtons) {
+            authButtons.innerHTML = `
+                <li class="flex items-center gap-md" style="display: flex; gap: var(--spacing-md); align-items: center; white-space: nowrap;">
+                    <span>${user.email}</span>
+                    <button class="btn btn-sm btn-ghost" onclick="logout()" style="margin: 0;">Logout</button>
+                </li>
+            `;
+        }
+    }
+});
+</script>

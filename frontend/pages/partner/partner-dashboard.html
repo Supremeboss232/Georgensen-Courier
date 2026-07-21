@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Partner Dashboard - Georgensen Global</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/main.css">
+  <style>
+    .region-selector {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+    .region-btn {
+      padding: 8px 16px;
+      border: 2px solid var(--gray-300);
+      background: var(--white);
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      font-size: 0.9em;
+    }
+    .region-btn.active {
+      background: #4caf50;
+      color: var(--white);
+      border-color: #4caf50;
+    }
+    .region-btn:hover {
+      border-color: #4caf50;
+    }
+    .language-selector {
+      display: flex;
+      gap: 8px;
+      margin-left: auto;
+    }
+    .lang-btn {
+      padding: 6px 12px;
+      border: 1px solid var(--gray-300);
+      background: var(--white);
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.85em;
+      transition: all 0.3s ease;
+    }
+    .lang-btn.active {
+      background: #2196f3;
+      color: var(--white);
+      border-color: #2196f3;
+    }
+    .currency-wallet {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    .wallet-card {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 12px;
+      border-radius: 8px;
+      text-align: center;
+    }
+    .wallet-card small {
+      opacity: 0.8;
+    }
+    .distance-unit-toggle {
+      display: flex;
+      gap: 4px;
+      margin-left: auto;
+    }
+    .toggle-btn {
+      padding: 6px 12px;
+      border: 1px solid var(--gray-300);
+      background: var(--white);
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.85em;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+    .toggle-btn.active {
+      background: #ff9800;
+      color: var(--white);
+      border-color: #ff9800;
+    }
+    .header-controls {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .international-badge {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 0.75em;
+      font-weight: 700;
+      margin: 0 2px;
+    }
+    .region-zone-badge {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 0.8em;
+      font-weight: 600;
+      background: #e3f2fd;
+      color: #1976d2;
+    }
+    .regional-help-btn {
+      padding: 8px 16px;
+      background: #2196f3;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.9em;
+      transition: all 0.3s ease;
+    }
+    .regional-help-btn:hover {
+      background: #1565c0;
+    }
+    
+    /* Global Enhancement Styles */
+    body {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+    
+    main {
+      flex: 1;
+    }
+    
+    .wallet-section {
+      background: var(--gray-50);
+      padding: 16px;
+      border-radius: 8px;
+      margin-bottom: 24px;
+    }
+    
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    
+    .stat-card {
+      background: var(--white);
+      padding: 16px;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+  </style>
+</head>
+<body>
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <div class="container">
+      <div class="logo">Georgensen Partners Global</div>
+      
+      <button class="menu-toggle" id="menuToggle">☰</button>
+      
+      <ul id="navMenu">
+        <li><a href="partner-dashboard.html" style="color: var(--accent);" data-i18n="nav_dashboard">Dashboard</a></li>
+        <li><a href="available-jobs.html" data-i18n="nav_jobs">Available Jobs</a></li>
+        <li><a href="active-deliveries.html" data-i18n="nav_deliveries">Active</a></li>
+        <li><a href="earnings.html" data-i18n="nav_earnings">Earnings</a></li>
+        <li><a href="partner-settings.html" data-i18n="nav_settings">Settings</a></li>
+        <li class="auth-buttons">
+          <span id="partnerName" style="color: var(--white); min-width: 100px;">Loading...</span>
+          <button class="btn btn-sm btn-outline" onclick="logout()" data-i18n="btn_logout">Logout</button>
+        </li>
+      </ul>
+    </div>
+  </nav>
+  
+  <!-- PAGE HEADER -->
+  <section style="background: linear-gradient(135deg, var(--primary) 0%, #00796b 100%); color: var(--white); padding: var(--spacing-xl) var(--spacing-md);">
+    <div class="container">
+      <h1 data-i18n="greeting">Welcome Back, <span id="partnerGreeting">Loading</span>!</h1>
+      <p style="color: rgba(255,255,255,0.9); margin-top: var(--spacing-sm);" data-i18n="subtitle">Global operations dashboard with regional insights</p>
+    </div>
+  </section>
+  
+  <!-- MAIN CONTENT -->
+  <main style="flex: 1; padding: var(--spacing-xl) var(--spacing-md);">
+    <div class="container">
+      <!-- CONTROLS HEADER -->
+      <div class="header-controls">
+        <div>
+          <div class="region-selector" id="regionSelector">
+            <!-- Generated by JS -->
+          </div>
+        </div>
+        <div style="display: flex; gap: 16px; align-items: center;">
+          <button class="regional-help-btn" onclick="openRegionalSupport()" id="regionalHelpBtn" data-i18n="regional_help">🆘 Regional Help</button>
+          <div class="distance-unit-toggle">
+            <button class="toggle-btn active" id="kmToggle" onclick="toggleDistanceUnit('km')" data-i18n="unit_km">km</button>
+            <button class="toggle-btn" id="miToggle" onclick="toggleDistanceUnit('mi')" data-i18n="unit_mi">mi</button>
+          </div>
+          <div class="language-selector" id="languageSelector">
+            <button class="lang-btn active" onclick="changeLanguage('en')">EN</button>
+            <button class="lang-btn" onclick="changeLanguage('es')">ES</button>
+            <button class="lang-btn" onclick="changeLanguage('fr')">FR</button>
+            <button class="lang-btn" onclick="changeLanguage('pt')">PT</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- MULTI-CURRENCY WALLET -->
+      <div class="wallet-section">
+        <h4 data-i18n="global_wallet">Global Wallet</h4>
+        <div class="currency-wallet" id="walletContainer">
+          <div class="wallet-card">
+            <small data-i18n="loading">Loading...</small>
+          </div>
+        </div>
+      </div>
+      
+      <!-- KEY METRICS -->
+      <div class="grid cols-4 gap-lg mb-xl">
+        <div class="card text-center">
+          <div style="font-size: 2.5em; margin-bottom: var(--spacing-md);">📦</div>
+          <h5 data-i18n="metric_today_deliveries">Today's Deliveries</h5>
+          <div style="font-size: 1.8em; font-weight: 700; color: var(--accent);" id="todayDeliveries">0</div>
+        </div>
+        
+        <div class="card text-center">
+          <div style="font-size: 2.5em; margin-bottom: var(--spacing-md);">✅</div>
+          <h5 data-i18n="metric_completed">Completed</h5>
+          <div style="font-size: 1.8em; font-weight: 700; color: #4caf50;" id="completedToday">0</div>
+        </div>
+        
+        <div class="card text-center">
+          <div style="font-size: 2.5em; margin-bottom: var(--spacing-md);">⭐</div>
+          <h5 data-i18n="metric_rating">Rating</h5>
+          <div style="font-size: 1.8em; font-weight: 700; color: #ff9800;" id="partnerRating">4.9</div>
+        </div>
+        
+        <div class="card text-center">
+          <div style="font-size: 2.5em; margin-bottom: var(--spacing-md);">💰</div>
+          <h5 data-i18n="metric_earnings">Today's Earnings</h5>
+          <div style="font-size: 1.8em; font-weight: 700; color: var(--accent);" id="todayEarnings">-</div>
+        </div>
+      </div>
+      
+      <!-- QUICK ACTIONS -->
+      <div class="grid cols-3 gap-lg mb-xl">
+        <button class="card text-center" onclick="location.href='available-jobs.html'" style="cursor: pointer; border: 2px solid var(--accent); background: rgba(255,87,34,0.05);">
+          <div style="font-size: 2em; margin-bottom: var(--spacing-md);">🎯</div>
+          <h5 data-i18n="action_find_jobs">Find Jobs</h5>
+          <p style="color: var(--gray-600); font-size: 0.9em;" data-i18n="action_find_jobs_desc">Browse by region</p>
+        </button>
+        
+        <button class="card text-center" onclick="location.href='active-deliveries.html'" style="cursor: pointer; border: 2px solid #00bcd4; background: rgba(0,188,212,0.05);">
+          <div style="font-size: 2em; margin-bottom: var(--spacing-md);">🚚</div>
+          <h5 data-i18n="action_active">Active Deliveries</h5>
+          <p style="color: var(--gray-600); font-size: 0.9em;" data-i18n="action_active_desc">Track all jobs</p>
+        </button>
+        
+        <button class="card text-center" onclick="location.href='earnings.html'" style="cursor: pointer; border: 2px solid #4caf50; background: rgba(76,175,80,0.05);">
+          <div style="font-size: 2em; margin-bottom: var(--spacing-md);">💵</div>
+          <h5 data-i18n="action_earnings">View Earnings</h5>
+          <p style="color: var(--gray-600); font-size: 0.9em;" data-i18n="action_earnings_desc">Multi-currency</p>
+        </button>
+      </div>
+      
+      <!-- PERFORMANCE STATS -->
+      <div class="grid cols-2 gap-lg mb-xl">
+        <div class="card">
+          <h3 style="margin-bottom: var(--spacing-lg);" data-i18n="stat_this_week">This Week</h3>
+          <div style="display: flex; justify-content: space-around; padding: var(--spacing-lg) 0;">
+            <div style="text-align: center;">
+              <div style="font-size: 1.5em; font-weight: 700;">28</div>
+              <small style="color: var(--gray-600);" data-i18n="stat_deliveries">Deliveries</small>
+            </div>
+            <div style="text-align: center;">
+              <div style="font-size: 1.5em; font-weight: 700; color: #4caf50;">27</div>
+              <small style="color: var(--gray-600);" data-i18n="stat_completed">Completed</small>
+            </div>
+            <div style="text-align: center;">
+              <div style="font-size: 1.5em; font-weight: 700; color: #ff9800;">96%</div>
+              <small style="color: var(--gray-600);" data-i18n="stat_success">Success Rate</small>
+            </div>
+          </div>
+          <div style="height: 8px; background: var(--gray-200); border-radius: 4px; margin-top: var(--spacing-lg); overflow: hidden;">
+            <div style="height: 100%; width: 96%; background: linear-gradient(90deg, var(--accent), #ff9800); border-radius: 4px;"></div>
+          </div>
+        </div>
+        
+        <div class="card">
+          <h3 style="margin-bottom: var(--spacing-lg);" data-i18n="stat_this_month">This Month</h3>
+          <div style="display: flex; justify-content: space-around; padding: var(--spacing-lg) 0;">
+            <div style="text-align: center;">
+              <div style="font-size: 1.5em; font-weight: 700;">142</div>
+              <small style="color: var(--gray-600);" data-i18n="stat_deliveries">Deliveries</small>
+            </div>
+            <div style="text-align: center;">
+              <div style="font-size: 1.5em; font-weight: 700;" id="monthEarningsValue">-</div>
+              <small style="color: var(--gray-600);" data-i18n="stat_earnings">Earnings</small>
+            </div>
+            <div style="text-align: center;">
+              <div style="font-size: 1.5em; font-weight: 700; color: #4caf50;">98%</div>
+              <small style="color: var(--gray-600);" data-i18n="stat_success">Success Rate</small>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- RECENT DELIVERIES WITH REGIONAL INFO -->
+      <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--spacing-lg);">
+          <h3 style="margin: 0;" data-i18n="recent_deliveries">Recent Deliveries (Global)</h3>
+        </div>
+        
+        <div id="recentDeliveries">
+          <div class="alert alert-info" data-i18n="loading_deliveries">Loading deliveries...</div>
+        </div>
+      </div>
+    </div>
+  </main>
+  
+  <!-- FOOTER -->
+  <footer style="background-color: var(--primary); color: var(--white); padding: var(--spacing-xl) var(--spacing-md); margin-top: auto;">
+    <div class="container" style="text-align: center; color: var(--gray-300);">
+      <p>&copy; 2026 Georgensen Partners Global</p>
+    </div>
+  </footer>
+
+  <!-- REGIONAL SUPPORT MODAL -->
+  <div id="supportModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+    <div style="background: white; padding: 24px; border-radius: 12px; max-width: 400px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+      <h3 data-i18n="regional_support">Regional Support</h3>
+      <p style="color: var(--gray-600); margin-bottom: 16px;" id="supportText">Support contact information based on region</p>
+      <div id="supportInfo" style="background: var(--gray-50); padding: 16px; border-radius: 8px; margin-bottom: 16px;">
+        <!-- Generated by JS -->
+      </div>
+      <button onclick="closeRegionalSupport()" class="btn btn-primary" data-i18n="btn_close">Close</button>
+    </div>
+  </div>
+  
+  <script src="/js/core/api.js"></script>
+  <script src="/js/core/auth.js"></script>
+  <script src="/js/core/guards.js"></script>
+  
+  <script>
+    if (!isAuthenticated()) location.href = '../pages/index.html';
+    
+    // GLOBAL CONFIG
+    const REGIONS = {
+      NA: { label: 'North America', currencies: ['USD', 'CAD'], timezone: 'America/Toronto', support: { email: 'support-na@georgensen.com', phone: '+1-888-555-0123' }, zone: 'North America' },
+      EU: { label: 'Europe', currencies: ['EUR', 'GBP'], timezone: 'Europe/London', support: { email: 'support-eu@georgensen.com', phone: '+44-20-7946-0958' }, zone: 'Europe' },
+      APAC: { label: 'Asia-Pacific', currencies: ['AUD', 'SGD', 'JPY'], timezone: 'Asia/Singapore', support: { email: 'support-apac@georgensen.com', phone: '+65-6100-3688' }, zone: 'Asia-Pacific' },
+      LATAM: { label: 'Latin America', currencies: ['BRL', 'ARS'], timezone: 'America/Sao_Paulo', support: { email: 'support-latam@georgensen.com', phone: '+55-11-3179-8000' }, zone: 'Latin America' },
+      MEA: { label: 'Middle East & Africa', currencies: ['AED', 'SAR'], timezone: 'Asia/Dubai', support: { email: 'support-mea@georgensen.com', phone: '+971-4-362-1111' }, zone: 'Middle East & Africa' }
+    };
+
+    const STATUS_INFO = {
+      pending: { color: '#ff9800', label: 'Pending', international: false },
+      confirmed: { color: '#2196f3', label: 'Confirmed', international: false },
+      picked_up: { color: '#00bcd4', label: 'Picked Up', international: false },
+      in_transit: { color: '#9c27b0', label: 'In Transit', international: true },
+      customs_hold: { color: '#f57c00', label: 'Customs Hold', international: true },
+      border_transit: { color: '#e64a19', label: 'Border Transit', international: true },
+      international_transit: { color: '#7b1fa2', label: 'International Transit', international: true },
+      delivered: { color: '#4caf50', label: 'Delivered', international: false },
+      failed: { color: '#f44336', label: 'Failed', international: false }
+    };
+
+    const i18n = {
+      en: {
+        nav_dashboard: 'Dashboard', nav_jobs: 'Available Jobs', nav_deliveries: 'Active', nav_earnings: 'Earnings', nav_settings: 'Settings',
+        btn_logout: 'Logout', btn_close: 'Close', unit_km: 'km', unit_mi: 'mi',
+        greeting: 'Welcome Back, {{name}}!', subtitle: 'Global operations dashboard with regional insights',
+        global_wallet: 'Global Wallet', loading: 'Loading...', loading_deliveries: 'Loading deliveries...',
+        metric_today_deliveries: 'Today\'s Deliveries', metric_completed: 'Completed', metric_rating: 'Rating', metric_earnings: 'Today\'s Earnings',
+        action_find_jobs: 'Find Jobs', action_find_jobs_desc: 'Browse by region', action_active: 'Active Deliveries', action_active_desc: 'Track all jobs', action_earnings: 'View Earnings', action_earnings_desc: 'Multi-currency',
+        stat_this_week: 'This Week', stat_this_month: 'This Month', stat_deliveries: 'Deliveries', stat_completed: 'Completed', stat_success: 'Success Rate', stat_earnings: 'Earnings',
+        recent_deliveries: 'Recent Deliveries (Global)', regional_help: '🆘 Regional Help', regional_support: 'Regional Support', table_date: 'Date', table_order: 'Order', table_route: 'Route', table_zone: 'Zone', table_status: 'Status', table_earnings: 'Earnings', table_eta: 'ETA (Local)'
+      },
+      es: {
+        nav_dashboard: 'Panel de Control', nav_jobs: 'Trabajos Disponibles', nav_deliveries: 'Activos', nav_earnings: 'Ganancias', nav_settings: 'Configuración',
+        btn_logout: 'Cerrar Sesión', btn_close: 'Cerrar', unit_km: 'km', unit_mi: 'mi',
+        greeting: '¡Bienvenido de vuelta, {{name}}!', subtitle: 'Panel de operaciones global con información regional',
+        global_wallet: 'Cartera Global', loading: 'Cargando...', loading_deliveries: 'Cargando entregas...',
+        metric_today_deliveries: 'Entregas Hoy', metric_completed: 'Completado', metric_rating: 'Calificación', metric_earnings: 'Ganancias Hoy',
+        action_find_jobs: 'Buscar Trabajos', action_find_jobs_desc: 'Explorar por región', action_active: 'Entregas Activas', action_active_desc: 'Rastrear trabajos', action_earnings: 'Ver Ganancias', action_earnings_desc: 'Multimoneda',
+        stat_this_week: 'Esta Semana', stat_this_month: 'Este Mes', stat_deliveries: 'Entregas', stat_completed: 'Completado', stat_success: 'Tasa de Éxito', stat_earnings: 'Ganancias',
+        recent_deliveries: 'Entregas Recientes (Global)', regional_help: '🆘 Ayuda Regional', regional_support: 'Soporte Regional', table_date: 'Fecha', table_order: 'Pedido', table_route: 'Ruta', table_zone: 'Zona', table_status: 'Estado', table_earnings: 'Ganancias', table_eta: 'ETA (Hora Local)'
+      },
+      fr: {
+        nav_dashboard: 'Tableau de Bord', nav_jobs: 'Emplois Disponibles', nav_deliveries: 'Actifs', nav_earnings: 'Gains', nav_settings: 'Paramètres',
+        btn_logout: 'Déconnexion', btn_close: 'Fermer', unit_km: 'km', unit_mi: 'mi',
+        greeting: 'Bienvenue, {{name}}!', subtitle: 'Tableau de bord des opérations mondiales avec informations régionales',
+        global_wallet: 'Portefeuille Global', loading: 'Chargement...', loading_deliveries: 'Chargement des livraisons...',
+        metric_today_deliveries: 'Livraisons Aujourd\'hui', metric_completed: 'Complétées', metric_rating: 'Évaluation', metric_earnings: 'Gains Aujourd\'hui',
+        action_find_jobs: 'Trouver des Emplois', action_find_jobs_desc: 'Explorer par région', action_active: 'Livraisons Actives', action_active_desc: 'Suivre les emplois', action_earnings: 'Voir les Gains', action_earnings_desc: 'Multidevises',
+        stat_this_week: 'Cette Semaine', stat_this_month: 'Ce Mois', stat_deliveries: 'Livraisons', stat_completed: 'Complétées', stat_success: 'Taux de Succès', stat_earnings: 'Gains',
+        recent_deliveries: 'Livraisons Récentes (Global)', regional_help: '🆘 Aide Régionale', regional_support: 'Support Régional', table_date: 'Date', table_order: 'Commande', table_route: 'Parcours', table_zone: 'Zone', table_status: 'Statut', table_earnings: 'Gains', table_eta: 'ETA (Heure Locale)'
+      },
+      pt: {
+        nav_dashboard: 'Painel de Controle', nav_jobs: 'Trabalhos Disponíveis', nav_deliveries: 'Ativos', nav_earnings: 'Ganhos', nav_settings: 'Configurações',
+        btn_logout: 'Sair', btn_close: 'Fechar', unit_km: 'km', unit_mi: 'mi',
+        greeting: 'Bem-vindo de volta, {{name}}!', subtitle: 'Painel de operações global com insights regionais',
+        global_wallet: 'Carteira Global', loading: 'Carregando...', loading_deliveries: 'Carregando entregas...',
+        metric_today_deliveries: 'Entregas Hoje', metric_completed: 'Concluído', metric_rating: 'Avaliação', metric_earnings: 'Ganhos Hoje',
+        action_find_jobs: 'Encontrar Trabalhos', action_find_jobs_desc: 'Explorar por região', action_active: 'Entregas Ativas', action_active_desc: 'Rastrear trabalhos', action_earnings: 'Ver Ganhos', action_earnings_desc: 'Multimática',
+        stat_this_week: 'Esta Semana', stat_this_month: 'Este Mês', stat_deliveries: 'Entregas', stat_completed: 'Concluído', stat_success: 'Taxa de Sucesso', stat_earnings: 'Ganhos',
+        recent_deliveries: 'Entregas Recentes (Global)', regional_help: '🆘 Ajuda Regional', regional_support: 'Suporte Regional', table_date: 'Data', table_order: 'Pedido', table_route: 'Rota', table_zone: 'Zona', table_status: 'Status', table_earnings: 'Ganhos', table_eta: 'ETA (Hora Local)'
+      }
+    };
+
+    // STATE
+    let appState = {
+      currentLanguage: 'en',
+      currentRegion: 'NA',
+      distanceUnit: 'km',
+      deliveries: []
+    };
+
+    // UTILITY FUNCTIONS
+    function translate(key, vars = {}) {
+      let text = i18n[appState.currentLanguage][key] || key;
+      Object.entries(vars).forEach(([k, v]) => {
+        text = text.replace(`{{${k}}}`, v);
+      });
+      return text;
+    }
+
+    function updateTranslations() {
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        el.textContent = translate(key);
+      });
+    }
+
+    function changeLanguage(lang) {
+      appState.currentLanguage = lang;
+      document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.remove('active'));
+      event.target.classList.add('active');
+      updateTranslations();
+    }
+
+    function toggleDistanceUnit(unit) {
+      appState.distanceUnit = unit;
+      document.getElementById('kmToggle').classList.remove('active');
+      document.getElementById('miToggle').classList.remove('active');
+      if (unit === 'km') document.getElementById('kmToggle').classList.add('active');
+      else document.getElementById('miToggle').classList.add('active');
+      renderRecentDeliveries(); // Re-render to show new units
+    }
+
+    function convertDistance(km) {
+      if (appState.distanceUnit === 'mi') return (km * 0.621371).toFixed(1) + ' mi';
+      return km.toFixed(1) + ' km';
+    }
+
+    function formatTimezone(isoDate, timezone) {
+      const date = new Date(isoDate);
+      const formatter = new Intl.DateTimeFormat('en-US', {
+        timeZone: timezone,
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+      return formatter.format(date);
+    }
+
+    // REGION SELECTOR
+    function initializeRegionSelector() {
+      const selector = document.getElementById('regionSelector');
+      Object.entries(REGIONS).forEach(([code, region]) => {
+        const btn = document.createElement('button');
+        btn.className = `region-btn ${code === appState.currentRegion ? 'active' : ''}`;
+        btn.textContent = region.label;
+        btn.onclick = () => selectRegion(code);
+        selector.appendChild(btn);
+      });
+    }
+
+    function selectRegion(regionCode) {
+      appState.currentRegion = regionCode;
+      document.querySelectorAll('.region-btn').forEach(btn => btn.classList.remove('active'));
+      event.target.classList.add('active');
+      loadDashboard();
+    }
+
+    // WALLET RENDERING
+    async function renderWallet() {
+      try {
+        const response = await apiCall(`/partners/earnings-summary?region=${appState.currentRegion}&period=month`);
+        const earningsByCurrency = response.earnings_by_currency || {};
+        
+        if (Object.keys(earningsByCurrency).length === 0) {
+          document.getElementById('walletContainer').innerHTML = '<div class="wallet-card"><small>No earnings data</small></div>';
+          return;
+        }
+
+        let html = '';
+        Object.entries(earningsByCurrency).forEach(([currency, data]) => {
+          const gradients = ['#667eea 0%, #764ba2', '#f093fb 0%, #f5576c', '#4facfe 0%, #00f2fe', '#43e97b 0%, #38f9d7', '#fa709a 0%, #fee140'];
+          const gradient = gradients[Object.keys(earningsByCurrency).indexOf(currency) % gradients.length];
+          const symbol = { 'USD': '$', 'CAD': 'C$', 'EUR': '€', 'GBP': '£', 'AUD': 'A$', 'SGD': 'S$', 'JPY': '¥', 'BRL': 'R$', 'ARS': 'ARS$' }[currency] || currency;
+          
+          html += `
+            <div class="wallet-card" style="background: linear-gradient(135deg, ${gradient});">
+              <div style="font-size: 1.3em; font-weight: 700;">${symbol}${data.total.toFixed(2)}</div>
+              <small>${currency}</small>
+            </div>
+          `;
+        });
+        
+        document.getElementById('walletContainer').innerHTML = html;
+      } catch (error) {
+        document.getElementById('walletContainer').innerHTML = '<div class="wallet-card"><small>Error loading wallet</small></div>';
+      }
+    }
+
+    // RECENT DELIVERIES
+    async function renderRecentDeliveries() {
+      try {
+        const response = await apiCall(`/partners/available-jobs?region=${appState.currentRegion}&limit=10`);
+        const deliveries = response || [];
+        
+        if (deliveries.length === 0) {
+          document.getElementById('recentDeliveries').innerHTML = '<div class="alert alert-info">No deliveries</div>';
+          return;
+        }
+
+        const region = REGIONS[appState.currentRegion];
+        const tableHtml = `
+          <table style="width: 100%; border-collapse: collapse;">
+            <thead style="border-bottom: 2px solid var(--gray-200);">
+              <tr>
+                <th style="text-align: left; padding: var(--spacing-md);" data-i18n="table_date">Date</th>
+                <th style="text-align: left; padding: var(--spacing-md);" data-i18n="table_order">Order</th>
+                <th style="text-align: left; padding: var(--spacing-md);" data-i18n="table_route">Route</th>
+                <th style="text-align: center; padding: var(--spacing-md);" data-i18n="table_zone">Zone</th>
+                <th style="text-align: center; padding: var(--spacing-md);" data-i18n="table_status">Status</th>
+                <th style="text-align: right; padding: var(--spacing-md);" data-i18n="table_earnings">Earnings</th>
+                <th style="text-align: left; padding: var(--spacing-md);" data-i18n="table_eta">ETA (Local)</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${deliveries.map((delivery) => {
+                const status = delivery.status || 'pending';
+                const statusInfo = STATUS_INFO[status] || STATUS_INFO.pending;
+                const symbol = (region.currencies[0] === 'USD' ? '$' : region.currencies[0] === 'CAD' ? 'C$' : '€');
+                const eta = delivery.eta ? formatTimezone(delivery.eta, region.timezone) : 'N/A';
+                
+                return `
+                  <tr style="border-bottom: 1px solid var(--gray-100);">
+                    <td style="padding: var(--spacing-md);">${new Date(delivery.created_at).toLocaleDateString()}</td>
+                    <td style="padding: var(--spacing-md); font-weight: 600;">${delivery.tracking_number}</td>
+                    <td style="padding: var(--spacing-md);">${delivery.pickup_city} → ${delivery.delivery_city}</td>
+                    <td style="padding: var(--spacing-md); text-align: center;">
+                      <span class="region-zone-badge">${region.zone}</span>
+                    </td>
+                    <td style="padding: var(--spacing-md); text-align: center;">
+                      <span style="background: ${statusInfo.color}33; color: ${statusInfo.color}; padding: 0.25em 0.75em; border-radius: 0.5em; font-size: 0.85em; font-weight: 600;">
+                        ${statusInfo.label}
+                      </span>
+                      ${statusInfo.international ? `<div class="international-badge" style="background: #fff3e0; color: #e65100; margin-top: 4px;">🌍 Intl</div>` : ''}
+                    </td>
+                    <td style="padding: var(--spacing-md); text-align: right; font-weight: 600; color: #4caf50;">${symbol}${delivery.payout ? delivery.payout.toFixed(2) : '0.00'}</td>
+                    <td style="padding: var(--spacing-md); font-size: 0.9em; color: var(--gray-600);">${eta}</td>
+                  </tr>
+                `;
+              }).join('')}
+            </tbody>
+          </table>
+        `;
+        
+        document.getElementById('recentDeliveries').innerHTML = tableHtml;
+        updateTranslations();
+      } catch (error) {
+        document.getElementById('recentDeliveries').innerHTML = '<div class="alert alert-error">' + error.message + '</div>';
+      }
+    }
+
+    // TODAY'S METRICS
+    async function loadDashboardMetrics() {
+      try {
+        const response = await apiCall(`/partners/profile?region=${appState.currentRegion}`);
+        
+        document.getElementById('todayDeliveries').textContent = response.active_deliveries || 0;
+        document.getElementById('completedToday').textContent = response.completed_today || 0;
+        
+        if (response.rating) {
+          document.getElementById('partnerRating').textContent = response.rating.score || '4.9';
+        }
+        
+        // Render wallet and earnings
+        await renderWallet();
+        
+        // Render recent deliveries
+        await renderRecentDeliveries();
+      } catch (error) {
+        console.error('Error loading dashboard:', error);
+      }
+    }
+
+    // REGIONAL SUPPORT
+    function openRegionalSupport() {
+      const region = REGIONS[appState.currentRegion];
+      const html = `
+        <div style="margin-bottom: 8px;"><strong>Email:</strong> <a href="mailto:${region.support.email}" style="color: #2196f3;">${region.support.email}</a></div>
+        <div><strong>Phone:</strong> <a href="tel:${region.support.phone.replace(/\D/g, '')}" style="color: #2196f3;">${region.support.phone}</a></div>
+      `;
+      document.getElementById('supportInfo').innerHTML = html;
+      document.getElementById('supportModal').style.display = 'flex';
+    }
+
+    function closeRegionalSupport() {
+      document.getElementById('supportModal').style.display = 'none';
+    }
+
+    // MAIN LOAD
+    async function loadDashboard() {
+      await loadDashboardMetrics();
+    }
+
+    // INITIALIZATION
+    const user = getCurrentUser();
+    document.getElementById('partnerName').textContent = user.first_name ? user.first_name.substring(0, 15) : 'Partner';
+    document.getElementById('partnerGreeting').textContent = user.first_name || 'Partner';
+    
+    initializeRegionSelector();
+    updateTranslations();
+    loadDashboard();
+    
+    document.getElementById('menuToggle').addEventListener('click', () => {
+      document.getElementById('navMenu').classList.toggle('mobile-menu-open');
+    });
+  </script>
+</body>
+</html>

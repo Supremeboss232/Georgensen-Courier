@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment - Georgensen Courier</title>
+    <link rel="stylesheet" href="/css/main.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://js.stripe.com/v3/"></script>
+    <style>
+        .invoice-card {
+            border-left: 4px solid #007bff;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .invoice-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .invoice-card.selected {
+            border-left-color: #28a745;
+            background-color: #f0f9ff;
+        }
+        .payment-form-container {
+            background: white;
+            border-radius: 8px;
+            padding: 30px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .StripeElement {
+            box-sizing: border-box;
+            height: 40px;
+            padding: 10px 12px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            background-color: white;
+            box-shadow: 0 1px 3px 0 #e6ebf1;
+            -webkit-transition: box-shadow 150ms ease;
+            transition: box-shadow 150ms ease;
+        }
+        .StripeElement--focus {
+            box-shadow: 0 1px 3px 0 #cfd7df;
+            border: 1px solid #80bdff;
+        }
+        .StripeElement--invalid {
+            border-color: #dc3545;
+        }
+        .payment-status {
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        .payment-status.success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .payment-status.error {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .payment-status.info {
+            background-color: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+        .loading-spinner {
+            display: none;
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+        .btn-container {
+            position: relative;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <div id="navbar"></div>
+
+    <main class="container mt-5 mb-5">
+        <div class="row">
+            <div class="col-lg-10 offset-lg-1">
+                <h1 class="mb-4">Pay Your Invoice</h1>
+
+                <!-- Status Message -->
+                <div id="statusMessage"></div>
+
+                <div class="row">
+                    <!-- Invoice Selection -->
+                    <div class="col-lg-6 mb-4">
+                        <h5 class="mb-3">Select Invoice</h5>
+                        <div id="invoiceList">
+                            <div class="text-center p-4">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                                <p class="mt-2">Loading invoices...</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Payment Form -->
+                    <div class="col-lg-6">
+                        <div class="payment-form-container">
+                            <h5 class="mb-4">Payment Details</h5>
+
+                            <!-- Selected Invoice Summary -->
+                            <div id="invoiceSummary" style="display: none;" class="alert alert-info mb-4">
+                                <div class="row">
+                                    <div class="col-6">
+                                        <small class="text-muted">Invoice #</small>
+                                        <p class="mb-0 fw-bold"><span id="summaryInvoiceNum">--</span></p>
+                                    </div>
+                                    <div class="col-6">
+                                        <small class="text-muted">Amount Due</small>
+                                        <p class="mb-0 fw-bold">$<span id="summaryAmount">0.00</span></p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Payment Method -->
+                            <div class="mb-4">
+                                <label class="form-label">Card Details</label>
+                                <div id="card-element" class="form-control p-0"></div>
+                                <div id="card-errors" class="text-danger mt-2" role="alert"></div>
+                            </div>
+
+                            <!-- Cardholder Name -->
+                            <div class="mb-4">
+                                <label for="cardholderName" class="form-label">Cardholder Name</label>
+                                <input type="text" class="form-control" id="cardholderName" placeholder="John Doe" required>
+                            </div>
+
+                            <!-- Email Confirmation -->
+                            <div class="mb-4">
+                                <label for="receiptEmail" class="form-label">Receipt Email</label>
+                                <input type="email" class="form-control" id="receiptEmail" required>
+                            </div>
+
+                            <!-- Terms & Conditions -->
+                            <div class="form-check mb-4">
+                                <input class="form-check-input" type="checkbox" id="termsCheck" required>
+                                <label class="form-check-label" for="termsCheck">
+                                    I agree to the payment terms and conditions
+                                </label>
+                            </div>
+
+                            <!-- Payment Button -->
+                            <div class="btn-container">
+                                <button id="paymentBtn" class="btn btn-primary w-100 py-2" disabled>
+                                    <span id="btnText">Pay Now</span>
+                                    <span id="btnSpinner" class="loading-spinner">
+                                        <span class="spinner-border spinner-border-sm" role="status"></span>
+                                    </span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Help Text -->
+                        <div class="alert alert-light mt-4" role="alert">
+                            <small class="text-muted">
+                                <strong>💳 Testing:</strong> Use card number 4242 4242 4242 4242 with any future expiration date and any 3-digit CVC.
+                            </small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Payments -->
+                <div class="mt-5">
+                    <h5 class="mb-3">Payment History</h5>
+                    <div id="paymentHistory" class="table-responsive">
+                        <table class="table table-sm">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Invoice #</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody id="paymentHistoryBody">
+                                <tr>
+                                    <td colspan="4" class="text-center text-muted py-3">Loading payment history...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <div id="footer"></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/main.js"></script>
+    <script src="/js/customer/payment.js"></script>
+</body>
+</html>

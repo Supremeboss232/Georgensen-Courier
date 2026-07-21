@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Partner Dashboard - Global</title>
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="stylesheet" href="/assets/lib/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .regional-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 8px;
+        }
+        
+        .region-selector {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+        
+        .region-badge {
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            border: 2px solid transparent;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .region-badge.active {
+            background: white;
+            color: #667eea;
+            border-color: white;
+        }
+        
+        .region-badge:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+        
+        .unit-toggle {
+            display: flex;
+            gap: 0.25rem;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 0.25rem;
+            border-radius: 6px;
+        }
+        
+        .unit-toggle button {
+            padding: 0.4rem 0.8rem;
+            border: none;
+            background: transparent;
+            color: white;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            transition: all 0.3s;
+        }
+        
+        .unit-toggle button.active {
+            background: rgba(255, 255, 255, 0.3);
+        }
+        
+        .language-selector {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 0.4rem 0.8rem;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        
+        .earnings-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .earnings-card {
+            background: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .earnings-currency {
+            font-size: 0.85rem;
+            color: #666;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+        
+        .earnings-amount {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #1a73e8;
+        }
+        
+        .earnings-subtext {
+            font-size: 0.75rem;
+            color: #999;
+            margin-top: 0.5rem;
+        }
+        
+        .compliance-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.3rem 0.7rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+        
+        .compliance-badge.customs-ready {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .compliance-badge.compliance-check {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+        
+        .compliance-badge.vat-included {
+            background: #e7f3ff;
+            color: #004085;
+            border: 1px solid #b8daff;
+        }
+        
+        .zone-label {
+            display: inline-block;
+            padding: 0.3rem 0.6rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-right: 0.5rem;
+        }
+        
+        .zone-na { background: #cfe2ff; color: #084298; }
+        .zone-eu { background: #f8f9fa; color: #212529; border: 1px solid #dee2e6; }
+        .zone-apac { background: #d1ecf1; color: #0c5460; }
+        .zone-latam { background: #f8d7da; color: #721c24; }
+        .zone-mea { background: #d2f4ea; color: #055160; }
+        
+        .distance-unit-indicator {
+            font-size: 0.8rem;
+            color: #999;
+            margin-left: 0.3rem;
+        }
+        
+        .rating-container {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .rating-stars {
+            color: #ffc107;
+        }
+        
+        .rating-value {
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .eta-timezone {
+            font-size: 0.8rem;
+            color: #666;
+            display: block;
+            margin-top: 0.2rem;
+        }
+        
+        .jobs-table-responsive {
+            overflow-x: auto;
+        }
+        
+        .kpi-card {
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .kpi-card .card-title {
+            color: #666;
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .region-icons {
+            font-size: 1.5rem;
+            margin-right: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <nav id="navbar-container"></nav>
+    
+    <!-- Regional Header with Controls -->
+    <div class="regional-header">
+        <div>
+            <h3 style="margin: 0; display: flex; align-items: center;">
+                <span id="regionEmoji" class="region-icons">🌎</span>
+                <span id="regionName">North America</span>
+            </h3>
+            <small id="regionSubtext" style="opacity: 0.9;">Optimized for your operating region</small>
+        </div>
+        <div class="region-selector">
+            <div class="d-flex gap-2 flex-wrap">
+                <button class="region-badge active" data-region="NA" onclick="switchRegion('NA')">🇨🇦🇺🇸 North America</button>
+                <button class="region-badge" data-region="EU" onclick="switchRegion('EU')">🇪🇺 Europe</button>
+                <button class="region-badge" data-region="APAC" onclick="switchRegion('APAC')">🌏 Asia-Pacific</button>
+                <button class="region-badge" data-region="LATAM" onclick="switchRegion('LATAM')">🌎 Latin America</button>
+                <button class="region-badge" data-region="MEA" onclick="switchRegion('MEA')">🌍 Middle East & Africa</button>
+            </div>
+            <div class="unit-toggle">
+                <button class="active" onclick="setDistanceUnit('metric')" title="Kilometers">km</button>
+                <button onclick="setDistanceUnit('imperial')" title="Miles">mi</button>
+            </div>
+            <select class="language-selector" id="languageSelector" onchange="changeLanguage(this.value)">
+                <option value="en">English</option>
+                <option value="es">Español</option>
+                <option value="fr">Français</option>
+                <option value="pt">Português</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="container-fluid mt-4">
+        <!-- Multi-Currency KPI Cards -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card kpi-card">
+                    <div class="card-body">
+                        <h5 class="card-title" data-i18n="active-deliveries">Active Deliveries</h5>
+                        <p class="display-6" id="activeDeliveries">0</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card kpi-card">
+                    <div class="card-body">
+                        <h5 class="card-title" data-i18n="completed-today">Completed Today</h5>
+                        <p class="display-6" id="completedToday">0</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card kpi-card">
+                    <div class="card-body">
+                        <h5 class="card-title" data-i18n="rating">Performance Rating</h5>
+                        <div class="rating-container">
+                            <span class="rating-stars" id="ratingStars">★★★★★</span>
+                            <span class="rating-value" id="ratingValue">0.0/5</span>
+                        </div>
+                        <small id="ratingCount" class="form-text text-muted">--</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card kpi-card">
+                    <div class="card-body">
+                        <h5 class="card-title" data-i18n="earnings-today">Earnings (Today)</h5>
+                        <div id="earningsSummary">
+                            <div class="earnings-amount" id="totalEarningsDisplay">--</div>
+                            <small class="form-text text-muted" id="earningsNote">Loading...</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Multi-Currency Earnings Container -->
+        <div class="row mb-4" id="multiCurrencyContainer" style="display: none;">
+            <div class="col-12">
+                <h5 data-i18n="earnings-by-currency">Earnings by Currency</h5>
+                <div class="earnings-container" id="earningsContainer">
+                    <!-- Dynamically populated -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Available Jobs Table with Global Features -->
+        <div class="row mt-4">
+            <div class="col-md-12">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <h3 data-i18n="available-jobs">Available Jobs</h3>
+                    <div>
+                        <span id="jobsFilterInfo" class="text-muted"></span>
+                    </div>
+                </div>
+                
+                <div class="jobs-table-responsive">
+                    <table class="table table-striped" id="jobsTable">
+                        <thead>
+                            <tr>
+                                <th data-i18n="job-id">Job ID</th>
+                                <th data-i18n="zone">Zone/Region</th>
+                                <th data-i18n="pickup">Pickup</th>
+                                <th data-i18n="delivery">Delivery</th>
+                                <th id="distanceHeader">Distance <span class="distance-unit-indicator">(km)</span></th>
+                                <th data-i18n="payout">Payout</th>
+                                <th data-i18n="compliance">Compliance</th>
+                                <th data-i18n="eta">ETA</th>
+                                <th data-i18n="action">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="jobsTableBody">
+                            <!-- Dynamically populated -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer id="footer-container"></footer>
+    
+    <script src="/js/core/api.js"></script>
+    <script src="/js/core/auth.js"></script>
+    <script src="/js/core/guards.js"></script>
+    <script src="/js/partner/jobs.js"></script>
+    
+    <script>
+        // Global State
+        const globalState = {
+            currentRegion: 'NA',
+            distanceUnit: 'metric',
+            language: 'en',
+            partnerProfile: {},
+            earnings: {},
+            jobs: []
+        };
+
+        // Regional Configuration
+        const REGIONS = {
+            NA: { name: 'North America', emoji: '🌎', currencies: ['CAD', 'USD'], timezone: 'America/Toronto', distanceUnit: 'km', vat: true },
+            EU: { name: 'Europe', emoji: '🇪🇺', currencies: ['EUR', 'GBP'], timezone: 'Europe/London', distanceUnit: 'km', vat: true },
+            APAC: { name: 'Asia-Pacific', emoji: '🌏', currencies: ['AUD', 'SGD', 'JPY'], timezone: 'Asia/Singapore', distanceUnit: 'km', vat: true },
+            LATAM: { name: 'Latin America', emoji: '🌎', currencies: ['MXN', 'BRL', 'ARS'], timezone: 'America/Mexico_City', distanceUnit: 'km', vat: true },
+            MEA: { name: 'Middle East & Africa', emoji: '🌍', currencies: ['AED', 'SAR', 'ZAR'], timezone: 'Asia/Dubai', distanceUnit: 'km', vat: true }
+        };
+
+        // Translation Dictionary
+        const i18n = {
+            en: {
+                'active-deliveries': 'Active Deliveries',
+                'completed-today': 'Completed Today',
+                'rating': 'Performance Rating',
+                'earnings-today': 'Earnings (Today)',
+                'earnings-by-currency': 'Earnings by Currency',
+                'available-jobs': 'Available Jobs',
+                'job-id': 'Job ID',
+                'zone': 'Zone/Region',
+                'pickup': 'Pickup',
+                'delivery': 'Delivery',
+                'payout': 'Payout',
+                'compliance': 'Compliance',
+                'eta': 'ETA (Local Time)',
+                'action': 'Action',
+                'customs-ready': 'Customs Ready',
+                'vat-included': 'VAT Included',
+                'compliance-check': 'Compliance Check Required'
+            },
+            es: {
+                'active-deliveries': 'Entregas Activas',
+                'completed-today': 'Completado Hoy',
+                'rating': 'Calificación de Desempeño',
+                'earnings-today': 'Ganancias (Hoy)',
+                'earnings-by-currency': 'Ganancias por Moneda',
+                'available-jobs': 'Trabajos Disponibles',
+                'job-id': 'ID del Trabajo',
+                'zone': 'Zona/Región',
+                'pickup': 'Recogida',
+                'delivery': 'Entrega',
+                'payout': 'Pago',
+                'compliance': 'Cumplimiento',
+                'eta': 'ETA (Hora Local)',
+                'action': 'Acción'
+            },
+            fr: {
+                'active-deliveries': 'Livraisons Actives',
+                'completed-today': 'Complété Aujourd\'hui',
+                'rating': 'Évaluation de Performance',
+                'earnings-today': 'Gains (Aujourd\'hui)',
+                'earnings-by-currency': 'Gains par Devise',
+                'available-jobs': 'Travaux Disponibles',
+                'job-id': 'ID du Travail',
+                'zone': 'Zone/Région',
+                'pickup': 'Enlèvement',
+                'delivery': 'Livraison',
+                'payout': 'Paiement',
+                'compliance': 'Conformité',
+                'eta': 'ETA (Heure Locale)',
+                'action': 'Action'
+            },
+            pt: {
+                'active-deliveries': 'Entregas Ativas',
+                'completed-today': 'Concluído Hoje',
+                'rating': 'Avaliação de Desempenho',
+                'earnings-today': 'Ganhos (Hoje)',
+                'earnings-by-currency': 'Ganhos por Moeda',
+                'available-jobs': 'Trabalhos Disponíveis',
+                'job-id': 'ID do Trabalho',
+                'zone': 'Zona/Região',
+                'pickup': 'Coleta',
+                'delivery': 'Entrega',
+                'payout': 'Pagamento',
+                'compliance': 'Conformidade',
+                'eta': 'ETA (Hora Local)',
+                'action': 'Ação'
+            }
+        };
+
+        // Switch Region
+        function switchRegion(region) {
+            globalState.currentRegion = region;
+            document.querySelectorAll('.region-badge').forEach(btn => btn.classList.remove('active'));
+            document.querySelector(`[data-region="${region}"]`).classList.add('active');
+            
+            const regionConfig = REGIONS[region];
+            document.getElementById('regionEmoji').textContent = regionConfig.emoji;
+            document.getElementById('regionName').textContent = regionConfig.name;
+            
+            updateDashboard();
+        }
+
+        // Set Distance Unit
+        function setDistanceUnit(unit) {
+            globalState.distanceUnit = unit;
+            document.querySelectorAll('.unit-toggle button').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            const unit_text = unit === 'metric' ? '(km)' : '(mi)';
+            document.getElementById('distanceHeader').innerHTML = 'Distance <span class="distance-unit-indicator">' + unit_text + '</span>';
+            
+            updateJobsTable();
+        }
+
+        // Change Language
+        function changeLanguage(lang) {
+            globalState.language = lang;
+            updatePageTranslations();
+        }
+
+        // Update Page Translations
+        function updatePageTranslations() {
+            document.querySelectorAll('[data-i18n]').forEach(elem => {
+                const key = elem.getAttribute('data-i18n');
+                if (i18n[globalState.language][key]) {
+                    elem.textContent = i18n[globalState.language][key];
+                }
+            });
+        }
+
+        // Update Dashboard
+        async function updateDashboard() {
+            try {
+                // Fetch partner profile with regional context
+                const profile = await fetch(`/api/v1/partners/profile?region=${globalState.currentRegion}`).then(r => r.json());
+                globalState.partnerProfile = profile;
+                
+                // Update KPIs
+                document.getElementById('activeDeliveries').textContent = profile.active_deliveries || 0;
+                document.getElementById('completedToday').textContent = profile.completed_today || 0;
+                
+                // Update Rating from actual profile
+                if (profile.rating) {
+                    const rating = profile.rating.score;
+                    const stars = Math.round(rating);
+                    document.getElementById('ratingValue').textContent = rating.toFixed(1) + '/5';
+                    document.getElementById('ratingStars').textContent = '★'.repeat(stars) + '☆'.repeat(5 - stars);
+                    document.getElementById('ratingCount').textContent = `(${profile.rating.review_count || 0} reviews)`;
+                }
+                
+                // Update Multi-Currency Earnings
+                const regionConfig = REGIONS[globalState.currentRegion];
+                globalState.earnings = profile.earnings_by_currency || {};
+                renderMultiCurrencyEarnings(regionConfig.currencies);
+                
+                // Fetch and render jobs
+                await fetchAndRenderJobs();
+                
+                updatePageTranslations();
+            } catch (error) {
+                console.error('Error updating dashboard:', error);
+            }
+        }
+
+        // Render Multi-Currency Earnings
+        function renderMultiCurrencyEarnings(currencies) {
+            const container = document.getElementById('earningsContainer');
+            const multiContainer = document.getElementById('multiCurrencyContainer');
+            container.innerHTML = '';
+            
+            let totalDisplay = 'Loading...';
+            if (Object.keys(globalState.earnings).length > 0) {
+                Object.entries(globalState.earnings).forEach(([currency, amount]) => {
+                    const card = document.createElement('div');
+                    card.className = 'earnings-card';
+                    card.innerHTML = `
+                        <div class="earnings-currency">${currency}</div>
+                        <div class="earnings-amount">${getCurrencySymbol(currency)}${amount.toFixed(2)}</div>
+                        <div class="earnings-subtext">Available for payout</div>
+                    `;
+                    container.appendChild(card);
+                });
+                
+                // Show multi-currency if more than one currency
+                if (Object.keys(globalState.earnings).length > 1) {
+                    multiContainer.style.display = 'block';
+                }
+            }
+            
+            // Update summary display
+            const primaryCurrency = currencies[0];
+            const primaryAmount = globalState.earnings[primaryCurrency] || 0;
+            document.getElementById('totalEarningsDisplay').textContent = getCurrencySymbol(primaryCurrency) + primaryAmount.toFixed(2);
+            document.getElementById('earningsNote').textContent = `+ ${Object.keys(globalState.earnings).length - 1} other currencies`;
+        }
+
+        // Fetch and Render Jobs
+        async function fetchAndRenderJobs() {
+            try {
+                const response = await fetch(`/api/v1/partners/available-jobs?region=${globalState.currentRegion}`);
+                const jobs = await response.json();
+                globalState.jobs = jobs;
+                updateJobsTable();
+            } catch (error) {
+                console.error('Error fetching jobs:', error);
+                document.getElementById('jobsTableBody').innerHTML = '<tr><td colspan="9" class="text-center text-muted">No jobs available</td></tr>';
+            }
+        }
+
+        // Update Jobs Table
+        function updateJobsTable() {
+            const tbody = document.getElementById('jobsTableBody');
+            tbody.innerHTML = '';
+            
+            globalState.jobs.forEach(job => {
+                const distance = globalState.distanceUnit === 'imperial' ? (job.distance_km * 0.621371).toFixed(1) : job.distance_km;
+                const distanceUnit = globalState.distanceUnit === 'metric' ? 'km' : 'mi';
+                
+                // Determine zone badge
+                const zone = getJobZone(job);
+                const zoneBadge = getZoneBadge(zone);
+                
+                // Compliance badges
+                const complianceBadges = getComplianceBadges(job);
+                
+                // Format ETA with destination timezone
+                const eta = formatETAWithTimezone(job.eta, job.destination_region);
+                
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td><strong>${job.id}</strong></td>
+                    <td>${zoneBadge}</td>
+                    <td>${job.pickup_location}</td>
+                    <td>${job.delivery_location}</td>
+                    <td>${distance} ${distanceUnit}</td>
+                    <td><strong>${getCurrencySymbol(job.currency)}${job.payout.toFixed(2)}</strong></td>
+                    <td>${complianceBadges}</td>
+                    <td><small>${eta}</small></td>
+                    <td><button class="btn btn-sm btn-primary" onclick="acceptJob('${job.id}')">Accept</button></td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // Helper Functions
+        function getJobZone(job) {
+            const zones = {
+                'CA': 'NA', 'US': 'NA',
+                'GB': 'EU', 'DE': 'EU', 'FR': 'EU', 'IT': 'EU', 'ES': 'EU', 'NL': 'EU', 'CH': 'EU',
+                'AU': 'APAC', 'SG': 'APAC', 'JP': 'APAC', 'NZ': 'APAC', 'HK': 'APAC',
+                'MX': 'LATAM', 'BR': 'LATAM', 'AR': 'LATAM', 'CL': 'LATAM',
+                'AE': 'MEA', 'SA': 'MEA', 'ZA': 'MEA', 'EG': 'MEA'
+            };
+            return zones[job.destination_country] || 'UNKNOWN';
+        }
+
+        function getZoneBadge(zone) {
+            const zoneName = {
+                'NA': 'North America', 'EU': 'Europe', 'APAC': 'Asia-Pacific', 'LATAM': 'Latin America', 'MEA': 'Middle East & Africa'
+            };
+            return `<span class="zone-label zone-${zone.toLowerCase()}">${zoneName[zone] || zone}</span>`;
+        }
+
+        function getComplianceBadges(job) {
+            let badges = '';
+            if (job.is_international) {
+                badges += '<span class="compliance-badge customs-ready"><i class="fas fa-check-circle"></i> Customs Ready</span>';
+            }
+            if (job.requires_vat_filing) {
+                badges += '<span class="compliance-badge vat-included"><i class="fas fa-file-invoice"></i> VAT Filing</span>';
+            }
+            if (job.compliance_check_required) {
+                badges += '<span class="compliance-badge compliance-check"><i class="fas fa-exclamation-triangle"></i> Check Required</span>';
+            }
+            return badges || '<span class="text-muted">--</span>';
+        }
+
+        function formatETAWithTimezone(eta, destinationRegion) {
+            const regionConfig = REGIONS[destinationRegion] || REGIONS['NA'];
+            const date = new Date(eta);
+            const formatter = new Intl.DateTimeFormat('en-US', {
+                timeZone: regionConfig.timezone,
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: true
+            });
+            return `${formatter.format(date)}<span class="eta-timezone">${regionConfig.timezone}</span>`;
+        }
+
+        function getCurrencySymbol(currency) {
+            const symbols = {
+                'CAD': 'C$', 'USD': '$', 'EUR': '€', 'GBP': '£',
+                'AUD': 'A$', 'SGD': 'S$', 'JPY': '¥', 'MXN': '$',
+                'BRL': 'R$', 'ARS': '$', 'AED': 'د.إ', 'SAR': 'ر.س', 'ZAR': 'R'
+            };
+            return symbols[currency] || currency;
+        }
+
+        function acceptJob(jobId) {
+            alert(`Job ${jobId} accepted! (Integration with backend required)`);
+            // Call backend API to accept job
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            updateDashboard();
+        });
+    </script>
+</body>
+</html>

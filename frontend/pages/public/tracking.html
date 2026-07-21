@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Track Shipment - Georgensen Courier</title>
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="stylesheet" href="/assets/lib/fontawesome/css/all.min.css">
+    <style>
+        .tracking-timeline {
+            position: relative;
+            padding: 20px 0;
+        }
+        
+        .timeline-item {
+            padding-left: 40px;
+            position: relative;
+            margin-bottom: 30px;
+        }
+        
+        .timeline-marker {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border: 3px solid white;
+            box-shadow: 0 0 0 4px #dee2e6;
+        }
+        
+        .timeline-content {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+        }
+        
+        .timeline-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        
+        .timeline-location {
+            margin: 8px 0;
+        }
+        
+        .timeline-notes {
+            margin: 8px 0;
+            color: #6c757d;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: 500;
+        }
+        
+        .connection-indicator {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 10px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            z-index: 1000;
+        }
+        
+        .connection-indicator.connected {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .connection-indicator.disconnected {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <strong style="color: #1e40af;">Georgensen</strong>
+            </a>
+            <span class="navbar-text">Real-time Tracking</span>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="container py-5">
+        <div class="row">
+            <div class="col-lg-10 offset-lg-1">
+                <!-- Search Section -->
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title">Track Your Shipment</h5>
+                        <form id="trackingForm" onsubmit="handleTrackingSubmit(event)">
+                            <div class="input-group input-group-lg">
+                                <input 
+                                    type="text" 
+                                    class="form-control" 
+                                    id="trackingInput" 
+                                    placeholder="e.g., GJ-CA-TRK001234" 
+                                    pattern="^GJ-[A-Z]{2}-[A-Z0-9]{8,}$"
+                                    title="Format: GJ-CC-XXXXXXXX (e.g., GJ-CA-TRK001234)"
+                                    required
+                                >
+                                <button class="btn btn-primary" type="submit">
+                                    <i class="fas fa-search"></i> Track
+                                </button>
+                            </div>
+                            <small class="form-text text-muted mt-2">Format: GJ-CC-XXXXXXXX (example: GJ-CA-TRK001234 for Canada, GJ-US-SHP005678 for USA)</small>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Tracking Display Section (initially hidden) -->
+                <div id="trackingDisplay" style="display: none;">
+                    <!-- Status Card -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <div class="row align-items-center">
+                                <div class="col">
+                                    <h5 class="mb-0">Shipment Status</h5>
+                                </div>
+                                <div class="col-auto">
+                                    <span id="connectionStatus" class="badge badge-warning">Connecting...</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <p class="text-muted mb-1"><strong>Tracking Number</strong></p>
+                                    <p class="h6 font-monospace" id="displayTrackingNum">-</p>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <p class="text-muted mb-1"><strong>Service Level</strong></p>
+                                    <p class="h6" id="displayServiceLevel">-</p>
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <p class="text-muted mb-1"><strong>Current Status</strong></p>
+                                    <div id="displayStatus">
+                                        <span class="status-badge" style="background: #e2e3e5; color: #383d41;">Pending</span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <p class="text-muted mb-1"><strong>Estimated Delivery</strong></p>
+                                    <p class="h6" id="displayEstimatedDelivery">-</p>
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <p class="text-muted mb-1"><strong>Current Location</strong></p>
+                                    <p class="h6" id="displayLocation">-</p>
+                                    <small id="displayLocationTimezone" class="text-muted">-</small>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <p class="text-muted mb-1"><strong>Last Update</strong></p>
+                                    <p class="h6" id="displayTime">-</p>
+                                </div>
+                            </div>
+                            <!-- Customs Status (for international shipments) -->
+                            <div id="customsStatusSection" style="display: none;">
+                                <hr>
+                                <div class="row">
+                                    <div class="col-md-12 mb-3">
+                                        <p class="text-muted mb-1"><strong><i class="fas fa-passport"></i> Customs Status</strong></p>
+                                        <div id="displayCustomsStatus">
+                                            <span class="status-badge" style="background: #fff3cd; color: #856404;">Pending Clearance</span>
+                                        </div>
+                                        <small id="displayClearanceInfo" class="text-muted d-block mt-2">-</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Addresses -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="mb-0">Delivery Information</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <p class="text-muted mb-1"><i class="fas fa-location-dot"></i> <strong>Pickup Address</strong></p>
+                                    <p id="displayPickup">-</p>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <p class="text-muted mb-1"><i class="fas fa-check-circle"></i> <strong>Delivery Address</strong></p>
+                                    <p id="displayDelivery">-</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Timeline -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">Tracking Timeline</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="tracking-timeline" id="trackingHistory">
+                                <p class="text-muted text-center">No updates yet...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Connection Indicator -->
+    <div id="connectionIndicator" class="connection-indicator disconnected">
+        <i class="fas fa-circle" style="font-size: 8px;"></i> Offline
+    </div>
+
+    <!-- Scripts -->
+    <script src="/js/main.js"></script>
+    <script src="/js/core/api.js"></script>
+    <script src="/js/core/guards.js"></script>
+    <script src="/js/tracking-realtime.js"></script>
+    <script src="/js/public/tracking.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

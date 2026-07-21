@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>International Disputes Management - Georgensen Courier</title>
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="stylesheet" href="/assets/lib/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/assets/lib/fontawesome/css/all.min.css">
+    <style>
+        /* Admin Navbar Styles */
+        .admin-navbar { background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%); color: white; padding: 0; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); }
+        .admin-navbar-container { max-width: 100%; margin: 0 auto; padding: 0 1.5rem; display: flex; justify-content: space-between; align-items: center; height: 70px; }
+        .navbar-left { display: flex; align-items: center; gap: 2rem; flex: 1; }
+        .navbar-brand { display: flex; align-items: center; }
+        .brand-logo { display: flex; align-items: center; gap: 0.75rem; text-decoration: none; color: white; font-weight: 700; font-size: 1.1rem; white-space: nowrap; }
+        .brand-icon { font-size: 1.5rem; }
+        .brand-text { display: none; }
+        @media (min-width: 768px) { .brand-text { display: inline; } }
+        .nav-menu { list-style: none; margin: 0; padding: 0; display: flex; gap: 0.5rem; }
+        .nav-item { position: relative; }
+        .nav-link { display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; color: rgba(255, 255, 255, 0.8); text-decoration: none; font-size: 0.95rem; border-radius: 4px; transition: all 0.3s ease; white-space: nowrap; }
+        .nav-link:hover { background: rgba(255, 255, 255, 0.15); color: white; }
+        .nav-link.active { background: rgba(255, 255, 255, 0.25); color: white; border-bottom: 3px solid #3498db; }
+        .nav-link span { display: none; }
+        @media (min-width: 992px) { .nav-link span { display: inline; } }
+        .navbar-right { display: flex; align-items: center; gap: 1.5rem; }
+        .admin-actions { display: flex; gap: 0.75rem; }
+        .action-btn { background: rgba(255, 255, 255, 0.1); border: none; color: white; padding: 0.5rem 0.75rem; border-radius: 4px; cursor: pointer; font-size: 1rem; transition: all 0.3s ease; position: relative; }
+        .action-btn:hover { background: rgba(255, 255, 255, 0.2); }
+        .notification-badge { position: absolute; top: -5px; right: -5px; background: #e74c3c; color: white; border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: bold; }
+        .user-info-section { display: flex; align-items: center; position: relative; }
+        .user-avatar { width: 36px; height: 36px; background: rgba(255, 255, 255, 0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; cursor: pointer; transition: all 0.3s ease; }
+        .user-avatar:hover { background: rgba(255, 255, 255, 0.3); }
+        .user-menu { position: absolute; top: 50px; right: 0; background: white; color: #333; border-radius: 4px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); min-width: 200px; z-index: 1001; padding: 0.5rem 0; display: none; }
+        .user-menu.show { display: block; }
+        .user-menu-header { padding: 0.75rem 1rem; }
+        .user-name { display: block; font-weight: 600; color: #2c3e50; }
+        .user-role { display: block; color: #7f8c8d; }
+        .menu-item { display: flex; align-items: center; gap: 0.75rem; width: 100%; padding: 0.75rem 1rem; background: none; border: none; color: #2c3e50; cursor: pointer; text-decoration: none; transition: all 0.2s ease; font-size: 0.95rem; }
+        .menu-item:hover { background: #f8f9fa; color: #2c3e50; }
+        .admin-search-bar { padding: 1rem 1.5rem; background: rgba(0, 0, 0, 0.1); border-top: 1px solid rgba(255, 255, 255, 0.1); }
+        .search-input { width: 100%; padding: 0.75rem 1rem; background: white; border: 1px solid #ddd; border-radius: 4px; font-size: 0.95rem; }
+        .search-results { margin-top: 0.75rem; max-height: 400px; overflow-y: auto; }
+        .search-result-item { padding: 0.75rem 1rem; background: white; border-bottom: 1px solid #eee; cursor: pointer; display: flex; align-items: center; gap: 0.75rem; }
+        .search-result-item:hover { background: #f8f9fa; }
+        .search-result-icon { color: #3498db; }
+        .search-result-content { flex: 1; }
+        .search-result-title { font-weight: 600; color: #2c3e50; }
+        .search-result-meta { font-size: 0.85rem; color: #7f8c8d; }
+        @media (max-width: 768px) { .admin-navbar-container { padding: 0 1rem; height: 60px; } .navbar-left { gap: 1rem; } .nav-menu { gap: 0rem; } .nav-link { padding: 0.5rem 0.75rem; } .admin-actions { gap: 0.5rem; } .action-btn { padding: 0.5rem 0.5rem; } }
+        
+        .disputes-header { padding: 2rem; background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%); color: white; border-radius: 8px; margin-bottom: 2rem; }
+        .disputes-header h1 { font-size: 2.5rem; margin: 0 0 0.5rem 0; }
+        .disputes-header p { margin: 0; opacity: 0.9; }
+        .filter-section { padding: 1.5rem; background: #f8f9fa; border-radius: 8px; margin-bottom: 2rem; }
+        .filter-group { display: flex; gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap; }
+        .filter-group select, .filter-group input { flex: 1; min-width: 150px; }
+        .skeleton-row { background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%); background-size: 200% 100%; animation: loading 1.5s infinite; height: 60px; }
+        @keyframes loading { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+        .status-badge { display: inline-block; padding: 0.35rem 0.75rem; border-radius: 20px; font-size: 0.85rem; font-weight: 500; }
+        .status-open { background: #f8d7da; color: #842029; }
+        .status-in-review { background: #fff3cd; color: #856404; }
+        .status-resolved { background: #d1e7dd; color: #0f5132; }
+        .status-escalated { background: #cfe2ff; color: #084298; }
+        .severity-badge { display: inline-block; padding: 0.35rem 0.75rem; border-radius: 20px; font-size: 0.85rem; font-weight: 500; }
+        .severity-low { background: #e7f3ff; color: #0066cc; }
+        .severity-medium { background: #fff3cd; color: #856404; }
+        .severity-high { background: #f8d7da; color: #842029; }
+        .sla-warning { padding: 0.5rem 1rem; border-radius: 4px; background: #fff3cd; color: #856404; font-size: 0.9rem; }
+        .sla-breach { padding: 0.5rem 1rem; border-radius: 4px; background: #f8d7da; color: #842029; font-size: 0.9rem; }
+        .region-chip { display: inline-block; padding: 0.25rem 0.75rem; background: #e9ecef; border-radius: 12px; font-size: 0.85rem; margin-right: 0.5rem; }
+        .currency-display { font-weight: 600; font-size: 1rem; }
+        .dispute-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1050; }
+        .dispute-modal.show { display: flex; align-items: center; justify-content: center; }
+        .modal-content-custom { background: white; border-radius: 12px; padding: 2rem; max-width: 1100px; max-height: 90vh; overflow-y: auto; box-shadow: 0 10px 40px rgba(0,0,0,0.3); }
+        .modal-close { position: absolute; top: 1rem; right: 1.5rem; cursor: pointer; font-size: 1.5rem; color: #666; }
+        .modal-tabs { display: flex; gap: 1rem; border-bottom: 2px solid #e0e0e0; margin-bottom: 1.5rem; flex-wrap: wrap; }
+        .modal-tab { padding: 0.75rem 0; border-bottom: 3px solid transparent; cursor: pointer; color: #666; font-weight: 500; font-size: 0.95rem; }
+        .modal-tab.active { color: #e74c3c; border-bottom-color: #e74c3c; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .info-row { padding: 0.75rem 0; border-bottom: 1px solid #e0e0e0; display: flex; justify-content: space-between; }
+        .info-row:last-child { border-bottom: none; }
+        .info-label { font-weight: 600; color: #333; }
+        .info-value { color: #666; }
+        .document-list { list-style: none; padding: 0; }
+        .document-item { padding: 0.75rem; background: #f8f9fa; border-radius: 4px; margin-bottom: 0.5rem; display: flex; justify-content: space-between; align-items: center; }
+        .timezone-info { background: #f8f9fa; padding: 1rem; border-radius: 8px; margin: 1rem 0; }
+        .timezone-row { display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid #e0e0e0; }
+        .timezone-row:last-child { border-bottom: none; }
+        .message-log { background: #f8f9fa; max-height: 400px; overflow-y: auto; border-radius: 8px; }
+        .message-item { padding: 1rem; border-bottom: 1px solid #e0e0e0; }
+        .message-item:last-child { border-bottom: none; }
+        .message-sender { font-weight: 600; color: #2c3e50; }
+        .message-timestamp { font-size: 0.85rem; color: #999; }
+        .message-content { margin-top: 0.5rem; color: #555; line-height: 1.5; }
+        .bulk-actions-bar { padding: 1rem; background: #f0f0f0; border-radius: 4px; margin-bottom: 1rem; display: none; }
+        .bulk-actions-bar.active { display: block; }
+        .evidence-vault-btn { margin: 0.5rem 0; }
+    </style>
+</head>
+<body>
+    <!-- Admin Navigation Bar -->
+    <nav class="admin-navbar">
+        <div class="admin-navbar-container">
+            <div class="navbar-left">
+                <div class="navbar-brand">
+                    <a href="/admin/dashboard" class="brand-logo">
+                        <span class="brand-icon">🚚</span>
+                        <span class="brand-text">Georgensen Admin</span>
+                    </a>
+                </div>
+                <ul class="nav-menu">
+                    <li class="nav-item"><a href="/admin/dashboard" class="nav-link" data-page="dashboard"><i class="fas fa-chart-line"></i><span>Dashboard</span></a></li>
+                    <li class="nav-item"><a href="/admin/orders" class="nav-link" data-page="orders"><i class="fas fa-boxes"></i><span>Orders</span></a></li>
+                    <li class="nav-item"><a href="/admin/partners" class="nav-link" data-page="partners"><i class="fas fa-handshake"></i><span>Partners</span></a></li>
+                    <li class="nav-item"><a href="/admin/users" class="nav-link" data-page="users"><i class="fas fa-users"></i><span>Users</span></a></li>
+                    <li class="nav-item"><a href="/admin/disputes" class="nav-link" data-page="disputes"><i class="fas fa-balance-scale"></i><span>Disputes</span></a></li>
+                    <li class="nav-item"><a href="/admin/reports" class="nav-link" data-page="reports"><i class="fas fa-file-chart-line"></i><span>Reports</span></a></li>
+                </ul>
+            </div>
+            <div class="navbar-right">
+                <div class="admin-actions">
+                    <button class="action-btn search-btn" title="Search" onclick="toggleSearch()"><i class="fas fa-search"></i></button>
+                    <button class="action-btn notifications-btn" title="Notifications" onclick="toggleNotifications()"><i class="fas fa-bell"></i><span class="notification-badge" id="notificationBadge" style="display:none;">3</span></button>
+                    <button class="action-btn settings-btn" title="Settings" onclick="openSettings()"><i class="fas fa-cog"></i></button>
+                </div>
+                <div class="user-info-section">
+                    <div class="user-avatar" onclick="toggleUserMenu()"><span id="userInitial">A</span></div>
+                    <div class="user-menu dropdown-menu" id="userMenu">
+                        <div class="user-menu-header"><span class="user-name" id="adminName">Admin User</span><small class="user-role" id="adminRole">Operations Lead</small></div>
+                        <hr style="margin: 0.5rem 0;">
+                        <a href="/admin/profile" class="menu-item"><i class="fas fa-user-circle"></i> My Profile</a>
+                        <a href="/admin/settings" class="menu-item"><i class="fas fa-sliders-h"></i> Settings</a>
+                        <a href="/admin/logs" class="menu-item"><i class="fas fa-history"></i> Activity Logs</a>
+                        <hr style="margin: 0.5rem 0;">
+                        <button class="menu-item" onclick="logoutAdmin()"><i class="fas fa-sign-out-alt"></i> Logout</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="admin-search-bar" id="searchBar" style="display:none;">
+            <input type="text" class="search-input" placeholder="Search orders, partners, disputes, customers..." id="adminSearch" onkeyup="handleAdminSearch()">
+            <div class="search-results" id="searchResults"></div>
+        </div>
+    </nav>
+    
+    <div class="container-fluid mt-4">
+        <!-- Disputes Header -->
+        <div class="disputes-header">
+            <h1><i class="fas fa-balance-scale"></i> International Disputes Management</h1>
+            <p>Multi-jurisdictional claim resolution with currency conversion, SLA tracking, and regional legal compliance</p>
+        </div>
+
+        <!-- Filters Section -->
+        <div class="filter-section">
+            <div class="row mb-3">
+                <div class="col-md-3">
+                    <label class="form-label"><strong>Region:</strong></label>
+                    <select id="regionFilter" class="form-select" onchange="filterDisputes()">
+                        <option value="">🌍 All Regions</option>
+                        <option value="north_america">🇺🇸 North America</option>
+                        <option value="europe">🇪🇺 Europe</option>
+                        <option value="asia_pacific">🌏 Asia Pacific</option>
+                        <option value="middle_east">🇦🇪 Middle East</option>
+                        <option value="africa">🇿🇦 Africa</option>
+                        <option value="latin_america">🇧🇷 Latin America</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label"><strong>Status:</strong></label>
+                    <select id="statusFilter" class="form-select" onchange="filterDisputes()">
+                        <option value="">All Status</option>
+                        <option value="open">🔴 Open</option>
+                        <option value="in_review">⏳ In Review</option>
+                        <option value="escalated">⚡ Escalated</option>
+                        <option value="resolved">✓ Resolved</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label"><strong>Severity:</strong></label>
+                    <select id="severityFilter" class="form-select" onchange="filterDisputes()">
+                        <option value="">All Levels</option>
+                        <option value="low">🟢 Low</option>
+                        <option value="medium">🟡 Medium</option>
+                        <option value="high">🔴 High</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label"><strong>SLA Status:</strong></label>
+                    <select id="slaFilter" class="form-select" onchange="filterDisputes()">
+                        <option value="">All SLAs</option>
+                        <option value="on_track">✓ On Track</option>
+                        <option value="warning">⚠ Warning</option>
+                        <option value="breached">✕ Breached</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-12">
+                    <input type="text" id="disputeSearch" class="form-control" placeholder="Search by Dispute ID, Order ID, or Customer..." onkeyup="searchDisputes()" />
+                </div>
+            </div>
+        </div>
+
+        <!-- SLA Health Summary -->
+        <div class="row mb-3">
+            <div class="col-md-3">
+                <div class="card">
+                    <div class="card-body">
+                        <h6 class="card-title">Total Disputes</h6>
+                        <h3 id="totalCount">0</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card">
+                    <div class="card-body">
+                        <h6 class="card-title">On Track</h6>
+                        <h3 id="onTrackCount" style="color: #28a745;">0</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card">
+                    <div class="card-body">
+                        <h6 class="card-title">⚠ Warning</h6>
+                        <h3 id="warningCount" style="color: #ffc107;">0</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card">
+                    <div class="card-body">
+                        <h6 class="card-title">✕ Breached</h6>
+                        <h3 id="breachedCount" style="color: #dc3545;">0</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bulk Actions Bar -->
+        <div class="bulk-actions-bar" id="bulkActionsBar">
+            <div class="d-flex gap-2 align-items-center">
+                <span id="selectedCount">0 disputes selected</span>
+                <button class="btn btn-sm btn-warning" onclick="bulkRegionalEscalate()">
+                    <i class="fas fa-exclamation-triangle"></i> Escalate for Region
+                </button>
+                <button class="btn btn-sm btn-success" onclick="bulkRegionalResolve()">
+                    <i class="fas fa-check-circle"></i> Batch Resolve
+                </button>
+                <button class="btn btn-sm btn-info" onclick="sendRegionalNotification()">
+                    <i class="fas fa-envelope"></i> Notify Regional Teams
+                </button>
+                <button class="btn btn-sm btn-danger" onclick="resetSelection()">
+                    <i class="fas fa-times"></i> Clear
+                </button>
+            </div>
+        </div>
+
+        <!-- Disputes Table -->
+        <div class="card">
+            <div class="card-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Regional Disputes <span id="disputeCount">(0)</span></h5>                    <div class="btn-group" role="group">
+                        <button type="button" class="btn btn-sm btn-success" onclick="createNewDispute()" title="File new dispute">
+                            <i class="fas fa-plus"></i> New Dispute
+                        </button>
+                        <button type="button" class="btn btn-sm btn-info" onclick="viewDisputeAnalytics()" title="View dispute metrics">
+                            <i class="fas fa-chart-bar"></i> Analytics
+                        </button>
+                        <button type="button" class="btn btn-sm btn-secondary" onclick="downloadDisputeData()" title="Download disputes">
+                            <i class="fas fa-download"></i> Export
+                        </button>
+                    </div>                </div>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th style="width: 40px;"><input type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAll(this)" /></th>
+                            <th>Dispute ID</th>
+                            <th>Order/Consignment</th>
+                            <th>Region</th>
+                            <th>Category</th>
+                            <th>Claim Amount</th>
+                            <th>Status</th>
+                            <th>Severity</th>
+                            <th>SLA Time</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="disputesTableBody">
+                        <!-- Skeleton Loaders -->
+                        <tr class="skeleton-row"><td colspan="10"></td></tr>
+                        <tr class="skeleton-row"><td colspan="10"></td></tr>
+                        <tr class="skeleton-row"><td colspan="10"></td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dispute Detail Modal -->
+    <div class="dispute-modal" id="disputeModal">
+        <div class="modal-content-custom">
+            <span class="modal-close" onclick="closeDisputeModal()">&times;</span>
+            
+            <h4 id="modalDisputeId">Dispute Details</h4>
+            
+            <!-- Modal Tabs -->
+            <div class="modal-tabs">
+                <div class="modal-tab active" onclick="switchTab('overview')">
+                    <i class="fas fa-file-alt"></i> Overview
+                </div>
+                <div class="modal-tab" onclick="switchTab('financial')">
+                    <i class="fas fa-dollar-sign"></i> Financial
+                </div>
+                <div class="modal-tab" onclick="switchTab('evidence')">
+                    <i class="fas fa-warehouse"></i> Evidence Vault
+                </div>
+                <div class="modal-tab" onclick="switchTab('timeline')">
+                    <i class="fas fa-history"></i> Communication Log
+                </div>
+                <div class="modal-tab" onclick="switchTab('sla')">
+                    <i class="fas fa-clock"></i> SLA & Timezone
+                </div>
+            </div>
+
+            <!-- Overview Tab -->
+            <div id="overview" class="tab-content active">
+                <div class="info-row">
+                    <span class="info-label">Dispute ID:</span>
+                    <span class="info-value" id="modalDisputeIdValue">---</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Order ID:</span>
+                    <span class="info-value" id="modalOrderIdValue">---</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Region:</span>
+                    <span class="info-value" id="modalRegionValue">---</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Category:</span>
+                    <span class="info-value" id="modalCategoryValue">---</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Plaintiff (Filer):</span>
+                    <span class="info-value" id="modalPlaintiffValue">---</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Defendant (Respondent):</span>
+                    <span class="info-value" id="modalDefendantValue">---</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Description:</span>
+                    <span class="info-value" id="modalDescriptionValue">---</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Status:</span>
+                    <span class="info-value" id="modalStatusValue">---</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Severity:</span>
+                    <span class="info-value" id="modalSeverityValue">---</span>
+                </div>
+            </div>
+
+            <!-- Financial Tab -->
+            <div id="financial" class="tab-content">
+                <h6>Currency & Claims Analysis</h6>
+                <div class="info-row">
+                    <span class="info-label">Original Transaction Currency:</span>
+                    <span class="info-value" id="modalOriginalCurrency">---</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Claim Amount (Original):</span>
+                    <span class="info-value" id="modalClaimAmountOriginal">---</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Platform Currency:</span>
+                    <span class="info-value" id="modalPlatformCurrency">USD</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Exchange Rate (at dispute):</span>
+                    <span class="info-value" id="modalExchangeRate">---</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Equivalent USD Amount:</span>
+                    <span class="info-value currency-display" id="modalClaimAmountUsd">---</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Refund Processed:</span>
+                    <span class="info-value" id="modalRefundStatus">---</span>
+                </div>
+            </div>
+
+            <!-- Evidence Vault Tab -->
+            <div id="evidence" class="tab-content">
+                <h6>Required Regional Documentation</h6>
+                <ul class="document-list" id="evidenceVault">
+                    <li class="document-item">Loading evidence requirements...</li>
+                </ul>
+                <div class="mt-3">
+                    <button class="btn btn-sm btn-primary evidence-vault-btn" onclick="viewEvidenceVault()">
+                        <i class="fas fa-folder-open"></i> Open Full Evidence Vault
+                    </button>
+                    <button class="btn btn-sm btn-secondary evidence-vault-btn" onclick="requestMoreDocuments()">
+                        <i class="fas fa-file-upload"></i> Request Additional Docs
+                    </button>
+                </div>
+            </div>
+
+            <!-- Communication Log Tab -->
+            <div id="timeline" class="tab-content">
+                <h6>Regional Communication Timeline</h6>
+                <div class="message-log" id="communicationLog">
+                    <div class="message-item text-center text-muted py-3">
+                        <small>Loading communication history...</small>
+                    </div>
+                </div>
+                <div class="mt-3">
+                    <label class="form-label"><strong>Add Resolution Note:</strong></label>
+                    <textarea id="resolutionNote" class="form-control" rows="3" placeholder="Document coordination, findings, or resolution steps..."></textarea>
+                    <button class="btn btn-sm btn-primary mt-2" onclick="addCommunicationNote()">
+                        <i class="fas fa-plus"></i> Add Note
+                    </button>
+                </div>
+            </div>
+
+            <!-- SLA & Timezone Tab -->
+            <div id="sla" class="tab-content">
+                <h6>SLA & Multi-Timezone Tracking</h6>
+                <div class="info-row">
+                    <span class="info-label">Regional SLA Days:</span>
+                    <span class="info-value" id="modalSlaRange">---</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Filed Date:</span>
+                    <span class="info-value" id="modalFiledDate">---</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">SLA Due Date:</span>
+                    <span class="info-value" id="modalDueDate">---</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Days Remaining:</span>
+                    <span class="info-value" id="modalDaysRemaining">---</span>
+                </div>
+                <div id="slaAlert" class="mt-3"></div>
+                <h6 class="mt-3">Timezone Awareness</h6>
+                <div class="timezone-info">
+                    <div class="timezone-row">
+                        <span><strong>Filed Time (UTC):</strong></span>
+                        <span id="tzFiledUtc">---</span>
+                    </div>
+                    <div class="timezone-row">
+                        <span><strong>Region Local Time:</strong></span>
+                        <span id="tzRegionTime">---</span>
+                    </div>
+                    <div class="timezone-row">
+                        <span><strong>Admin Local Time:</strong></span>
+                        <span id="tzAdminTime">---</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="mt-4">
+                <button class="btn btn-warning" onclick="escalateDispute()">
+                    <i class="fas fa-exclamation-triangle"></i> Escalate to Regional Team
+                </button>
+                <button class="btn btn-success" onclick="resolveDispute()">
+                    <i class="fas fa-check-circle"></i> Mark Resolved
+                </button>
+                <button class="btn btn-info" onclick="adjustRefund()">
+                    <i class="fas fa-credit-card"></i> Adjust Refund
+                </button>
+                <button class="btn btn-outline-primary btn-sm" onclick="viewDisputeOrder()">View Order</button>
+                <button class="btn btn-outline-warning btn-sm" onclick="viewDisputePartner()">View Partner</button>
+                <button class="btn btn-secondary" onclick="closeDisputeModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <footer id="footer-container"></footer>
+    <script src="/js/core/api.js"></script>
+    <script src="/js/core/auth.js"></script>
+    <script src="/js/core/guards.js"></script>
+    <script src="/js/admin/disputes.js"></script>
+</body>
+</html>

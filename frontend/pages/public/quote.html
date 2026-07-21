@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Get instant shipping quotes for North American and global logistics. CAD/USD pricing with regional tax calculations.">
+    <meta name="keywords" content="shipping quote, courier, Canada logistics, US logistics, international shipping, postal code calculator">
+    <title>Instant Quote Calculator - Georgensen Courier | Canada & US Logistics</title>
+    
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="/assets/lib/bootstrap/css/bootstrap.min.css">
+    
+    <!-- FontAwesome (local) -->
+    <link rel="stylesheet" href="/assets/lib/fontawesome/css/all.min.css">
+    
+    <!-- Main CSS -->
+    <link rel="stylesheet" href="/css/main.css">
+    
+    <style>
+        :root {
+            --primary-color: #667eea;
+            --secondary-color: #764ba2;
+            --accent-color: #ffc107;
+            --danger-color: #dc3545;
+            --success-color: #28a745;
+            --info-color: #17a2b8;
+            --warning-color: #ffc107;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+        }
+
+        .navbar-custom {
+            background: white;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .navbar-brand {
+            font-weight: 700;
+            color: var(--primary-color) !important;
+            font-size: 1.3em;
+        }
+
+        /* Language & Currency Toggle Bar */
+        .controls-bar {
+            background: white;
+            border-bottom: 1px solid #e9ecef;
+            padding: 12px 0;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+        }
+
+        .controls-bar .btn-group {
+            display: flex;
+            gap: 5px;
+        }
+
+        .toggle-btn {
+            padding: 6px 12px;
+            font-size: 0.85em;
+            border: 1px solid #dee2e6;
+            background: white;
+            color: #495057;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+
+        .toggle-btn:hover {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        .toggle-btn.active {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .page-header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            padding: 30px 0;
+            margin-bottom: 40px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .page-header h1 {
+            font-weight: 700;
+            margin-bottom: 10px;
+            font-size: 2.2em;
+        }
+
+        .page-header p {
+            font-size: 1.1em;
+            opacity: 0.95;
+            margin-bottom: 0;
+        }
+
+        .quote-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.08);
+            padding: 40px;
+            margin-bottom: 40px;
+        }
+
+        .form-section-title {
+            font-weight: 600;
+            color: var(--primary-color);
+            font-size: 1.1em;
+            margin-top: 25px;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .form-control, .form-select {
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+            padding: 10px 12px;
+            font-size: 0.95em;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+
+        .small-hint {
+            font-size: 0.85em;
+            color: #6c757d;
+            margin-top: 4px;
+            display: block;
+        }
+
+        .dimensions-group {
+            display: flex;
+            gap: 8px;
+            align-items: flex-end;
+        }
+
+        .dimensions-group input {
+            flex: 1;
+        }
+
+        .dimensions-group select {
+            max-width: 90px;
+        }
+
+        .dimension-separator {
+            color: #999;
+            font-weight: bold;
+            align-self: center;
+            padding-bottom: 8px;
+        }
+
+        .weight-group {
+            display: flex;
+            gap: 8px;
+        }
+
+        .weight-group input {
+            flex: 1;
+        }
+
+        .weight-group select {
+            max-width: 100px;
+        }
+
+        .btn-calculate {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            border: none;
+            color: white;
+            padding: 14px 28px;
+            font-weight: 600;
+            font-size: 1.05em;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-top: 15px;
+        }
+
+        .btn-calculate:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+            color: white;
+        }
+
+        .btn-calculate:active {
+            transform: translateY(0);
+        }
+
+        /* Quote Result Styling */
+        .quote-result-panel {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+            border: 2px solid var(--primary-color);
+            border-radius: 8px;
+            padding: 24px;
+            margin-top: 30px;
+        }
+
+        .quote-section {
+            background: white;
+            padding: 16px;
+            border-radius: 6px;
+            margin-bottom: 16px;
+        }
+
+        .quote-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .quote-row:last-child {
+            border-bottom: none;
+        }
+
+        .quote-label {
+            font-weight: 500;
+            color: #495057;
+            font-size: 0.95em;
+        }
+
+        .quote-value {
+            font-weight: 600;
+            color: #333;
+            font-size: 1.05em;
+        }
+
+        .quote-total {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 6px;
+            text-align: center;
+            margin-top: 16px;
+        }
+
+        .quote-total-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+            margin-bottom: 8px;
+        }
+
+        .quote-total-amount {
+            font-size: 2.5em;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .alert-customs {
+            background: linear-gradient(135deg, rgba(255, 193, 7, 0.1) 0%, rgba(255, 152, 0, 0.1) 100%);
+            border: 1px solid var(--warning-color);
+            border-radius: 6px;
+            padding: 14px;
+            margin-bottom: 20px;
+            color: #856404;
+        }
+
+        .alert-customs i {
+            color: var(--warning-color);
+            margin-right: 8px;
+        }
+
+        .delivery-estimate {
+            background: linear-gradient(135deg, rgba(40, 167, 69, 0.1) 0%, rgba(23, 162, 184, 0.1) 100%);
+            border-left: 4px solid var(--success-color);
+            padding: 12px 16px;
+            border-radius: 4px;
+            font-size: 0.95em;
+            color: #155724;
+            margin-top: 12px;
+        }
+
+        .delivery-estimate i {
+            color: var(--success-color);
+            margin-right: 8px;
+        }
+
+        .hero-section {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .hero-section h2 {
+            color: var(--primary-color);
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+
+        .hero-section p {
+            color: #666;
+            font-size: 1.05em;
+            margin-bottom: 0;
+        }
+
+        .feature-badges {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 15px;
+        }
+
+        .badge-item {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            color: #495057;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .badge-item i {
+            color: var(--primary-color);
+        }
+
+        footer {
+            background: #f8f9fa;
+            border-top: 1px solid #e9ecef;
+            padding: 40px 0;
+            margin-top: 60px;
+        }
+
+        @media (max-width: 768px) {
+            .quote-container {
+                padding: 20px;
+            }
+
+            .page-header {
+                padding: 20px 0;
+                margin-bottom: 20px;
+            }
+
+            .page-header h1 {
+                font-size: 1.8em;
+            }
+
+            .quote-total-amount {
+                font-size: 2em;
+            }
+
+            .dimensions-group, .weight-group {
+                flex-direction: column;
+            }
+
+            .dimensions-group select, .weight-group select {
+                max-width: 100%;
+            }
+        }
+
+        .loading-spinner {
+            display: none;
+            margin: 12px auto;
+        }
+
+        .location-route {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 12px 0;
+            font-size: 1em;
+        }
+
+        .location-route-item {
+            padding: 8px 12px;
+            background: #f8f9fa;
+            border-radius: 4px;
+            font-weight: 500;
+        }
+
+        .location-route-arrow {
+            color: var(--primary-color);
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <!-- Navbar Container (injected by main.js) -->
+        <div id="navbar-container"></div>
+
+        <!-- Language & Currency Controls -->
+        <div class="controls-bar">
+            <div class="container">
+                <div class="row align-items-center">
+                    <div class="col-md-6 text-start">
+                        <label style="margin: 0; margin-right: 10px; font-weight: 600; font-size: 0.9em;">Language:</label>
+                        <div class="btn-group">
+                            <button class="toggle-btn active" data-lang="en" onclick="switchLanguage('en')">English</button>
+                            <button class="toggle-btn" data-lang="fr" onclick="switchLanguage('fr')">Français</button>
+                        </div>
+                    </div>
+                    <div class="col-md-6 text-end">
+                        <label style="margin: 0; margin-right: 10px; font-weight: 600; font-size: 0.9em;">Currency:</label>
+                        <div class="btn-group">
+                            <button class="toggle-btn active" data-currency="CAD" onclick="switchCurrency('CAD')">CAD</button>
+                            <button class="toggle-btn" data-currency="USD" onclick="switchCurrency('USD')">USD</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Page Header -->
+        <div class="page-header">
+            <div class="container">
+                <h1 data-en="Get Your Instant Quote" data-fr="Obtenez Votre Devis Instantané">Get Your Instant Quote</h1>
+                <p data-en="Calculate shipping costs for North American and global logistics" data-fr="Calculez les frais d'expédition pour les logistiques nord-américaines et mondiales">
+                    Calculate shipping costs for North American and global logistics
+                </p>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <main class="container">
+            <!-- Info Section -->
+            <div class="hero-section">
+                <h2 data-en="Proudly Canadian • Globally Connected" data-fr="Fièrement canadien • Connecté mondialement">
+                    🍁 Proudly Canadian • Globally Connected
+                </h2>
+                <p data-en="Serving US and Canada with transparent pricing and regional compliance" data-fr="Servant les États-Unis et le Canada avec une tarification transparente et une conformité régionale">
+                    Serving US and Canada with transparent pricing and regional compliance
+                </p>
+                <div class="feature-badges">
+                    <div class="badge-item">
+                        <i class="fas fa-check-circle"></i>
+                        <span data-en="Real-time Quotes" data-fr="Devis en temps réel">Real-time Quotes</span>
+                    </div>
+                    <div class="badge-item">
+                        <i class="fas fa-lock"></i>
+                        <span data-en="Regional Tax Included" data-fr="Taxe régionale incluse">Regional Tax Included</span>
+                    </div>
+                    <div class="badge-item">
+                        <i class="fas fa-globe"></i>
+                        <span data-en="Customs Ready" data-fr="Douane prête">Customs Ready</span>
+                    </div>
+                    <div class="badge-item">
+                        <i class="fas fa-exchange-alt"></i>
+                        <span data-en="CAD/USD Support" data-fr="Support CAD/USD">CAD/USD Support</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quote Form Container -->
+            <div class="quote-container">
+                <h2 class="mb-4" data-en="Enter Your Shipment Details" data-fr="Entrez les détails de votre expédition">
+                    <i class="fas fa-box" style="color: var(--primary-color); margin-right: 10px;"></i>
+                    Enter Your Shipment Details
+                </h2>
+
+                <!-- Include Quote Form Component -->
+                <div id="quote-form-container"></div>
+
+            </div>
+
+            <!-- Quote Result Container (Populated by JavaScript) -->
+            <div id="quoteResultContainer"></div>
+        </main>
+
+        <!-- Footer -->
+        <footer>
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-6 text-start">
+                        <h5 style="color: var(--primary-color); font-weight: 700;">Georgensen Courier</h5>
+                        <p style="color: #666;">Your Package. Our Priority. Anywhere, Everywhere.</p>
+                        <p style="color: #999; font-size: 0.9em;">
+                            <i class="fas fa-phone" style="color: var(--primary-color); margin-right: 8px;"></i>
+                            Toll-Free: <strong>1-844-GEO-SHIP</strong>
+                        </p>
+                    </div>
+                    <div class="col-md-6 text-end">
+                        <p style="color: #666;">
+                            <i class="fas fa-compass" style="color: var(--primary-color); margin-right: 8px;"></i>
+                            Headquarters: Toronto, ON & Chicago, IL
+                        </p>
+                        <p style="color: #999; font-size: 0.9em;">
+                            GEO-CA-2026 | GEO-US-2026
+                        </p>
+                    </div>
+                </div>
+                <hr class="my-4" style="border-color: #e9ecef;">
+                <div class="text-center" style="color: #666; font-size: 0.9em;">
+                    <p style="margin-bottom: 8px;">
+                        <a href="/privacy" style="color: var(--primary-color); text-decoration: none;">Privacy Policy (PIPEDA)</a> |
+                        <a href="/accessibility" style="color: var(--primary-color); text-decoration: none;">Accessibility (AODA)</a> |
+                        <a href="/ccpa" style="color: var(--primary-color); text-decoration: none;">CCPA Rights</a>
+                    </p>
+                    <p>&copy; 2026 Georgensen Courier. All rights reserved.</p>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Load Scripts in Proper Order -->
+    <!-- 1. Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- 2. Core main.js for navbar injection and global setup -->
+    <script src="/js/main.js"></script>
+
+    <!-- 3. API utilities -->
+    <script src="/js/core/api.js" onerror="console.log('api.js not found, using fallback')"></script>
+
+    <!-- 4. Bilingual support -->
+    <script src="/js/public/bilingual.js"></script>
+
+    <!-- 5. Quote calculator (relies on bilingual.js) -->
+    <script src="/js/public/quote-calculator.js"></script>
+
+    <!-- 6. Global helper functions for quote form -->
+    <script>
+        // Weight conversion helper
+        function convertWeightUnits() {
+            const weightInput = document.getElementById('quoteWeight');
+            const weightUnit = document.getElementById('quoteWeightUnit');
+            
+            if (!weightInput || !weightUnit) return;
+            
+            const currentValue = parseFloat(weightInput.value);
+            if (isNaN(currentValue)) return;
+
+            if (weightUnit.value === 'kg') {
+                // Convert lbs to kg (divide by 2.205)
+                const kgValue = (currentValue / 2.20462).toFixed(2);
+                weightInput.value = kgValue;
+                weightInput.placeholder = 'Weight in kg';
+            } else {
+                // Convert kg to lbs (multiply by 2.205)
+                const lbsValue = (currentValue * 2.20462).toFixed(2);
+                weightInput.value = lbsValue;
+                weightInput.placeholder = 'Weight in lbs';
+            }
+        }
+
+        // Dimension conversion helper
+        function convertDimensions() {
+            const dimensionUnit = document.getElementById('dimensionUnit');
+            const inputs = document.querySelectorAll('.dimensions-group input');
+            
+            if (!inputs.length) return;
+
+            inputs.forEach(input => {
+                const currentValue = parseFloat(input.value);
+                if (isNaN(currentValue)) return;
+
+                if (dimensionUnit.value === 'cm') {
+                    // Convert inches to cm (multiply by 2.54)
+                    input.value = (currentValue * 2.54).toFixed(1);
+                    input.placeholder = 'cm';
+                } else {
+                    // Convert cm to inches (divide by 2.54)
+                    input.value = (currentValue / 2.54).toFixed(1);
+                    input.placeholder = 'inches';
+                }
+            });
+        }
+
+        // Update currency and zones when origin country changes
+        function updateCurrencyAndZones() {
+            const originCountry = document.getElementById('quoteOriginCountry');
+            if (!originCountry) return;
+
+            const country = originCountry.value;
+            
+            // Set currency based on origin country
+            if (window.quoteCalculator) {
+                const currency = country === 'US' ? 'USD' : 'CAD';
+                window.quoteCalculator.selectedCurrency = currency;
+                localStorage.setItem('appCurrency', currency);
+                
+                // Update button states
+                document.querySelectorAll('[data-currency]').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                document.querySelector(`[data-currency="${currency}"]`).classList.add('active');
+            }
+        }
+
+        // Update zone pricing when destination country changes
+        function updateZonePricing() {
+            // This would typically recalculate available zones
+            // For now, just ensure form is ready
+            console.log('Zone pricing updated');
+        }
+
+        // Initialize quote form from component
+        const quoteFormContainer = document.getElementById('quote-form-container');
+        if (quoteFormContainer) {
+            fetch('/components/forms/quote-form.html')
+                .then(response => response.text())
+                .then(html => {
+                    quoteFormContainer.innerHTML = html;
+                    // Re-initialize bilingual system after form is loaded
+                    if (window.bilingualManager) {
+                        window.bilingualManager.refreshLanguage();
+                    }
+                    // Re-initialize quote calculator
+                    if (window.quoteCalculator) {
+                        window.quoteCalculator.init();
+                    }
+                })
+                .catch(error => console.error('Error loading quote form:', error));
+        }
+
+        // Language switcher
+        function switchLanguage(lang) {
+            if (window.bilingualManager) {
+                window.bilingualManager.toggleLanguage(lang);
+            }
+            
+            // Update button states
+            document.querySelectorAll('[data-lang]').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector(`[data-lang="${lang}"]`).classList.add('active');
+            
+            // Dispatch custom event for external listeners
+            window.dispatchEvent(new CustomEvent('languageChanged', {
+                detail: { language: lang }
+            }));
+        }
+
+        // Currency switcher
+        function switchCurrency(currency) {
+            if (window.quoteCalculator) {
+                window.quoteCalculator.selectedCurrency = currency;
+                localStorage.setItem('appCurrency', currency);
+                
+                // Update button states
+                document.querySelectorAll('[data-currency]').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                document.querySelector(`[data-currency="${currency}"]`).classList.add('active');
+                
+                // Refresh display if quote is already shown
+                if (window.quoteCalculator.currentQuoteData) {
+                    window.quoteCalculator.displayQuote(window.quoteCalculator.currentQuoteData);
+                }
+            }
+            
+            // Dispatch event for other listeners
+            window.dispatchEvent(new CustomEvent('currencyChanged', {
+                detail: { currency: currency }
+            }));
+        }
+
+        // Initialize with saved language and currency preferences
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => {
+                const savedLang = localStorage.getItem('appLanguage') || 'en';
+                const savedCurrency = localStorage.getItem('appCurrency') || 'CAD';
+                
+                switchLanguage(savedLang);
+                switchCurrency(savedCurrency);
+            }, 500);  // Slight delay to ensure all scripts are loaded
+        });
+    </script>
+</body>
+</html>

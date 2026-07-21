@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Disputes Management - Admin Dashboard</title>
+    <link rel="stylesheet" href="/lib/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/lib/fontawesome/css/all.min.css">
+</head>
+<body>
+    <div class="d-flex">
+        <!-- Sidebar -->
+        <nav class="bg-dark text-white p-4" style="width: 250px; min-height: 100vh;">
+            <h4 class="mb-4">Admin Panel</h4>
+            <ul class="nav flex-column">
+                <li class="nav-item"><a class="nav-link" href="/admin-dashboard.html">Dashboard</a></li>
+                <li class="nav-item"><a class="nav-link" href="/orders-management.html">Orders</a></li>
+                <li class="nav-item"><a class="nav-link" href="/partners-management.html">Partners</a></li>
+                <li class="nav-item"><a class="nav-link active" href="#">Disputes</a></li>
+                <li class="nav-item"><a class="nav-link" href="/payments-management.html">Payments</a></li>
+                <li class="nav-item"><a class="nav-link" href="/analytics-reports.html">Analytics</a></li>
+                <li class="nav-item"><a class="nav-link" href="/audit-logs.html">Audit Logs</a></li>
+            </ul>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="flex-grow-1 p-4">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1>Disputes Management</h1>
+                <button class="btn btn-primary">Export Report</button>
+            </div>
+
+            <!-- Filters -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <label class="form-label">Status</label>
+                            <select class="form-select" id="filterStatus">
+                                <option value="">All</option>
+                                <option value="open">Open</option>
+                                <option value="investigating">Investigating</option>
+                                <option value="resolved">Resolved</option>
+                                <option value="rejected">Rejected</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Type</label>
+                            <select class="form-select" id="filterType">
+                                <option value="">All</option>
+                                <option value="delivery_failure">Delivery Failure</option>
+                                <option value="quality_issue">Quality Issue</option>
+                                <option value="missing_items">Missing Items</option>
+                                <option value="damage">Damage</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Priority</label>
+                            <select class="form-select" id="filterPriority">
+                                <option value="">All</option>
+                                <option value="high">High</option>
+                                <option value="medium">Medium</option>
+                                <option value="low">Low</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">&nbsp;</label>
+                            <button class="btn btn-secondary w-100">Apply Filters</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Disputes Table -->
+            <div class="card">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Dispute ID</th>
+                                <th>Order ID</th>
+                                <th>Type</th>
+                                <th>Status</th>
+                                <th>Priority</th>
+                                <th>Created</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="disputesTable">
+                            <tr>
+                                <td>#DSP-2026-001</td>
+                                <td>#ORD-2026-001</td>
+                                <td><span class="badge bg-warning">Delivery Failure</span></td>
+                                <td><span class="badge bg-info">Investigating</span></td>
+                                <td><span class="badge bg-danger">High</span></td>
+                                <td>2026-02-01</td>
+                                <td>
+                                    <button class="btn btn-sm btn-info" onclick="viewDispute(1)">View</button>
+                                    <button class="btn btn-sm btn-warning" onclick="assignDispute(1)">Assign</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>#DSP-2026-002</td>
+                                <td>#ORD-2026-002</td>
+                                <td><span class="badge bg-info">Missing Items</span></td>
+                                <td><span class="badge bg-success">Resolved</span></td>
+                                <td><span class="badge bg-warning">Medium</span></td>
+                                <td>2026-02-02</td>
+                                <td>
+                                    <button class="btn btn-sm btn-info" onclick="viewDispute(2)">View</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="/lib/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="/lib/fontawesome/js/all.min.js"></script>
+    <script>
+        function viewDispute(id) {
+            alert('View dispute ' + id);
+        }
+        function assignDispute(id) {
+            alert('Assign dispute ' + id);
+        }
+    </script>
+</body>
+</html>
