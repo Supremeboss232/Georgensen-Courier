@@ -17,15 +17,20 @@ except ImportError:
     logger.warning("Stripe SDK not installed. Install with: pip install stripe")
 
 
+from app.services.payrail_payment import payrail_payment_service
+
 class StripePaymentService:
-    """Handle Stripe payment processing"""
+    """Handle Stripe payment processing with fallback integration for Payrail"""
     
     def __init__(self):
         """Initialize Stripe with API key"""
         self.api_key = settings.STRIPE_SECRET_KEY or ''
         self.publishable_key = settings.STRIPE_PUBLISHABLE_KEY or ''
+        self.use_payrail = True  # Flag to bypass Stripe and route to Payrail
         
-        if STRIPE_AVAILABLE and self.api_key:
+        if self.use_payrail:
+            self.enabled = True
+        elif STRIPE_AVAILABLE and self.api_key:
             stripe.api_key = self.api_key
             self.enabled = True
         else:
@@ -42,25 +47,31 @@ class StripePaymentService:
         invoice_id: int,
         description: str = None
     ) -> Dict:
-        """
-        Create a Stripe payment intent
-        
-        Args:
-            amount_cents: Amount in cents (e.g., 1000 = $10.00)
-            customer_email: Customer email
-            invoice_id: Invoice ID for reference
-            description: Payment description
-        
-        Returns:
-            Dict with client_secret and status
-        """
-        
+        """Create a payment intent (routes to Payrail if active)"""
         if not self.enabled:
             return {
                 "success": False,
                 "error": "Payment processing not configured",
                 "client_secret": None
             }
+            
+        if self.use_payrail:
+            res = await payrail_payment_service.create_payment_intent(
+                amount_cents=amount_cents,
+                customer_email=customer_email,
+                invoice_id=invoice_id,
+                description=description
+            )
+            if res.get("success"):
+                return {
+                    "success": True,
+                    "client_secret": res["client_secret"],
+                    "intent_id": res["reference"],
+                    "amount": amount_cents,
+                    "status": "requires_payment_method",
+                    "authorization_url": res.get("authorization_url")
+                }
+            return {"success": False, "error": res.get("error", "Failed to initialize Payrail transaction")}
         
         try:
             intent = stripe.PaymentIntent.create(
@@ -112,12 +123,30 @@ class StripePaymentService:
         except Exception as e:
             logger.error(f"Unexpected error: {str(e)}")
             return {"success": False, "error": "Unexpected error during payment"}
-    
+     
     async def retrieve_payment_intent(self, intent_id: str) -> Dict:
         """Retrieve payment intent status"""
-        
         if not self.enabled:
             return {"success": False, "error": "Payment processing not configured"}
+            
+        if self.use_payrail:
+            res = await payrail_payment_service.verify_payment(intent_id)
+            if res.get("success"):
+                status_mapping = {
+                    "success": "succeeded",
+                    "failed": "failed",
+                    "pending": "processing"
+                }
+                status = res.get("status")
+                stripe_status = status_mapping.get(status, "requires_payment_method")
+                return {
+                    "success": True,
+                    "intent_id": intent_id,
+                    "status": stripe_status,
+                    "amount": 0,
+                    "charges": [{"id": f"ch_{intent_id}"}]
+                }
+            return {"success": False, "error": res.get("error", "Failed to verify Payrail payment")}
         
         try:
             intent = stripe.PaymentIntent.retrieve(intent_id)
@@ -133,14 +162,9 @@ class StripePaymentService:
         except Exception as e:
             logger.error(f"Failed to retrieve intent: {str(e)}")
             return {"success": False, "error": str(e)}
-    
+     
     async def confirm_payment(self, intent_id: str) -> Dict:
-        """
-        Confirm payment was successful
-        
-        This is typically called by webhook after payment completes
-        """
-        
+        """Confirm payment was successful"""
         try:
             intent = await self.retrieve_payment_intent(intent_id)
             
@@ -172,27 +196,28 @@ class StripePaymentService:
         except Exception as e:
             logger.error(f"Payment confirmation error: {str(e)}")
             return {"success": False, "error": str(e)}
-    
+     
     async def refund_payment(
         self,
         intent_id: str,
         amount_cents: Optional[int] = None,
         reason: str = None
     ) -> Dict:
-        """
-        Refund a payment (full or partial)
-        
-        Args:
-            intent_id: Stripe payment intent ID
-            amount_cents: Amount to refund (None = full refund)
-            reason: Reason for refund (disputed, requested_by_customer, etc.)
-        
-        Returns:
-            Refund confirmation
-        """
-        
+        """Refund a payment (full or partial)"""
         if not self.enabled:
             return {"success": False, "error": "Payment processing not configured"}
+            
+        if self.use_payrail:
+            res = await payrail_payment_service.refund_payment(intent_id, amount_cents or 0)
+            if res.get("success"):
+                return {
+                    "success": True,
+                    "refund_id": f"ref_{intent_id}",
+                    "charge_id": f"ch_{intent_id}",
+                    "amount": amount_cents,
+                    "status": "succeeded"
+                }
+            return {"success": False, "error": res.get("error", "Payrail refund request failed")}
         
         try:
             intent = await self.retrieve_payment_intent(intent_id)
@@ -209,7 +234,7 @@ class StripePaymentService:
             # Process refund
             refund = stripe.Refund.create(
                 charge=charge_id,
-                amount=amount_cents,  # None = full refund
+                amount=amount_cents,
                 reason=reason or "requested_by_customer",
                 metadata={"intent_id": intent_id}
             )
@@ -232,17 +257,23 @@ class StripePaymentService:
         except Exception as e:
             logger.error(f"Refund processing error: {str(e)}")
             return {"success": False, "error": str(e)}
-    
+     
     async def create_customer(
         self,
         email: str,
         name: str,
         phone: Optional[str] = None
     ) -> Dict:
-        """Create Stripe customer"""
-        
+        """Create customer account mapping"""
         if not self.enabled:
             return {"success": False, "error": "Payment processing not configured"}
+            
+        if self.use_payrail:
+            return {
+                "success": True,
+                "customer_id": f"payrail_cust_{email.replace('@', '_')}",
+                "email": email
+            }
         
         try:
             customer = stripe.Customer.create(
@@ -263,10 +294,10 @@ class StripePaymentService:
         except Exception as e:
             logger.error(f"Customer creation error: {str(e)}")
             return {"success": False, "error": str(e)}
-    
+     
     @staticmethod
     def get_publishable_key() -> str:
-        """Get Stripe publishable key for frontend"""
+        """Get publishable key"""
         return os.getenv('STRIPE_PUBLISHABLE_KEY', '')
 
 
