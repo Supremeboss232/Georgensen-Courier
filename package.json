@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Georjensen - Asset-light Courier Platform",
   "scripts": {
-    "start": "PYTHONPATH=backend uvicorn app.main:app --host 0.0.0.0 --port $PORT",
+    "start": "uvicorn app.main:app --host 0.0.0.0 --port $PORT",
     "build": "pip install -r backend/requirements.txt",
     "deploy": "echo 'Deploy to production'"
   },
