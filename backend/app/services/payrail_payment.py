@@ -2,6 +2,7 @@ import urllib.request
 import urllib.parse
 import json
 import logging
+import os
 from typing import Optional, Dict
 from sqlalchemy.orm import Session
 from app.core.config import settings
@@ -15,8 +16,14 @@ class PayrailPaymentService:
     """
     
     def __init__(self):
-        # Use STRIPE_SECRET_KEY as fallback if PAYRAIL_SECRET_KEY is not defined
-        self.api_key = os_secret = settings.STRIPE_SECRET_KEY
+        # Resolve API key from multiple possible environment configurations
+        self.api_key = (
+            os.getenv('PAYRAIL_SECRET_KEY') or
+            os.getenv('STRIPE_SECRET_KEY') or
+            os.getenv('PAYRAIL_API_KEY') or
+            (getattr(settings, 'STRIPE_SECRET_KEY', None)) or
+            ''
+        )
         self.base_url = "https://api.payrail.co/v1"
         self.enabled = bool(self.api_key)
         
