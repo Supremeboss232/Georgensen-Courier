@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: georgensen-courier
+    env: python
+    buildCommand: pip install -r backend/requirements.txt
+    startCommand: PYTHONPATH=backend uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: ENABLE_PAYMENTS
+        value: "True"
+      - key: STRIPE_SECRET_KEY
+        sync: false # Set this in the Render dashboard env settings
+      - key: CELERY_BROKER_URL
+        sync: false # Set this in the Render dashboard env settings
+      - key: CELERY_RESULT_BACKEND
+        sync: false # Set this in the Render dashboard env settings
+      - key: REDIS_HOST
+        sync: false
+      - key: REDIS_PORT
+        sync: false
+      - key: REDIS_PASSWORD
+        sync: false
+      - key: DATABASE_URL
+        sync: false # Set this to your Supabase/PostgreSQL URL
