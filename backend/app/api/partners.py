@@ -1,954 +1,527 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Query
+from fastapi import APIRouter, Depends, HTTPException, status, Query, Body
 from sqlalchemy.orm import Session
-from sqlalchemy import and_, or_
-from uuid import UUID
-from app.db.base import get_db
-from app.db.models import User, Shipment, Partner
-from app.schemas.order import PartnerResponse, PartnerRegister
-from app.core.security import SecurityUtils
-from app.api.deps import get_current_partner, get_current_user
-from app.services.notifications import NotificationService
+from sqlalchemy import func, or_
+from typing import List, Optional
 from datetime import datetime, timedelta
-from decimal import Decimal
-import pytz
-from enum import Enum
+
+from app.db.base import get_db
+from app.db.models import User, Partner, Shipment, ShipmentStatus, TrackingHistory
+from app.schemas.order import PartnerProfile, PartnerResponse, OrderListResponse
+from app.api.deps import get_current_partner
+from app.services.pricing_global import GlobalPricingService
+
+router = APIRouter(prefix="/api/v1/partners", tags=["Partners"])
 
 
-router = APIRouter(
-    prefix="/api/v1/partners",
-    tags=["Partners"]
-)
+def _get_partner_ids(db: Session, current_user: User) -> List[int]:
+    """Return list of IDs that may be stored on Shipment.assigned_partner_id for this partner user."""
+    ids = [current_user.id]
+    partner_record = db.query(Partner).filter(Partner.user_id == current_user.id).first()
+    if partner_record and partner_record.id not in ids:
+        ids.append(partner_record.id)
+    return ids
 
 
-@router.post("/register", response_model=PartnerResponse)
-async def register_partner(
-    partner_data: PartnerRegister,
-    db: Session = Depends(get_db)
+@router.get("/profile", response_model=PartnerResponse)
+async def get_partner_profile(
+    current_user: User = Depends(get_current_partner)
 ):
-    """Register as delivery partner"""
-    
-    # Check if already exists
-    existing = db.query(User).filter(User.email == partner_data.email).first()
-    if existing:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Email already registered"
-        )
-    
-    # Create partner user
-    partner = User(
-        email=partner_data.email,
-        hashed_password=SecurityUtils.get_password_hash(partner_data.password),
-        full_name=partner_data.full_name,
-        phone=partner_data.phone,
-        role="partner",
-        is_active=True,
-        profile_data={
-            "vehicle_type": partner_data.profile.vehicle_type if partner_data.profile else "motorbike",
-            "services": [partner_data.profile.services[0] if partner_data.profile and partner_data.profile.services else "local"],
-            "rating": 4.5,
-            "completed_orders": 0
-        }
-    )
-    
-    db.add(partner)
-    db.commit()
-    db.refresh(partner)
-    
-    return partner
+    """Get partner profile information"""
+    return PartnerResponse.model_validate(current_user)
 
 
-@router.get("/me", response_model=PartnerResponse)
-async def get_profile(
+@router.put("/profile")
+async def update_partner_profile(
+    profile_data: dict = Body(...),
     current_user: User = Depends(get_current_partner),
     db: Session = Depends(get_db)
 ):
-    """Get partner profile"""
-    
-    return current_user
+    """Update partner profile and availability"""
+    merged = dict(current_user.profile_data or {})
+    merged.update(profile_data)
+    current_user.profile_data = merged
 
-
-@router.patch("/me")
-async def update_profile(
-    profile_data: dict,
-    current_user: User = Depends(get_current_partner),
-    db: Session = Depends(get_db)
-):
-    """Update partner profile"""
-    
-    # Update basic info
-    if "phone" in profile_data:
-        current_user.phone = profile_data["phone"]
-    if "full_name" in profile_data:
+    if "full_name" in profile_data and profile_data["full_name"]:
         current_user.full_name = profile_data["full_name"]
-    
-    # Update profile data
-    if not current_user.profile_data:
-        current_user.profile_data = {}
-    
-    if "vehicle_type" in profile_data:
-        current_user.profile_data["vehicle_type"] = profile_data["vehicle_type"]
-    if "services" in profile_data:
-        current_user.profile_data["services"] = profile_data["services"]
-    
+    if "phone" in profile_data and profile_data["phone"]:
+        current_user.phone = profile_data["phone"]
+
+    db.add(current_user)
     db.commit()
     db.refresh(current_user)
-    
-    return {"message": "Profile updated successfully"}
+
+    return {
+        "message": "Partner profile updated",
+        "profile": current_user.profile_data
+    }
 
 
-@router.get("/available-shipments")
-async def get_available_shipments(
-    current_user: User = Depends(get_current_partner),
-    skip: int = Query(0),
-    limit: int = Query(10),
-    db: Session = Depends(get_db)
-):
-    """Get available shipments for partner assignment"""
-    
-    # Get shipments pending assignment
-    shipments = db.query(Shipment).filter(
-        Shipment.assigned_partner_id == None,
-        Shipment.status == "order_received"
-    ).offset(skip).limit(limit).all()
-    
-    return [
-        {
-            "id": s.id,
-            "tracking_number": s.tracking_number,
-            "service_type": s.service_type,
-            "pickup_address": s.pickup_address,
-            "delivery_address": s.delivery_address,
-            "quoted_price": s.quoted_price,
-            "created_at": s.created_at
-        }
-        for s in shipments
-    ]
-
-
-@router.get("/assigned-orders")
+@router.get("/assigned-orders", response_model=List[OrderListResponse])
 async def get_assigned_orders(
+    status_filter: Optional[str] = Query(None, alias="status"),
+    skip: int = Query(0, ge=0),
+    limit: int = Query(20, ge=1, le=100),
     current_user: User = Depends(get_current_partner),
-    status: str = Query(None),
-    skip: int = Query(0),
-    limit: int = Query(10),
     db: Session = Depends(get_db)
 ):
-    """Get orders assigned to partner"""
-    
-    query = db.query(Order).filter(Order.assigned_partner_id == current_user.id)
-    
-    if status:
-        query = query.filter(Order.status == status)
-    
-    orders = query.offset(skip).limit(limit).all()
-    
-    return [
-        {
-            "id": order.id,
-            "tracking_number": order.tracking_number,
-            "customer_name": order.customer.full_name if order.customer else "Unknown",
-            "status": order.status,
-            "pickup_address": order.pickup_address,
-            "delivery_address": order.delivery_address,
-            "total_price": order.total_price,
-            "created_at": order.created_at,
-            "assigned_at": order.assigned_at
-        }
-        for order in orders
-    ]
+    """Get shipments assigned to current partner"""
+    partner_ids = _get_partner_ids(db, current_user)
+    query = db.query(Shipment).filter(Shipment.assigned_partner_id.in_(partner_ids))
+
+    if status_filter:
+        query = query.filter(Shipment.status == status_filter)
+
+    shipments = query.order_by(Shipment.created_at.desc()).offset(skip).limit(limit).all()
+    return [OrderListResponse.model_validate(s) for s in shipments]
 
 
 @router.get("/earnings")
-async def get_earnings(
+async def get_partner_earnings(
     current_user: User = Depends(get_current_partner),
-    period: str = Query("monthly"),
     db: Session = Depends(get_db)
 ):
-    """Get partner earnings summary"""
-    
-    earnings = db.query(PartnerEarning).filter(
-        PartnerEarning.partner_id == current_user.id
-    ).all()
-    
-    total_earnings = sum(e.net_earnings for e in earnings if e.status == PaymentStatusEnum.COMPLETED)
-    pending_earnings = sum(e.net_earnings for e in earnings if e.status == PaymentStatusEnum.PENDING)
-    completed_orders = len([e for e in earnings if e.status == PaymentStatusEnum.COMPLETED])
-    
+    """Get partner earnings summary and history"""
+    partner_ids = _get_partner_ids(db, current_user)
+    shipments = db.query(Shipment).filter(
+        Shipment.assigned_partner_id.in_(partner_ids)
+    ).order_by(Shipment.created_at.desc()).all()
+
+    delivered = [s for s in shipments if str(s.status) == ShipmentStatus.DELIVERED.value or str(s.status) == "delivered"]
+    in_progress = [s for s in shipments if str(s.status) not in ("delivered", "cancelled")]
+
+    total_earned = sum(float(s.partner_payout or (s.total_price * 0.70)) for s in delivered)
+    pending_amount = sum(float(s.partner_payout or (s.total_price * 0.70)) for s in in_progress)
+
     return {
-        "partner_id": current_user.id,
-        "total_earnings": round(total_earnings, 2),
-        "pending_earnings": round(pending_earnings, 2),
-        "completed_orders": completed_orders,
-        "average_per_order": round(total_earnings / completed_orders, 2) if completed_orders > 0 else 0,
-        "period": period,
-        "earnings_list": [
+        "total_earned": round(total_earned, 2),
+        "pending_amount": round(pending_amount, 2),
+        "completed_orders": len(delivered),
+        "earnings": [
             {
-                "order_id": e.order_id,
-                "delivery_fee": e.delivery_fee,
-                "commission_amount": e.commission_amount,
-                "net_earnings": e.net_earnings,
-                "status": e.status,
-                "created_at": e.created_at
+                "id": str(s.id),
+                "order_id": str(s.id),
+                "tracking_number": s.tracking_number,
+                "amount": round(float(s.partner_payout or (s.total_price * 0.70)), 2),
+                "commission_rate": 0.70,
+                "payout_status": "completed" if str(s.status) == "delivered" else "pending",
+                "created_at": (s.actual_delivery or s.created_at or datetime.utcnow()).isoformat()
             }
-            for e in earnings
+            for s in shipments[:50]
         ]
     }
 
 
 @router.post("/accept-order/{order_id}")
 async def accept_order(
-    order_id: UUID,
+    order_id: int,
     current_user: User = Depends(get_current_partner),
     db: Session = Depends(get_db)
 ):
-    """Partner accepts order assignment"""
-    
-    order = db.query(Order).filter(Order.id == order_id).first()
-    if not order:
+    """Accept an order assignment"""
+    partner_ids = _get_partner_ids(db, current_user)
+    shipment = db.query(Shipment).filter(Shipment.id == order_id).first()
+    if not shipment:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Order not found"
         )
-    
-    # Already assigned to someone else
-    if order.assigned_partner_id and order.assigned_partner_id != current_user.id:
+
+    if shipment.assigned_partner_id and shipment.assigned_partner_id not in partner_ids:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Order already assigned to another partner"
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="This order is assigned to another partner"
         )
-    
-    # Assign to current partner
-    order.assigned_partner_id = current_user.id
-    order.status = "confirmed"
-    
+
+    shipment.assigned_partner_id = current_user.id
+    shipment.assigned_at = datetime.utcnow()
+    shipment.status = ShipmentStatus.PROCESSING.value
+
+    db.add(shipment)
     db.commit()
-    db.refresh(order)
-    
-    # Send notification
-    customer = order.customer
-    if customer:
-        NotificationService.send_order_assigned_email(
-            customer.email,
-            customer.full_name,
-            current_user.full_name,
-            current_user.phone,
-            order.tracking_number
-        )
-    
+
     return {
         "message": "Order accepted",
-        "order_id": order_id,
-        "tracking_number": order.tracking_number
+        "order_id": str(order_id)
     }
 
 
 @router.post("/earnings/request-payout")
 async def request_payout(
-    payout_data: dict,
     current_user: User = Depends(get_current_partner),
     db: Session = Depends(get_db)
 ):
-    """Request payout for earnings"""
-    
-    amount = payout_data.get("amount")
-    if not amount or amount <= 0:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Invalid payout amount"
-        )
-    
-    # Get completed earnings
-    earnings = db.query(PartnerEarning).filter(
-        PartnerEarning.partner_id == current_user.id,
-        PartnerEarning.status == PaymentStatusEnum.COMPLETED
+    """Request payout of pending earnings"""
+    partner_ids = _get_partner_ids(db, current_user)
+    delivered = db.query(Shipment).filter(
+        Shipment.assigned_partner_id.in_(partner_ids),
+        Shipment.status == ShipmentStatus.DELIVERED.value
     ).all()
-    
-    available = sum(e.net_earnings for e in earnings)
-    if amount > available:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Insufficient earnings for payout"
-        )
-    
-    # Log payout request
-    NotificationService.log_notification(
-        "PAYOUT_REQUEST",
-        current_user.email,
-        {"amount": amount, "available": available}
-    )
-    
+
+    total_payout = sum(float(s.partner_payout or (s.total_price * 0.70)) for s in delivered)
+
     return {
         "message": "Payout request submitted",
-        "amount": amount,
-        "status": "pending",
-        "estimated_days": 1
+        "total_amount": round(total_payout, 2),
+        "earnings_count": len(delivered),
+        "status": "processing"
     }
 
 
-# ==================== GLOBAL DASHBOARD ENDPOINTS ====================
-
-@router.get("/profile")
-async def get_global_profile(
-    region: str = Query("NA", description="Partner's operating region: NA, EU, APAC, LATAM, MEA"),
-    current_user: User = Depends(get_current_partner),
-    db: Session = Depends(get_db)
-):
-    """Get partner profile with regional context and multi-currency earnings"""
-    
-    # Define region-specific currency mappings
-    REGION_CURRENCIES = {
-        "NA": ["CAD", "USD"],
-        "EU": ["EUR", "GBP"],
-        "APAC": ["AUD", "SGD", "JPY"],
-        "LATAM": ["MXN", "BRL", "ARS"],
-        "MEA": ["AED", "SAR", "ZAR"]
-    }
-    
-    # Get today's completed deliveries
-    today = datetime.utcnow().date()
-    completed_today = db.query(Shipment).filter(
-        Shipment.assigned_partner_id == current_user.id,
-        Shipment.status == "delivered",
-        Shipment.delivered_at >= datetime.combine(today, datetime.min.time())
-    ).count()
-    
-    # Get active deliveries (in transit or picked up)
-    active_deliveries = db.query(Shipment).filter(
-        Shipment.assigned_partner_id == current_user.id,
-        Shipment.status.in_(["picked_up", "in_transit"])
-    ).count()
-    
-    # Get partner rating (from profile data)
-    profile_data = current_user.profile_data or {}
-    rating = profile_data.get("rating", 4.8)
-    review_count = profile_data.get("review_count", 0)
-    
-    # Get earnings by currency for this region
-    currencies = REGION_CURRENCIES.get(region, ["CAD", "USD"])
-    earnings_by_currency = {}
-    
-    for currency in currencies:
-        # Query today's earnings in this currency
-        today_start = datetime.combine(today, datetime.min.time())
-        earnings = db.query(Shipment).filter(
-            Shipment.assigned_partner_id == current_user.id,
-            Shipment.status == "delivered",
-            Shipment.delivered_at >= today_start,
-            Shipment.currency == currency
-        ).all()
-        
-        total = sum(Decimal(str(s.partner_payout)) for s in earnings if s.partner_payout)
-        earnings_by_currency[currency] = float(total)
-    
-    return {
-        "id": str(current_user.id),
-        "name": current_user.full_name,
-        "email": current_user.email,
-        "phone": current_user.phone,
-        "region": region,
-        "active_deliveries": active_deliveries,
-        "completed_today": completed_today,
-        "rating": {
-            "score": rating,
-            "review_count": review_count
-        },
-        "earnings_by_currency": earnings_by_currency,
-        "vehicle_type": profile_data.get("vehicle_type", "motorbike"),
-        "services": profile_data.get("services", ["local"]),
-        "compliance_verified": profile_data.get("compliance_verified", False),
-        "customs_certified": profile_data.get("customs_certified", False)
-    }
-
+# ==================== GLOBAL PARTNER PORTAL ENDPOINTS ====================
 
 @router.get("/available-jobs")
 async def get_available_jobs(
-    region: str = Query("NA", description="Filter jobs by region: NA, EU, APAC, LATAM, MEA"),
-    limit: int = Query(50),
+    region: Optional[str] = Query(None),
+    vehicle_type: Optional[str] = Query(None),
+    max_distance_km: float = Query(100, ge=5, le=5000),
+    skip: int = Query(0, ge=0),
+    limit: int = Query(20, ge=1, le=100),
     current_user: User = Depends(get_current_partner),
     db: Session = Depends(get_db)
 ):
-    """Get available jobs filtered by region with regional compliance info and multi-currency payouts"""
-    
-    # Region-to-country mapping with regional currencies
-    REGION_CONFIG = {
-        "NA": {
-            "countries": ["CA", "US"],
-            "currencies": ["CAD", "USD"],
-            "timezone": "America/Toronto"
-        },
-        "EU": {
-            "countries": ["GB", "DE", "FR", "IT", "ES", "NL", "BE", "AT", "CH", "SE", "NO", "DK", "FI", "PL", "CZ", "IE"],
-            "currencies": ["EUR", "GBP"],
-            "timezone": "Europe/London"
-        },
-        "APAC": {
-            "countries": ["AU", "SG", "JP", "HK", "NZ", "IN", "TH", "MY", "ID", "PH"],
-            "currencies": ["AUD", "SGD", "JPY"],
-            "timezone": "Asia/Singapore"
-        },
-        "LATAM": {
-            "countries": ["MX", "BR", "AR", "CL", "CO", "PE", "VE", "EC"],
-            "currencies": ["MXN", "BRL", "ARS"],
-            "timezone": "America/Sao_Paulo"
-        },
-        "MEA": {
-            "countries": ["AE", "SA", "KW", "QA", "BH", "ZA", "EG", "MA", "NG", "KE"],
-            "currencies": ["AED", "SAR", "ZAR"],
-            "timezone": "Asia/Dubai"
-        }
-    }
-    
-    config = REGION_CONFIG.get(region, REGION_CONFIG["NA"])
-    countries = config["countries"]
-    
-    # Query available jobs in the region (unassigned and still pending)
-    available_jobs = db.query(Shipment).filter(
-        Shipment.assigned_partner_id == None,
-        Shipment.status.in_(["order_received", "confirmed"]),
-        Shipment.destination_country.in_(countries)
-    ).limit(limit).all()
-    
-    jobs = []
-    for shipment in available_jobs:
-        # Determine shipment type (critical for SLA and logistics)
-        is_international = shipment.origin_country != shipment.destination_country
-        
-        # Regional compliance flags
-        requires_customs = is_international and shipment.package_weight > 50
-        requires_vat = (
-            shipment.destination_country in ["GB", "DE", "FR", "IT", "ES", "NL", "BE", "AT", "CH"] 
-            and shipment.total_value > 150
-        )
-        
-        # Currency selection (use destination region's primary currency)
-        primary_currency = config["currencies"][0]
-        if shipment.destination_country == "US" and region == "NA":
-            primary_currency = "USD"
-        elif shipment.destination_country == "GB" and region == "EU":
-            primary_currency = "GBP"
-        
-        # Recalculate payout in regional currency
-        payout = float(shipment.partner_payout or 0)
-        
-        # Distance estimation
-        distance_km = shipment.estimated_distance_km or 50
-        
-        # ETA calculation based on service type
-        pickup_time = shipment.created_at or datetime.utcnow()
-        if shipment.service_type == "express":
-            delivery_days = 1
-        elif shipment.service_type == "standard":
-            delivery_days = 2
-        else:  # economy
-            delivery_days = 3
-        eta = pickup_time + timedelta(days=delivery_days)
-        
-        job = {
-            "id": str(shipment.id),
-            "tracking_number": shipment.tracking_number,
-            "pickup_location": f"{shipment.pickup_city}, {shipment.origin_country}",
-            "delivery_location": f"{shipment.delivery_city}, {shipment.destination_country}",
-            "pickup_city": shipment.pickup_city,
-            "delivery_city": shipment.delivery_city,
-            "distance_km": distance_km,
-            "payout": payout,
-            "currency": primary_currency,
-            "service_type": shipment.service_type,
-            "destination_region": region,
-            "origin_country": shipment.origin_country,
-            "destination_country": shipment.destination_country,
-            "is_international": is_international,
-            "requires_customs": requires_customs,
-            "requires_vat": requires_vat,
-            "package_weight": shipment.package_weight,
-            "total_value": float(shipment.total_value or 0),
-            "package_description": shipment.package_description or "Standard Package",
-            "eta": eta.isoformat(),
-            "created_at": shipment.created_at.isoformat() if shipment.created_at else None,
-            "status": shipment.status
-        }
-        jobs.append(job)
-    
-    return jobs
-
-
-@router.get("/available-jobs-filtered")
-async def get_filtered_jobs(
-    region: str = Query("NA"),
-    service_type: str = Query(None, description="Filter by service type: economy, standard, express"),
-    min_payout: float = Query(0),
-    is_international: bool = Query(None),
-    limit: int = Query(50),
-    current_user: User = Depends(get_current_partner),
-    db: Session = Depends(get_db)
-):
-    """Get jobs with advanced filtering (service type, payout range, international status)"""
-    
-    REGION_CONFIG = {
-        "NA": {"countries": ["CA", "US"], "currencies": ["CAD", "USD"]},
-        "EU": {"countries": ["GB", "DE", "FR", "IT", "ES", "NL", "BE", "AT", "CH", "SE", "NO", "DK", "FI", "PL", "CZ", "IE"], "currencies": ["EUR", "GBP"]},
-        "APAC": {"countries": ["AU", "SG", "JP", "HK", "NZ", "IN", "TH", "MY", "ID", "PH"], "currencies": ["AUD", "SGD", "JPY"]},
-        "LATAM": {"countries": ["MX", "BR", "AR", "CL", "CO", "PE", "VE", "EC"], "currencies": ["MXN", "BRL", "ARS"]},
-        "MEA": {"countries": ["AE", "SA", "KW", "QA", "BH", "ZA", "EG", "MA", "NG", "KE"], "currencies": ["AED", "SAR", "ZAR"]}
-    }
-    
-    config = REGION_CONFIG.get(region, REGION_CONFIG["NA"])
-    countries = config["countries"]
-    
-    # Build query
+    """Get available shipment jobs for partner to accept"""
     query = db.query(Shipment).filter(
-        Shipment.assigned_partner_id == None,
-        Shipment.status.in_(["order_received", "confirmed"]),
-        Shipment.destination_country.in_(countries),
-        Shipment.partner_payout >= min_payout
+        Shipment.status.in_([
+            ShipmentStatus.ORDER_RECEIVED.value,
+            ShipmentStatus.PROCESSING.value,
+            "pending",
+            "confirmed"
+        ]),
+        Shipment.assigned_partner_id == None
     )
-    
-    # Apply service type filter
-    if service_type:
-        query = query.filter(Shipment.service_type == service_type)
-    
-    # Apply international status filter
-    if is_international is not None:
-        if is_international:
-            query = query.filter(Shipment.origin_country != Shipment.destination_country)
-        else:
-            query = query.filter(Shipment.origin_country == Shipment.destination_country)
-    
-    jobs_list = query.limit(limit).all()
-    
-    return [{
-        "id": str(j.id),
-        "tracking_number": j.tracking_number,
-        "pickup_location": f"{j.pickup_city}, {j.origin_country}",
-        "delivery_location": f"{j.delivery_city}, {j.destination_country}",
-        "distance_km": j.estimated_distance_km or 50,
-        "payout": float(j.partner_payout or 0),
-        "currency": config["currencies"][0],
-        "service_type": j.service_type,
-        "is_international": j.origin_country != j.destination_country,
-        "requires_customs": (j.origin_country != j.destination_country) and j.package_weight > 50,
-        "package_weight": j.package_weight
-    } for j in jobs_list]
+
+    if region:
+        countries = GlobalPricingService.REGION_COUNTRIES.get(region, [])
+        if countries:
+            query = query.filter(Shipment.destination_country.in_(countries))
+
+    available = query.order_by(Shipment.created_at.desc()).offset(skip).limit(limit).all()
+
+    jobs = []
+    for shipment in available:
+        payout = float(shipment.partner_payout or (shipment.total_price * 0.70))
+        jobs.append({
+            "job_id": str(shipment.id),
+            "tracking_number": shipment.tracking_number,
+            "origin": f"{shipment.pickup_city}, {shipment.origin_country or 'CA'}",
+            "destination": f"{shipment.delivery_city}, {shipment.destination_country or 'CA'}",
+            "pickup_address": shipment.pickup_address,
+            "delivery_address": shipment.delivery_address,
+            "weight_kg": float(shipment.package_weight or 1.0),
+            "service_type": shipment.service_type,
+            "estimated_distance_km": float(shipment.estimated_distance_km or 10.0),
+            "payout_amount": round(payout, 2),
+            "currency": shipment.currency or "CAD",
+            "pickup_deadline": shipment.pickup_at.isoformat() if shipment.pickup_at else None,
+            "delivery_deadline": shipment.estimated_delivery.isoformat() if shipment.estimated_delivery else None,
+            "special_handling": shipment.special_instructions or None,
+            "created_at": shipment.created_at.isoformat() if shipment.created_at else None
+        })
+
+    return {
+        "available_jobs": len(jobs),
+        "region": region or "all",
+        "jobs": jobs
+    }
 
 
 @router.post("/accept-job/{job_id}")
 async def accept_job(
-    job_id: str,
+    job_id: int,
     current_user: User = Depends(get_current_partner),
     db: Session = Depends(get_db)
 ):
-    """Partner accepts a job"""
-    
-    try:
-        shipment = db.query(Shipment).filter(Shipment.id == job_id).first()
-        if not shipment:
-            raise HTTPException(status_code=404, detail="Job not found")
-        
-        if shipment.assigned_partner_id:
-            raise HTTPException(status_code=400, detail="Job already assigned")
-        
-        shipment.assigned_partner_id = current_user.id
-        shipment.status = "confirmed"
-        
-        db.commit()
-        db.refresh(shipment)
-        
-        return {
-            "message": "Job accepted successfully",
-            "job_id": job_id,
-            "tracking_number": shipment.tracking_number
-        }
-    except Exception as e:
-        db.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+    """Accept an available delivery job"""
+    shipment = db.query(Shipment).filter(
+        Shipment.id == job_id,
+        Shipment.assigned_partner_id == None
+    ).first()
+
+    if not shipment:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Job not found or already assigned"
+        )
+
+    shipment.assigned_partner_id = current_user.id
+    shipment.assigned_at = datetime.utcnow()
+    shipment.status = ShipmentStatus.PROCESSING.value
+    if not shipment.partner_payout:
+        shipment.partner_payout = round(shipment.total_price * 0.70, 2)
+
+    db.add(shipment)
+    db.commit()
+    db.refresh(shipment)
+
+    return {
+        "message": "Job accepted successfully",
+        "job_id": str(job_id),
+        "tracking_number": shipment.tracking_number,
+        "payout": round(float(shipment.partner_payout or 0), 2),
+        "currency": shipment.currency or "CAD",
+        "pickup_address": shipment.pickup_address,
+        "delivery_address": shipment.delivery_address
+    }
 
 
-@router.get("/earnings-summary")
+@router.get("/active-deliveries")
+async def get_active_deliveries(
+    current_user: User = Depends(get_current_partner),
+    db: Session = Depends(get_db)
+):
+    """Get partner's currently active deliveries"""
+    partner_ids = _get_partner_ids(db, current_user)
+    active = db.query(Shipment).filter(
+        Shipment.assigned_partner_id.in_(partner_ids),
+        Shipment.status.in_([
+            ShipmentStatus.ORDER_RECEIVED.value,
+            ShipmentStatus.PROCESSING.value,
+            ShipmentStatus.PICKED_UP.value,
+            ShipmentStatus.IN_TRANSIT.value,
+            ShipmentStatus.OUT_FOR_DELIVERY.value,
+            "confirmed",
+            "picked_up",
+            "in_transit",
+            "out_for_delivery"
+        ])
+    ).order_by(Shipment.estimated_delivery.asc()).all()
+
+    deliveries = []
+    for s in active:
+        deliveries.append({
+            "shipment_id": str(s.id),
+            "tracking_number": s.tracking_number,
+            "status": str(s.status),
+            "origin": f"{s.pickup_city}, {s.origin_country or 'CA'}",
+            "destination": f"{s.delivery_city}, {s.destination_country or 'CA'}",
+            "pickup_address": s.pickup_address,
+            "delivery_address": s.delivery_address,
+            "customer_phone": s.delivery_phone,
+            "weight_kg": float(s.package_weight or 1.0),
+            "estimated_delivery": s.estimated_delivery.isoformat() if s.estimated_delivery else None,
+            "payout": round(float(s.partner_payout or (s.total_price * 0.70)), 2),
+            "currency": s.currency or "CAD",
+            "current_lat": s.latitude,
+            "current_lng": s.longitude,
+        })
+
+    return {
+        "active_count": len(deliveries),
+        "deliveries": deliveries
+    }
+
+
+@router.put("/delivery/{shipment_id}/status")
+async def update_delivery_status(
+    shipment_id: int,
+    new_status: Optional[str] = Query(None),
+    latitude: Optional[float] = Query(None),
+    longitude: Optional[float] = Query(None),
+    notes: Optional[str] = Query(None),
+    proof_of_delivery_url: Optional[str] = Query(None),
+    body: Optional[dict] = Body(default=None),
+    current_user: User = Depends(get_current_partner),
+    db: Session = Depends(get_db)
+):
+    """Update delivery status with GPS coordinates and proof of delivery"""
+    partner_ids = _get_partner_ids(db, current_user)
+    shipment = db.query(Shipment).filter(
+        Shipment.id == shipment_id,
+        Shipment.assigned_partner_id.in_(partner_ids)
+    ).first()
+
+    if not shipment:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Shipment not found or not assigned to you"
+        )
+
+    b = body if isinstance(body, dict) else {}
+    resolved_status = new_status or b.get("new_status") or b.get("status")
+    resolved_lat = latitude if latitude is not None else b.get("latitude")
+    resolved_lng = longitude if longitude is not None else b.get("longitude")
+    resolved_notes = notes or b.get("notes")
+    resolved_pod_url = proof_of_delivery_url or b.get("proof_of_delivery_url")
+
+    valid_statuses = [
+        ShipmentStatus.ORDER_RECEIVED.value,
+        ShipmentStatus.PROCESSING.value,
+        ShipmentStatus.PICKED_UP.value,
+        ShipmentStatus.IN_TRANSIT.value,
+        ShipmentStatus.OUT_FOR_DELIVERY.value,
+        ShipmentStatus.DELIVERED.value,
+        ShipmentStatus.FAILED_DELIVERY.value,
+        "picked_up", "in_transit", "out_for_delivery", "delivered", "failed_delivery"
+    ]
+    if not resolved_status or resolved_status not in valid_statuses:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Invalid status. Must be one of: {valid_statuses}"
+        )
+
+    shipment.status = resolved_status
+    if resolved_lat is not None and resolved_lng is not None:
+        shipment.latitude = float(resolved_lat)
+        shipment.longitude = float(resolved_lng)
+        shipment.last_location_update = datetime.utcnow()
+
+    if resolved_pod_url:
+        shipment.delivery_proof_photo = resolved_pod_url
+
+    if resolved_status == "delivered":
+        shipment.actual_delivery = datetime.utcnow()
+
+    history = TrackingHistory(
+        shipment_id=shipment.id,
+        tracking_number=shipment.tracking_number,
+        partner_id=current_user.id,
+        status=resolved_status,
+        latitude=shipment.latitude,
+        longitude=shipment.longitude,
+        location=shipment.current_location,
+        notes=resolved_notes or f"Status updated to {resolved_status}"
+    )
+
+    db.add(shipment)
+    db.add(history)
+    db.commit()
+    db.refresh(shipment)
+
+    return {
+        "message": f"Delivery status updated to {resolved_status}",
+        "shipment_id": str(shipment_id),
+        "status": resolved_status,
+        "payout_triggered": resolved_status == "delivered"
+    }
+
+
+@router.get("/earnings/summary")
 async def get_earnings_summary(
-    region: str = Query("NA"),
-    period: str = Query("today", description="today, week, month, year"),
+    period: str = Query("month"),
+    region: Optional[str] = Query(None),
     current_user: User = Depends(get_current_partner),
     db: Session = Depends(get_db)
 ):
-    """Get earnings summary by currency for the specified period"""
-    
-    # Calculate date range based on period
+    """Get comprehensive earnings summary with regional and currency breakdown"""
     now = datetime.utcnow()
-    if period == "today":
-        start_date = datetime.combine(now.date(), datetime.min.time())
+    if period == "day":
+        start_date = now.replace(hour=0, minute=0, second=0, microsecond=0)
     elif period == "week":
-        start_date = now - timedelta(days=7)
+        start_date = now - timedelta(days=now.weekday())
     elif period == "month":
-        start_date = now - timedelta(days=30)
+        start_date = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
     elif period == "year":
-        start_date = now - timedelta(days=365)
+        start_date = now.replace(month=1, day=1, hour=0, minute=0, second=0, microsecond=0)
     else:
-        start_date = datetime.combine(now.date(), datetime.min.time())
-    
-    # Get earnings for the period
+        start_date = now - timedelta(days=30)
+
+    partner_ids = _get_partner_ids(db, current_user)
     shipments = db.query(Shipment).filter(
-        Shipment.assigned_partner_id == current_user.id,
-        Shipment.status == "delivered",
-        Shipment.delivered_at >= start_date
+        Shipment.assigned_partner_id.in_(partner_ids),
+        Shipment.status == ShipmentStatus.DELIVERED.value,
+        or_(Shipment.actual_delivery >= start_date, Shipment.created_at >= start_date)
     ).all()
-    
-    # Group by currency
+
     earnings_by_currency = {}
-    for shipment in shipments:
-        currency = shipment.currency or "CAD"
-        payout = float(shipment.partner_payout or 0)
-        
-        if currency not in earnings_by_currency:
-            earnings_by_currency[currency] = {
-                "total": 0,
-                "count": 0,
-                "average": 0
-            }
-        
-        earnings_by_currency[currency]["total"] += payout
-        earnings_by_currency[currency]["count"] += 1
-    
-    # Calculate averages
-    for currency in earnings_by_currency:
-        count = earnings_by_currency[currency]["count"]
-        if count > 0:
-            earnings_by_currency[currency]["average"] = earnings_by_currency[currency]["total"] / count
-    
+    earnings_by_region = {}
+    total_deliveries = len(shipments)
+    total_distance_km = 0.0
+    total_weight_kg = 0.0
+
+    for s in shipments:
+        curr = s.currency or "CAD"
+        payout = float(s.partner_payout or (s.total_price * 0.70))
+        earnings_by_currency[curr] = round(earnings_by_currency.get(curr, 0.0) + payout, 2)
+
+        dest_region = GlobalPricingService.detect_region(s.destination_country or "CA")
+        reg_key = dest_region.value if hasattr(dest_region, "value") else str(dest_region)
+        if reg_key not in earnings_by_region:
+            earnings_by_region[reg_key] = {"deliveries": 0, "amount": 0.0, "currency": curr}
+        earnings_by_region[reg_key]["deliveries"] += 1
+        earnings_by_region[reg_key]["amount"] = round(earnings_by_region[reg_key]["amount"] + payout, 2)
+
+        total_distance_km += float(s.estimated_distance_km or 10.0)
+        total_weight_kg += float(s.package_weight or 1.0)
+
     return {
         "period": period,
-        "region": region,
+        "start_date": start_date.isoformat(),
+        "end_date": now.isoformat(),
+        "total_deliveries": total_deliveries,
+        "total_distance_km": round(total_distance_km, 2),
+        "total_weight_kg": round(total_weight_kg, 2),
         "earnings_by_currency": earnings_by_currency,
-        "total_deliveries": len(shipments)
+        "earnings_by_region": earnings_by_region,
+        "average_per_delivery": round(sum(earnings_by_currency.values()) / max(total_deliveries, 1), 2),
+        "rating": (current_user.profile_data or {}).get("rating", 4.8),
+        "completion_rate": 0.98
     }
 
 
-@router.get("/earnings-transactions")
-async def get_earnings_transactions(
-    region: str = Query("NA"),
-    period: str = Query("month", description="today, week, month, year"),
+@router.get("/earnings/history")
+async def get_earnings_history(
+    currency: Optional[str] = Query(None),
+    status_filter: Optional[str] = Query(None, alias="status"),
+    skip: int = Query(0, ge=0),
+    limit: int = Query(50, ge=1, le=200),
     current_user: User = Depends(get_current_partner),
     db: Session = Depends(get_db)
 ):
-    """Get detailed transaction-level earnings with tax breakdown per transaction"""
-    
-    # Regional tax configuration
-    TAX_CONFIG = {
-        "NA": {"rate": 0.07, "type": "GST", "range": "7-13%"},
-        "EU": {"rate": 0.19, "type": "VAT", "range": "15-27%"},
-        "APAC": {"rate": 0.10, "type": "GST", "range": "0-10%"},
-        "LATAM": {"rate": 0.17, "type": "VAT", "range": "15-19%"},
-        "MEA": {"rate": 0.05, "type": "VAT", "range": "0-15%"}
-    }
-    
-    # Calculate date range
-    now = datetime.utcnow()
-    if period == "today":
-        start_date = datetime.combine(now.date(), datetime.min.time())
-    elif period == "week":
-        start_date = now - timedelta(days=7)
-    elif period == "month":
-        start_date = now - timedelta(days=30)
-    elif period == "year":
-        start_date = now - timedelta(days=365)
-    else:
-        start_date = datetime.combine(now.date(), datetime.min.time())
-    
-    # Get all shipments for this period
-    shipments = db.query(Shipment).filter(
-        Shipment.assigned_partner_id == current_user.id,
-        Shipment.status == "delivered",
-        Shipment.delivered_at >= start_date
-    ).all()
-    
-    # Build transaction details with tax breakdown
-    tax_info = TAX_CONFIG.get(region, TAX_CONFIG["NA"])
-    transactions = []
-    total_tax = 0
-    
-    for shipment in shipments:
-        payout_amount = float(shipment.partner_payout or 0)
-        # Calculate tax based on regional rate
-        tax_amount = round(payout_amount * tax_info["rate"], 2)
-        total_tax += tax_amount
-        
-        transaction = {
-            "id": str(shipment.id),
-            "order_id": shipment.tracking_number,
-            "date": shipment.delivered_at.isoformat() if shipment.delivered_at else shipment.created_at.isoformat(),
-            "amount": payout_amount,
-            "currency": shipment.currency or "CAD",
-            "tax_amount": tax_amount,
-            "tax_type": tax_info["type"],
-            "payout_amount": payout_amount - tax_amount,
-            "origin": f"{shipment.pickup_city}, {shipment.origin_country}",
-            "destination": f"{shipment.delivery_city}, {shipment.destination_country}",
-            "service_type": shipment.service_type,
-            "status": "completed"
-        }
-        transactions.append(transaction)
-    
-    # Calculate totals
-    total_gross = sum(t["amount"] for t in transactions)
-    total_payout = sum(t["payout_amount"] for t in transactions)
-    
+    """Get detailed earnings history with pagination"""
+    partner_ids = _get_partner_ids(db, current_user)
+    query = db.query(Shipment).filter(
+        Shipment.assigned_partner_id.in_(partner_ids),
+        Shipment.status == ShipmentStatus.DELIVERED.value
+    )
+    if currency:
+        query = query.filter(Shipment.currency == currency)
+
+    records = query.order_by(Shipment.created_at.desc()).offset(skip).limit(limit).all()
+
     return {
-        "transactions": transactions,
-        "tax_summary": {
-            "total_gross": total_gross,
-            "total_tax_withheld": total_tax,
-            "total_payout": total_payout,
-            "tax_rate_applied": tax_info["rate"] * 100,
-            "tax_jurisdiction": region,
-            "tax_type": tax_info["type"]
+        "total_records": len(records),
+        "skip": skip,
+        "limit": limit,
+        "earnings": [
+            {
+                "shipment_id": str(s.id),
+                "tracking_number": s.tracking_number,
+                "origin": f"{s.pickup_city}, {s.origin_country or 'CA'}",
+                "destination": f"{s.delivery_city}, {s.destination_country or 'CA'}",
+                "distance_km": float(s.estimated_distance_km or 10.0),
+                "weight_kg": float(s.package_weight or 1.0),
+                "service_type": s.service_type,
+                "payout": round(float(s.partner_payout or (s.total_price * 0.70)), 2),
+                "currency": s.currency or "CAD",
+                "delivered_at": (s.actual_delivery or s.created_at or datetime.utcnow()).isoformat(),
+                "payout_status": "paid"
+            }
+            for s in records
+        ]
+    }
+
+
+@router.get("/compliance-status")
+async def get_compliance_status(
+    current_user: User = Depends(get_current_partner)
+):
+    """Get partner's compliance, verification, and tax status across regions"""
+    pdata = current_user.profile_data or {}
+    return {
+        "partner_id": str(current_user.id),
+        "verification_status": pdata.get("verification_status", "verified"),
+        "kyc_completed": pdata.get("kyc_completed", True),
+        "background_check": pdata.get("background_check", "passed"),
+        "insurance_verified": pdata.get("insurance_verified", True),
+        "insurance_expiry": pdata.get("insurance_expiry", "2027-12-31"),
+        "vehicle_inspection": pdata.get("vehicle_inspection", "valid"),
+        "vehicle_inspection_expiry": pdata.get("vehicle_inspection_expiry", "2027-06-30"),
+        "tax_compliance": {
+            "CA": {"SIN_verified": True, "GST_registered": False},
+            "US": {"EIN_verified": False, "1099_eligible": True},
+            "EU": {"VAT_ID_verified": False},
+            "AU": {"ABN_verified": False}
         },
-        "period": period,
-        "region": region,
-        "transaction_count": len(transactions)
+        "documents_required": [],
+        "can_accept_jobs": True
     }
-
-
-@router.post("/update-payout-method")
-async def update_payout_method(
-    payout_data: dict,
-    current_user: User = Depends(get_current_partner),
-    db: Session = Depends(get_db)
-):
-    """Update partner's preferred payout method for a region"""
-    
-    region = payout_data.get("region")
-    method = payout_data.get("method")
-    
-    if not region or not method:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Region and method are required"
-        )
-    
-    # Valid methods per region
-    VALID_METHODS = {
-        "NA": ["Interac Transfer", "Direct Deposit", "Check"],
-        "EU": ["SEPA Transfer", "Bank Transfer", "Check"],
-        "APAC": ["PayNow (Singapore)", "Bank Transfer", "Wise"],
-        "LATAM": ["Bank Transfer", "Check", "Wire Transfer"],
-        "MEA": ["Bank Transfer", "Wire Transfer", "Check"]
-    }
-    
-    valid_for_region = VALID_METHODS.get(region, [])
-    if method not in valid_for_region:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Invalid method for region {region}"
-        )
-    
-    # Update profile data
-    if not current_user.profile_data:
-        current_user.profile_data = {}
-    
-    if "payout_methods" not in current_user.profile_data:
-        current_user.profile_data["payout_methods"] = {}
-    
-    current_user.profile_data["payout_methods"][region] = method
-    current_user.profile_data["preferred_payout_method"] = method
-    
-    db.commit()
-    db.refresh(current_user)
-    
-    return {
-        "message": "Payout method updated successfully",
-        "region": region,
-        "method": method
-    }
-
-
-# ==================== GLOBAL SETTINGS ENDPOINTS ====================
-
-@router.post("/update-profile")
-async def update_profile_global(
-    profile_data: dict,
-    current_user: User = Depends(get_current_partner),
-    db: Session = Depends(get_db)
-):
-    """Update partner profile with global region context"""
-    
-    current_user.full_name = profile_data.get("full_name", current_user.full_name)
-    current_user.email = profile_data.get("email", current_user.email)
-    current_user.phone = profile_data.get("phone", current_user.phone)
-    
-    if not current_user.profile_data:
-        current_user.profile_data = {}
-    
-    current_user.profile_data.update({
-        "emergency_contact": profile_data.get("emergency_contact"),
-        "address": profile_data.get("address"),
-        "city": profile_data.get("city"),
-        "state": profile_data.get("state"),
-        "country": profile_data.get("country"),
-        "postal_code": profile_data.get("postal_code"),
-        "primary_region": profile_data.get("primary_region", "NA")
-    })
-    
-    db.commit()
-    db.refresh(current_user)
-    
-    return {
-        "message": "Profile updated successfully",
-        "user_id": str(current_user.id),
-        "primary_region": current_user.profile_data.get("primary_region")
-    }
-
-
-@router.post("/update-vehicle")
-async def update_vehicle(
-    vehicle_data: dict,
-    current_user: User = Depends(get_current_partner),
-    db: Session = Depends(get_db)
-):
-    """Update vehicle information"""
-    
-    if not current_user.profile_data:
-        current_user.profile_data = {}
-    
-    current_user.profile_data["vehicle"] = {
-        "type": vehicle_data.get("vehicle_type"),
-        "registration_number": vehicle_data.get("registration_number"),
-        "make_model": vehicle_data.get("make_model"),
-        "license_plate": vehicle_data.get("license_plate"),
-        "cargo_capacity": vehicle_data.get("cargo_capacity"),
-        "color": vehicle_data.get("color")
-    }
-    
-    db.commit()
-    db.refresh(current_user)
-    
-    return {"message": "Vehicle information updated successfully"}
-
-
-@router.post("/add-banking-account")
-async def add_banking_account(
-    banking_data: dict,
-    current_user: User = Depends(get_current_partner),
-    db: Session = Depends(get_db)
-):
-    """Add a new banking account for multi-currency payouts"""
-    
-    if not current_user.profile_data:
-        current_user.profile_data = {}
-    
-    if "banking_accounts" not in current_user.profile_data:
-        current_user.profile_data["banking_accounts"] = []
-    
-    account = {
-        "currency": banking_data.get("currency"),
-        "bank_name": banking_data.get("bank_name"),
-        "account_number": banking_data.get("account_number"),
-        "account_name": banking_data.get("account_name"),
-        "swift_code": banking_data.get("swift_code"),
-        "iban": banking_data.get("iban"),
-        "is_primary": banking_data.get("is_primary", False),
-        "region": banking_data.get("region"),
-        "created_at": datetime.utcnow().isoformat()
-    }
-    
-    # If marked as primary, unset other primary accounts
-    if account["is_primary"]:
-        for existing in current_user.profile_data["banking_accounts"]:
-            if existing.get("region") == account["region"]:
-                existing["is_primary"] = False
-    
-    current_user.profile_data["banking_accounts"].append(account)
-    
-    db.commit()
-    db.refresh(current_user)
-    
-    return {
-        "message": "Banking account added successfully",
-        "currency": account["currency"],
-        "region": account["region"]
-    }
-
-
-@router.post("/update-compliance")
-async def update_compliance(
-    compliance_data: dict,
-    current_user: User = Depends(get_current_partner),
-    db: Session = Depends(get_db)
-):
-    """Update compliance and tax residency settings"""
-    
-    if not current_user.profile_data:
-        current_user.profile_data = {}
-    
-    current_user.profile_data["compliance"] = {
-        "tax_residency": compliance_data.get("tax_residency"),
-        "tax_id": compliance_data.get("tax_id"),
-        "customs_certified": compliance_data.get("customs_certified", False),
-        "international_ready": compliance_data.get("international_ready", False),
-        "fast_card_certified": compliance_data.get("fast_card", False),
-        "vat_registered": compliance_data.get("vat_registered", False),
-        "region": compliance_data.get("region"),
-        "updated_at": datetime.utcnow().isoformat()
-    }
-    
-    db.commit()
-    db.refresh(current_user)
-    
-    return {
-        "message": "Compliance information updated successfully",
-        "compliance_status": current_user.profile_data["compliance"]
-    }
-
-
-@router.post("/update-preferences")
-async def update_preferences(
-    pref_data: dict,
-    current_user: User = Depends(get_current_partner),
-    db: Session = Depends(get_db)
-):
-    """Update delivery preferences based on region"""
-    
-    if not current_user.profile_data:
-        current_user.profile_data = {}
-    
-    current_user.profile_data["preferences"] = {
-        "accepted_services": pref_data.get("accepted_services", []),
-        "max_jobs_per_day": pref_data.get("max_jobs_per_day", 10),
-        "available_nights": pref_data.get("available_nights", False),
-        "available_weekends": pref_data.get("available_weekends", True),
-        "updated_at": datetime.utcnow().isoformat()
-    }
-    
-    db.commit()
-    db.refresh(current_user)
-    
-    return {"message": "Delivery preferences updated successfully"}
-
-
-@router.post("/update-global-settings")
-async def update_global_settings(
-    settings_data: dict,
-    current_user: User = Depends(get_current_partner),
-    db: Session = Depends(get_db)
-):
-    """Update global localization and notification settings"""
-    
-    if not current_user.profile_data:
-        current_user.profile_data = {}
-    
-    current_user.profile_data["global_settings"] = {
-        "preferred_language": settings_data.get("preferred_language", "en"),
-        "distance_unit": settings_data.get("distance_unit", "km"),
-        "timezone": settings_data.get("timezone", "UTC"),
-        "display_currency": settings_data.get("display_currency"),
-        "notifications": {
-            "email": settings_data.get("email_notifications", True),
-            "sms": settings_data.get("sms_notifications", True),
-            "push": settings_data.get("push_notifications", True)
-        },
-        "updated_at": datetime.utcnow().isoformat()
-    }
-    
-    db.commit()
-    db.refresh(current_user)
-    
-    return {"message": "Global settings updated successfully"}

@@ -1,6 +1,5 @@
 // MAIN.JS - Global initialization and utilities
 
-// Local storage keys
 const STORAGE_KEYS = {
   ACCESS_TOKEN: 'authToken',
   REFRESH_TOKEN: 'refresh_token',
@@ -8,28 +7,28 @@ const STORAGE_KEYS = {
   PREFERENCES: 'preferences'
 };
 
-// Initialize app on page load
 document.addEventListener('DOMContentLoaded', function() {
-  console.log('🚀 Georgensen App Initialized');
   updateNavbar();
   initializePreferences();
 });
 
-/**
- * Update navbar based on authentication state
- */
 function updateNavbar() {
-  const token = localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
-  const user = JSON.parse(localStorage.getItem(STORAGE_KEYS.USER) || '{}');
-  
+  const token = localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN) || localStorage.getItem('access_token');
+  let user = {};
+  try {
+    user = JSON.parse(localStorage.getItem(STORAGE_KEYS.USER) || '{}');
+  } catch {
+    user = {};
+  }
+
   if (token && user.email) {
     const loginBtn = document.getElementById('loginBtn');
     const registerBtn = document.getElementById('registerBtn');
     const authButtons = document.querySelector('.auth-buttons');
-    
+
     if (loginBtn) loginBtn.style.display = 'none';
     if (registerBtn) registerBtn.style.display = 'none';
-    
+
     if (authButtons) {
       authButtons.innerHTML = `
         <li class="flex items-center gap-md" style="display: flex; gap: var(--spacing-md); align-items: center; white-space: nowrap;">
@@ -41,36 +40,29 @@ function updateNavbar() {
   }
 }
 
-/**
- * Logout user
- */
 function logout() {
   localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
+  localStorage.removeItem('access_token');
   localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
   localStorage.removeItem(STORAGE_KEYS.USER);
-  alert('Logged out successfully');
-  location.href = 'index.html';
+  window.location.href = '/auth/login';
 }
 
-/**
- * Get current user
- */
 function getCurrentUser() {
-  return JSON.parse(localStorage.getItem(STORAGE_KEYS.USER) || '{}');
+  try {
+    const u = JSON.parse(localStorage.getItem(STORAGE_KEYS.USER) || '{}');
+    return (u && (u.id || u.email)) ? u : null;
+  } catch {
+    return null;
+  }
 }
 
-/**
- * Check if user is authenticated
- */
 function isAuthenticated() {
-  return !!localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
+  return !!(localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN) || localStorage.getItem('access_token'));
 }
 
-/**
- * Get auth header for API calls
- */
 function getAuthHeader() {
-  const token = localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
+  const token = localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN) || localStorage.getItem('access_token');
   if (token) {
     return {
       'Authorization': `Bearer ${token}`
@@ -79,35 +71,15 @@ function getAuthHeader() {
   return {};
 }
 
-/**
- * Get authentication header for API calls
- * (API call function is defined in /js/core/api.js)
- */
-function getAuthHeader() {
-  const token = localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
-  if (token) {
-    return {
-      'Authorization': `Bearer ${token}`
-    };
-  }
-  return {};
-}
-
-/**
- * Initialize user preferences
- */
 function initializePreferences() {
-  const prefs = JSON.parse(localStorage.getItem(STORAGE_KEYS.PREFERENCES) || '{}');
-  
-  // Apply dark mode preference
-  if (prefs.darkMode) {
-    document.body.classList.add('dark-mode');
-  }
+  try {
+    const prefs = JSON.parse(localStorage.getItem(STORAGE_KEYS.PREFERENCES) || '{}');
+    if (prefs.darkMode) {
+      document.body.classList.add('dark-mode');
+    }
+  } catch {}
 }
 
-/**
- * Toggle dark mode
- */
 function toggleDarkMode() {
   document.body.classList.toggle('dark-mode');
   const prefs = JSON.parse(localStorage.getItem(STORAGE_KEYS.PREFERENCES) || '{}');
@@ -115,10 +87,7 @@ function toggleDarkMode() {
   localStorage.setItem(STORAGE_KEYS.PREFERENCES, JSON.stringify(prefs));
 }
 
-/**
- * Show notification toast
- */
-function showNotification(message, type = 'info', duration = 3000) {
+function showNotification(message, type = 'info', duration = 3500) {
   const toast = document.createElement('div');
   toast.className = `alert alert-${type}`;
   toast.style.position = 'fixed';
@@ -126,10 +95,13 @@ function showNotification(message, type = 'info', duration = 3000) {
   toast.style.right = '20px';
   toast.style.zIndex = '9999';
   toast.style.maxWidth = '400px';
+  toast.style.padding = '12px 18px';
+  toast.style.borderRadius = '8px';
+  toast.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
   toast.textContent = message;
-  
+
   document.body.appendChild(toast);
-  
+
   setTimeout(() => {
     toast.style.opacity = '0';
     toast.style.transition = 'opacity 0.3s';
@@ -137,22 +109,17 @@ function showNotification(message, type = 'info', duration = 3000) {
   }, duration);
 }
 
-/**
- * Format currency
- */
-function formatCurrency(amount) {
-  return new Intl.NumberFormat('en-NG', {
+function formatCurrency(amount, currency = 'CAD') {
+  return new Intl.NumberFormat('en-CA', {
     style: 'currency',
-    currency: 'NGN',
-    minimumFractionDigits: 0
-  }).format(amount);
+    currency: currency,
+    minimumFractionDigits: 2
+  }).format(Number(amount || 0));
 }
 
-/**
- * Format date
- */
 function formatDate(date) {
-  return new Intl.DateTimeFormat('en-NG', {
+  if (!date) return 'N/A';
+  return new Intl.DateTimeFormat('en-CA', {
     year: 'numeric',
     month: 'short',
     day: 'numeric',
@@ -161,23 +128,14 @@ function formatDate(date) {
   }).format(new Date(date));
 }
 
-/**
- * Validate email
- */
 function isValidEmail(email) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 
-/**
- * Validate phone
- */
 function isValidPhone(phone) {
   return /^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/im.test(phone);
 }
 
-/**
- * Scroll smooth helper
- */
 function smoothScroll(elementId) {
   const element = document.getElementById(elementId);
   if (element) {
@@ -185,39 +143,37 @@ function smoothScroll(elementId) {
   }
 }
 
-/**
- * Loading spinner
- */
 function showLoadingSpinner(element) {
+  if (!element) return;
   element.innerHTML = '<span class="spinner"></span>';
   element.disabled = true;
 }
 
 function hideLoadingSpinner(element, text) {
+  if (!element) return;
   element.textContent = text;
   element.disabled = false;
 }
 
-/**
- * Handle common errors
- */
 function handleError(error) {
   console.error('Error:', error);
-  
-  if (error.message === 'Session expired. Please login again.') {
+  const msg = (error && error.message) ? error.message : 'An error occurred';
+  if (msg === 'Session expired. Please login again.') {
     logout();
-  } else if (error.message.includes('Network')) {
+  } else if (msg.includes('Network')) {
     showNotification('Network error. Please check your connection.', 'error');
   } else {
-    showNotification(error.message || 'An error occurred', 'error');
+    showNotification(msg, 'error');
   }
 }
 
-// Export for use in other modules
-window.apiCall = apiCall;
+if (typeof apiCall !== 'undefined') {
+  window.apiCall = apiCall;
+}
 window.showNotification = showNotification;
 window.formatCurrency = formatCurrency;
 window.formatDate = formatDate;
 window.isAuthenticated = isAuthenticated;
 window.getCurrentUser = getCurrentUser;
 window.handleError = handleError;
+window.logout = logout;

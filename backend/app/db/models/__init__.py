@@ -11,14 +11,19 @@ from .tracking import Tracking, TrackingStatus
 from .tracking_history import TrackingHistory
 from .pod import POD
 from .dispute import Dispute
-from .invoice import Invoice
-from .support_ticket import SupportTicket
+from .invoice import Invoice, InvoiceStatus
+from .support_ticket import SupportTicket, TicketStatus, TicketCategory, TicketPriority
 
 from .hub import Hub, HubStatus
 from .fleet_vehicle import FleetVehicle, VehicleStatus, VehicleType
 from .handler import Handler, HandlerType, HandlerStatus
 from .shipment_log import ShipmentLog, LogAction
 from .webhook import WebhookEvent
+
+# Legacy aliases for unified Phase 1/2/3 compatibility
+Order = Shipment
+OrderStatusEnum = ShipmentStatus
+ProofOfDelivery = POD
 
 __all__ = [
     "User",
@@ -33,13 +38,20 @@ __all__ = [
     "Partner",
     "Shipment",
     "ShipmentStatus",
+    "Order",
+    "OrderStatusEnum",
     "Tracking",
     "TrackingStatus",
     "TrackingHistory",
     "POD",
+    "ProofOfDelivery",
     "Dispute",
     "Invoice",
+    "InvoiceStatus",
     "SupportTicket",
+    "TicketStatus",
+    "TicketCategory",
+    "TicketPriority",
     # Logistics models
     "Hub",
     "HubStatus",
@@ -53,4 +65,3 @@ __all__ = [
     "LogAction",
     "WebhookEvent",
 ]
-

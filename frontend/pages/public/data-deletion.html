@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Data Deletion Request - Georgensen Courier</title>
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="stylesheet" href="/assets/lib/bootstrap/css/bootstrap.min.css">
+</head>
+<body>
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark px-4">
+    <a class="navbar-brand fw-bold" href="/">🚚 Georgensen Courier</a>
+    <div class="ms-auto d-flex gap-3 align-items-center">
+      <a class="text-light text-decoration-none" href="/privacy.html">Privacy Policy</a>
+      <a class="text-light text-decoration-none" href="/ccpa.html">CCPA</a>
+      <a class="text-light text-decoration-none" href="/dpa.html">DPA</a>
+    </div>
+  </nav>
+
+  <main class="container py-5" style="max-width: 680px;">
+    <h1 class="fw-bold mb-3">Personal Data & Account Deletion Request</h1>
+    <p class="text-muted">Submit a verifiable request under PIPEDA, GDPR (Article 17), or CCPA to erase your personal account data.</p>
+
+    <div id="delAlert" class="alert" style="display:none;"></div>
+    <form id="deletionForm" class="card p-4 shadow-sm mt-3">
+      <div class="mb-3">
+        <label class="form-label fw-bold">Full Name</label>
+        <input type="text" class="form-control" id="delName" required>
+      </div>
+      <div class="mb-3">
+        <label class="form-label fw-bold">Account Email Address</label>
+        <input type="email" class="form-control" id="delEmail" required>
+      </div>
+      <div class="mb-3">
+        <label class="form-label fw-bold">Jurisdiction / Regulation</label>
+        <select class="form-select" id="delReg">
+          <option value="PIPEDA (Canada)">PIPEDA (Canada)</option>
+          <option value="GDPR (EU / UK)">GDPR (EU / UK)</option>
+          <option value="CCPA / CPRA (California)">CCPA / CPRA (California)</option>
+          <option value="General Account Closure">General Account Closure</option>
+        </select>
+      </div>
+      <div class="mb-3">
+        <label class="form-label fw-bold">Additional Details</label>
+        <textarea class="form-control" id="delReason" rows="3" placeholder="Please erase my account and associated profile records."></textarea>
+      </div>
+      <button type="submit" class="btn btn-danger">Submit Data Deletion Request</button>
+    </form>
+  </main>
+
+  <script src="/js/core/api.js"></script>
+  <script src="/js/main.js"></script>
+  <script>
+    document.getElementById('deletionForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const alertEl = document.getElementById('delAlert');
+      try {
+        const res = await post('/support/tickets', {
+          name: document.getElementById('delName').value,
+          email: document.getElementById('delEmail').value,
+          subject: `DATA DELETION (${document.getElementById('delReg').value})`,
+          message: document.getElementById('delReason').value || 'Account and personal data deletion request.'
+        });
+        alertEl.className = 'alert alert-success';
+        alertEl.textContent = `Request recorded (Reference: ${res.ticket_id}). Our Privacy Officer will process your erasure within 30 days.`;
+        alertEl.style.display = 'block';
+        e.target.reset();
+      } catch (err) {
+        alertEl.className = 'alert alert-danger';
+        alertEl.textContent = err.message || 'Failed to submit request';
+        alertEl.style.display = 'block';
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Settings - Admin | Georgensen Courier</title>
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="stylesheet" href="/assets/lib/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/assets/lib/fontawesome/css/all.min.css">
+</head>
+<body class="bg-light">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark px-4">
+        <a class="navbar-brand fw-bold" href="/admin/dashboard.html">🚚 Georgensen Admin</a>
+        <div class="ms-auto d-flex gap-3 align-items-center">
+            <a class="text-light text-decoration-none" href="/admin/dashboard.html">Dashboard</a>
+            <a class="text-light text-decoration-none" href="/admin/orders.html">Orders</a>
+            <a class="text-light text-decoration-none" href="/admin/partners.html">Partners</a>
+            <a class="text-light text-decoration-none" href="/admin/disputes.html">Disputes</a>
+            <a class="text-light text-decoration-none" href="/admin/reports.html">Reports</a>
+            <a class="text-light text-decoration-none fw-bold" href="/admin/settings.html">Settings</a>
+            <a class="text-light text-decoration-none" href="/admin/logs.html">System Logs</a>
+            <button class="btn btn-sm btn-outline-light" onclick="logout()">Logout</button>
+        </div>
+    </nav>
+
+    <div class="container py-5">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white py-3">
+                <h4 class="mb-0">Platform Configuration & Pricing Settings</h4>
+            </div>
+            <div class="card-body p-4">
+                <form id="systemSettingsForm">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Company Name</label>
+                            <input type="text" class="form-control" id="company_name" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Support Email</label>
+                            <input type="email" class="form-control" id="support_email" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold">Default Currency</label>
+                            <select class="form-select" id="default_currency">
+                                <option value="CAD">CAD</option>
+                                <option value="USD">USD</option>
+                                <option value="EUR">EUR</option>
+                                <option value="GBP">GBP</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold">Partner Commission Rate</label>
+                            <input type="number" step="0.01" min="0" max="1" class="form-control" id="partner_commission_rate">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold">Fuel Surcharge Rate</label>
+                            <input type="number" step="0.01" min="0" max="1" class="form-control" id="fuel_surcharge_rate">
+                        </div>
+                        <div class="col-md-6 mt-4">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="auto_assign_partners">
+                                <label class="form-check-label fw-bold" for="auto_assign_partners">Auto-Assign Shipments to Available Partners</label>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mt-4">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="webhook_notifications_enabled">
+                                <label class="form-check-label fw-bold" for="webhook_notifications_enabled">Enable Webhook Event Notifications</label>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary mt-4">Save System Settings</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/core/api.js"></script>
+    <script src="/js/core/auth.js"></script>
+    <script src="/js/core/guards.js"></script>
+    <script src="/js/main.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            if (!requireAdmin()) return;
+            try {
+                const s = await getWithAuth('/admin/settings');
+                document.getElementById('company_name').value = s.company_name || '';
+                document.getElementById('support_email').value = s.support_email || '';
+                document.getElementById('default_currency').value = s.default_currency || 'CAD';
+                document.getElementById('partner_commission_rate').value = s.partner_commission_rate ?? 0.70;
+                document.getElementById('fuel_surcharge_rate').value = s.fuel_surcharge_rate ?? 0.12;
+                document.getElementById('auto_assign_partners').checked = !!s.auto_assign_partners;
+                document.getElementById('webhook_notifications_enabled').checked = !!s.webhook_notifications_enabled;
+            } catch (e) {
+                console.error(e);
+            }
+
+            document.getElementById('systemSettingsForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                try {
+                    await putWithAuth('/admin/settings', {
+                        company_name: document.getElementById('company_name').value,
+                        support_email: document.getElementById('support_email').value,
+                        default_currency: document.getElementById('default_currency').value,
+                        partner_commission_rate: parseFloat(document.getElementById('partner_commission_rate').value),
+                        fuel_surcharge_rate: parseFloat(document.getElementById('fuel_surcharge_rate').value),
+                        auto_assign_partners: document.getElementById('auto_assign_partners').checked,
+                        webhook_notifications_enabled: document.getElementById('webhook_notifications_enabled').checked
+                    });
+                    showNotification('System settings updated!', 'success');
+                } catch (err) {
+                    showNotification(err.message || 'Failed to save settings', 'error');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

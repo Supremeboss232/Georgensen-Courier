@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Boolean, DateTime, Integer, Enum as SQLEnum
+from sqlalchemy import Column, String, Boolean, DateTime, Integer, Enum as SQLEnum, JSON
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
 import enum
@@ -30,7 +30,7 @@ class User(Base):
     hashed_password = Column(String, nullable=False)
     is_active = Column(Boolean, default=True)
     is_superuser = Column(Boolean, default=False)
-    is_email_verified = Column(Boolean, default=False)  # NEW: Track email verification
+    is_email_verified = Column(Boolean, default=False)
     role = Column(SQLEnum(UserRole), default=UserRole.customer, nullable=False)
     phone = Column(String, nullable=True)
     address = Column(String, nullable=True)
@@ -39,16 +39,48 @@ class User(Base):
     postal_code = Column(String, nullable=True)
     
     # LOGISTICS: Hub assignment for managers, drivers, handlers
-    assigned_hub_id = Column(Integer, nullable=True, index=True)  # Will link to Hub table
+    assigned_hub_id = Column(Integer, nullable=True, index=True)
+    profile_data = Column(JSON, default=dict, nullable=True)
     
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
-    # Relationships - NEW
+    # Relationships
     email_verifications = relationship("EmailVerification", back_populates="user", cascade="all, delete-orphan")
     refresh_tokens = relationship("RefreshToken", back_populates="user", cascade="all, delete-orphan")
     auth_logs = relationship("AuthAuditLog", back_populates="user", cascade="all, delete-orphan")
     password_resets = relationship("PasswordReset", back_populates="user", cascade="all, delete-orphan")
+
+    @property
+    def status(self) -> str:
+        if isinstance(self.profile_data, dict) and "status" in self.profile_data:
+            return self.profile_data["status"]
+        return "active" if self.is_active else "inactive"
+
+    @status.setter
+    def status(self, value: str):
+        self.is_active = value in ("active", "approved", "verified")
+        data = dict(self.profile_data or {})
+        data["status"] = value
+        self.profile_data = data
+
+    @property
+    def primary_region(self) -> str:
+        if isinstance(self.profile_data, dict):
+            return self.profile_data.get("primary_region", "NA")
+        return "NA"
+
+    @property
+    def compliance_status(self) -> str:
+        if isinstance(self.profile_data, dict):
+            return self.profile_data.get("compliance_status", "verified")
+        return "verified"
+
+    @property
+    def kyc_status(self) -> str:
+        if isinstance(self.profile_data, dict):
+            return self.profile_data.get("kyc_status", "verified")
+        return "verified"
 
     def __repr__(self):
         return f"<User {self.email}>"

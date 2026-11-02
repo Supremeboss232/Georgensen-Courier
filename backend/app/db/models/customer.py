@@ -28,17 +28,17 @@ class Customer(Base):
     # Shipping preferences
     default_return_address = Column(String, nullable=True)
     preferred_service_type = Column(String, default="local")
-    preferred_pickup_time = Column(String, nullable=True)  # e.g., "09:00-12:00"
+    preferred_pickup_time = Column(String, nullable=True)
     
     # Account settings
-    account_type = Column(String, default="individual")  # individual, business, enterprise
+    account_type = Column(String, default="individual")
     is_verified = Column(Boolean, default=False)
     verification_date = Column(DateTime(timezone=True), nullable=True)
     
     # Statistics
     total_shipments = Column(Integer, default=0)
     total_spent = Column(Float, default=0.0)
-    account_balance = Column(Float, default=0.0)  # Prepaid balance or credit
+    account_balance = Column(Float, default=0.0)
     average_rating = Column(Float, default=0.0)
     
     # Preferences
@@ -58,6 +58,26 @@ class Customer(Base):
     support_tickets = relationship("SupportTicket", back_populates="customer", cascade="all, delete-orphan")
     shipments = relationship("Shipment", back_populates="customer", cascade="all, delete-orphan")
     invoices = relationship("Invoice", back_populates="customer", cascade="all, delete-orphan")
+
+    @property
+    def email_verified(self) -> bool:
+        return bool(self.is_verified)
+
+    @email_verified.setter
+    def email_verified(self, value: bool):
+        self.is_verified = bool(value)
+
+    @property
+    def phone_verified(self) -> bool:
+        return bool(self.phone)
+
+    @phone_verified.setter
+    def phone_verified(self, value: bool):
+        pass
+
+    @property
+    def preferred_payment_method(self) -> str:
+        return "credit_card"
 
     def __repr__(self):
         return f"<Customer user_id={self.user_id}>"

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Profile - Customer Portal</title>
+    <title>My Profile - Customer Portal | Georgensen Courier</title>
     <link rel="stylesheet" href="/css/main.css">
     <link rel="stylesheet" href="/assets/lib/bootstrap/css/bootstrap.min.css">
 </head>
@@ -25,7 +25,7 @@
                     </div>
                     <div class="mb-3">
                         <label for="email" class="form-label">Email Address</label>
-                        <input type="email" class="form-control" id="email" name="email" required>
+                        <input type="email" class="form-control" id="email" name="email" readonly>
                     </div>
                     <div class="mb-3">
                         <label for="phone" class="form-label">Phone Number</label>
@@ -39,42 +39,26 @@
                 </form>
 
                 <h4 class="mt-5">Security</h4>
-                <button class="btn btn-warning w-100" data-bs-toggle="modal" data-bs-target="#changePasswordModal">Change Password</button>
-
-                <h4 class="mt-4">Account</h4>
-                <button class="btn btn-danger w-100">Delete Account</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Change Password Modal -->
-    <div class="modal fade" id="changePasswordModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Change Password</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="changePasswordForm">
+                <div class="card p-3 mt-2">
+                    <form id="changePasswordForm" onsubmit="event.preventDefault(); changePassword();">
                         <div class="mb-3">
                             <label for="currentPassword" class="form-label">Current Password</label>
                             <input type="password" class="form-control" id="currentPassword" name="currentPassword" required>
                         </div>
                         <div class="mb-3">
-                            <label for="newPassword" class="form-label">New Password</label>
-                            <input type="password" class="form-control" id="newPassword" name="newPassword" required>
+                            <label for="newPassword" class="form-label">New Password (min 8 chars)</label>
+                            <input type="password" class="form-control" id="newPassword" name="newPassword" minlength="8" required>
                         </div>
                         <div class="mb-3">
                             <label for="confirmPassword" class="form-label">Confirm Password</label>
-                            <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" required>
+                            <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" minlength="8" required>
                         </div>
+                        <button type="submit" class="btn btn-warning w-100">Change Password</button>
                     </form>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-primary" onclick="changePassword()">Change Password</button>
-                </div>
+
+                <h4 class="mt-4">Data & Privacy</h4>
+                <a href="/data-deletion.html" class="btn btn-outline-danger w-100">Request Account / Data Deletion</a>
             </div>
         </div>
     </div>
@@ -83,6 +67,7 @@
     <script src="/js/core/api.js"></script>
     <script src="/js/core/auth.js"></script>
     <script src="/js/core/guards.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/main.js"></script>
+    <script src="/js/customer/profile.js"></script>
 </body>
 </html>

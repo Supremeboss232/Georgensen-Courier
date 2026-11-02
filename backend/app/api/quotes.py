@@ -1,411 +1,271 @@
 """
-Quotes API for Canada-global logistics pricing
-Handles quote calculations with regional tax, customs, and currency support
+Quote & Pricing Calculator API
+Calculates shipping rates based on Canadian zone pricing and global multi-region pricing
 """
+from fastapi import APIRouter, HTTPException, Query, status
+from pydantic import BaseModel, Field, ConfigDict
+from typing import Optional, Dict
+from datetime import datetime
+from enum import Enum
 
-from fastapi import APIRouter, Depends, HTTPException, status
-from pydantic import BaseModel, Field
-from typing import Optional
-from sqlalchemy.orm import Session
-import logging
-from app.db.base import get_db
-from app.services.pricing_canada import CanadianPricingService
-from app.services.pricing_global import GlobalPricingService
+from app.services.pricing_canada import CanadianPricingService, ShippingZone, CanadianTaxJurisdiction
+from app.services.pricing_global import GlobalPricingService, GlobalRegion
 
-logger = logging.getLogger(__name__)
-
-
-router = APIRouter(
-    prefix="/api/v1/quotes",
-    tags=["Quotes"]
-)
+router = APIRouter(prefix="/api/v1/quotes", tags=["quotes"])
 
 
-# Request schema
+class ServiceTypeEnum(str, Enum):
+    ECONOMY = "economy"
+    STANDARD = "standard"
+    EXPRESS = "express"
+    OVERNIGHT = "overnight"
+
+
+class ItemTypeEnum(str, Enum):
+    DOCUMENTS = "documents"
+    ELECTRONICS = "electronics"
+    FRAGILE = "fragile"
+    PERISHABLE = "perishable"
+    HAZMAT = "hazmat"
+    GENERAL = "general"
+
+
 class QuoteCalculateRequest(BaseModel):
-    """Quote calculation request with Canada-global parameters"""
-    
-    origin_postal: Optional[str] = Field(
-        default=None,
-        description="Origin postal code (CA: A1A 1A1 format, US: 5-digit, optional for non-CA/US)",
-        example="M5H 2N2"
-    )
-    destination_postal: Optional[str] = Field(
-        default=None,
-        description="Destination postal code (CA: A1A 1A1 format, US: 5-digit, optional for non-CA/US)",
-        example="V6B 4X8"
-    )
-    weight_kg: float = Field(
-        ...,
-        description="Package weight in kilograms",
-        example=2.5,
-        ge=0.1,
-        le=100.0
-    )
-    distance_km: Optional[float] = Field(
-        default=500,
-        description="Distance in kilometers (optional, will estimate if not provided)",
-        ge=1
-    )
-    service_type: str = Field(
-        default="standard",
-        description="Service type: standard, express, overnight, economy",
-        example="standard"
-    )
-    origin_country: str = Field(
-        ...,
-        description="Origin country code (CA, US, GB, AU, MX, BR, DE, JP, etc.)",
-        pattern="^[A-Z]{2}$",
-        example="CA"
-    )
-    destination_country: str = Field(
-        ...,
-        description="Destination country code (CA, US, GB, AU, MX, BR, DE, JP, etc.)",
-        pattern="^[A-Z]{2}$",
-        example="US"
-    )
-    item_type: Optional[str] = Field(
-        default="documents",
-        description="Type of item: documents, small-parcel, medium-box, large-box, pallet",
-        example="documents"
-    )
-    currency: Optional[str] = Field(
-        default=None,
-        description="Currency for quote (auto-detected from destination country if not specified)",
-        pattern="^[A-Z]{3}$",
-        example="CAD"
+    """Request to calculate shipping quote - Global multi-region support"""
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "origin_country": "CA",
+                "origin_postal": "M5V 3A8",
+                "destination_country": "GB",
+                "destination_postal": "SW1A 1AA",
+                "weight_kg": 25.5,
+                "distance_km": 5580,
+                "service_type": "express",
+                "item_type": "electronics"
+            }
+        }
     )
 
-
-# Response schema
-class PriceBreakdown(BaseModel):
-    """Detailed price breakdown"""
-    base: float = Field(..., description="Base shipping fare")
-    distance: float = Field(..., description="Distance-based charge")
-    weight: float = Field(..., description="Weight-based charge")
-    customs: float = Field(..., description="Customs handling fee (if international)")
-    fuel: float = Field(..., description="Fuel surcharge")
-    tax: float = Field(..., description="Provincial tax")
-    total: float = Field(..., description="Total price")
+    origin_country: str = Field(default="CA", min_length=2, max_length=2)
+    origin_postal: Optional[str] = Field(default="M5V 3A8", max_length=15)
+    destination_country: str = Field(default="CA", min_length=2, max_length=2)
+    destination_postal: Optional[str] = Field(default="V6B 2W9", max_length=15)
+    weight_kg: float = Field(..., gt=0, le=30000)
+    distance_km: Optional[float] = Field(default=500, ge=0, le=50000)
+    service_type: ServiceTypeEnum = Field(default=ServiceTypeEnum.STANDARD)
+    item_type: ItemTypeEnum = Field(default=ItemTypeEnum.GENERAL)
+    insurance_value_cad: Optional[float] = Field(default=0, ge=0)
 
 
 class QuoteCalculateResponse(BaseModel):
-    """Quote calculation response"""
-    currency: str = Field(..., description="Quote currency (CAD, USD, EUR, GBP, AUD, etc.)")
-    origin_postal: Optional[str]
-    destination_postal: Optional[str]
-    origin_country: str = Field(..., description="Origin country code")
-    destination_country: str = Field(..., description="Destination country code")
-    origin_region: Optional[str] = Field(None, description="Origin region (north_america, europe, etc.)")
-    destination_region: Optional[str] = Field(None, description="Destination region")
-    distance_km: float
-    weight_kg: float
-    zone: str = Field(..., description="Shipping zone (zone_1 to zone_5)")
-    service_type: str
-    is_international: bool = Field(
-        ..., 
-        description="Whether this is an international shipment"
-    )
-    origin_timezone: str = Field(..., description="Origin timezone")
-    destination_timezone: str = Field(..., description="Destination timezone")
-    tax_jurisdiction: str
-    tax_rate: float = Field(..., description="Tax rate as percentage (e.g., 13.0)")
-    base_fare: float = Field(..., description="Base shipping fare")
-    distance_charge: float = Field(..., description="Distance-based charge")
-    weight_charge: float = Field(..., description="Weight-based charge")
-    customs_fee: float = Field(..., description="Customs handling fee (if international)")
-    fuel_surcharge: float = Field(..., description="Fuel surcharge")
-    subtotal: float = Field(..., description="Subtotal before tax")
-    tax_amount: float = Field(..., description="Tax amount")
-    total_price: float = Field(..., description="Total price in specified currency")
-    total_usd: Optional[float] = Field(None, description="Total price in USD (for reference)")
-    exchange_rate: Optional[float] = Field(None, description="Exchange rate used")
-    breakdown: PriceBreakdown
-    service_display: str = Field(..., description="Display-friendly service name")
-    estimated_delivery_days: int = Field(..., description="Estimated delivery days")
-    delivery_time: Optional[str] = Field(None, description="Delivery time range")
-    hubs: Optional[list] = Field(None, description="Regional hubs serving the destination")
-    notes: Optional[str] = Field(None, description="Additional notes (e.g., customs warnings)")
-    
-    # Origin details
+    """Global shipping quote response with regional currency and breakdown"""
+    quote_id: str
+    timestamp: datetime
+    valid_until: datetime
+
     origin_country: str
-    origin_timezone: str
-    
-    # Destination details
+    origin_region: str
+    origin_postal: Optional[str] = None
     destination_country: str
-    destination_timezone: str
-    
-    # Tax information
-    tax_jurisdiction: str = Field(..., description="Destination province/state code")
-    tax_rate: float = Field(..., description="Applicable tax rate percentage")
-    
-    # Pricing breakdown
+    destination_region: str
+    destination_postal: Optional[str] = None
+    distance_km: float
+
+    weight_kg: float
+    service_type: str
+    item_type: str
+    zone: str
+    delivery_time: str
+
+    currency: str
     base_fare: float
     distance_charge: float
     weight_charge: float
-    customs_fee: float = Field(default=0, description="Customs fee for international")
+    customs_fee: float
     fuel_surcharge: float
-    subtotal: float = Field(..., description="Subtotal before tax")
+    insurance_charge: float = 0.0
+    subtotal: float
+    tax_rate: float
     tax_amount: float
-    total_price: float = Field(..., description="Total price in specified currency")
-    
-    # Additional info
-    breakdown: PriceBreakdown
-    service_display: str = Field(
-        ..., 
-        description="Human-readable service type"
-    )
-    estimated_delivery_days: int = Field(
-        ...,
-        description="Estimated delivery in business days"
-    )
-    notes: Optional[str] = Field(
-        default=None,
-        description="Additional notes (e.g., customs warnings)"
-    )
+    total_price: float
+    total_usd: float
+    exchange_rate: float
+
+    breakdown: Dict
+    hubs: list
 
 
 @router.post("/calculate", response_model=QuoteCalculateResponse)
-async def calculate_quote(
-    request: QuoteCalculateRequest,
-    db: Session = Depends(get_db)
-):
-    """
-    Calculate shipping quote with global pricing support
-    
-    Supports 6 major regions:
-    - North America (CA, US)
-    - Europe (GB, DE, FR, IT, ES, NL, BE, AT, CH, SE, NO, DK, FI, PL, CZ, IE)
-    - Asia-Pacific (AU, SG, JP, HK, NZ, IN, TH, MY, ID, PH)
-    - Middle East & Africa (AE, SA, KW, QA, BH, ZA, EG, MA, NG, KE)
-    - Latin America (MX, BR, AR, CL, CO, PE, VE, EC)
-    
-    Example:
-    ```json
-    {
-        "origin_country": "CA",
-        "destination_country": "US",
-        "weight_kg": 2.5,
-        "distance_km": 500,
-        "service_type": "standard"
-    }
-    ```
-    """
-    
-    # Validate service type
-    valid_services = ["economy", "standard", "express", "overnight"]
-    if request.service_type not in valid_services:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Invalid service type. Must be one of: {', '.join(valid_services)}"
-        )
-    
-    # Check if we're using postal codes (North America) or global mode
-    is_postal_code_mode = (
-        (request.origin_country in ["CA", "US"] and request.origin_postal) and
-        (request.destination_country in ["CA", "US"] and request.destination_postal)
-    )
-    
+async def calculate_quote(request: QuoteCalculateRequest):
+    """Calculate shipping quote for global shipment across 5 regions"""
     try:
-        if is_postal_code_mode:
-            # Use Canadian pricing service for CA/US with postal codes
-            # Validate postal codes format
-            def is_valid_postal(code: str, country: str) -> bool:
-                if country == "CA":
-                    import re
-                    pattern = r'^[A-Z]\d[A-Z]\s?\d[A-Z]\d$'
-                    return bool(re.match(pattern, code.upper()))
-                elif country == "US":
-                    return code.isdigit() and len(code) == 5
-                return False
-            
-            if not is_valid_postal(request.origin_postal, request.origin_country):
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail=f"Invalid origin postal code format for {request.origin_country}"
-                )
-            
-            if not is_valid_postal(request.destination_postal, request.destination_country):
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail=f"Invalid destination postal code format for {request.destination_country}"
-                )
-            
-            # Get quote from Canadian pricing service
-            quote_data = CanadianPricingService.calculate_quote(
-                origin_postal=request.origin_postal,
-                destination_postal=request.destination_postal,
-                weight_kg=request.weight_kg,
-                distance_km=request.distance_km or 100,
-                service_type=request.service_type,
-                origin_country=request.origin_country,
-                destination_country=request.destination_country,
-                item_type=request.item_type or "documents"
-            )
-            
-            # Get timezones for postal codes
-            def get_timezone_from_postal(postal_code: str, country: str) -> str:
-                if country != "CA":
-                    return "EST"  # Default to Eastern for US
-                
-                first_char = postal_code[0].upper()
-                timezone_map = {
-                    'A': 'NST', 'B': 'AST', 'C': 'AST', 'E': 'AST',
-                    'G': 'EST', 'H': 'EST', 'J': 'EST',
-                    'K': 'EST', 'L': 'EST', 'M': 'EST', 'N': 'EST', 'P': 'EST',
-                    'R': 'CST', 'S': 'CST',
-                    'T': 'MST',
-                    'V': 'PST',
-                    'X': 'CST', 'Y': 'PST',
-                }
-                return timezone_map.get(first_char, 'EST')
-            
-            origin_timezone = get_timezone_from_postal(request.origin_postal, request.origin_country)
-            destination_timezone = get_timezone_from_postal(request.destination_postal, request.destination_country)
-            
-            # Determine currency
-            currency = request.currency or ("CAD" if request.destination_country == "CA" else "USD")
-            
-            # Apply currency conversion if needed
-            total_price = quote_data["total_price"]
-            if currency == "USD" and request.destination_country == "CA":
-                total_price = round(total_price / 1.35, 2)
-            elif currency == "CAD" and request.destination_country == "US":
-                total_price = round(total_price * 1.35, 2)
-            
-        else:
-            # Use Global pricing service for multi-region support
-            supported_countries = GlobalPricingService.list_supported_countries()
-            all_countries = []
-            for countries in supported_countries.values():
-                all_countries.extend(countries)
-            
-            if request.origin_country not in all_countries:
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail=f"Origin country {request.origin_country} not supported. Supported countries: {', '.join(sorted(set(all_countries)))}"
-                )
-            
-            if request.destination_country not in all_countries:
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail=f"Destination country {request.destination_country} not supported. Supported countries: {', '.join(sorted(set(all_countries)))}"
-                )
-            
-            # Get global quote
-            quote_data = GlobalPricingService.calculate_global_quote(
-                origin_country=request.origin_country,
-                destination_country=request.destination_country,
-                weight_kg=request.weight_kg,
-                distance_km=request.distance_km or 500,
-                service_type=request.service_type,
-                item_type=request.item_type or "documents"
-            )
-            
-            # Use currency from global service or override
-            currency = request.currency or quote_data["currency"]
-            origin_timezone = "EST"  # Placeholder - would use geolocation API
-            destination_timezone = "EST"  # Placeholder - would use geolocation API
-            total_price = quote_data["total_price"]
-        
-        # Map service type to display name
-        service_display_map = {
-            "economy": "Economy (5-7 days)",
-            "standard": "Standard (2-3 days)",
-            "express": "Express (24 hours)",
-            "overnight": "Overnight"
-        }
-        service_display = service_display_map.get(request.service_type, "Standard")
-        
-        # Estimate delivery days
-        est_days_map = {
-            "economy": 6,
-            "standard": 2,
-            "express": 1,
-            "overnight": 1
-        }
-        est_days = est_days_map.get(request.service_type, 2)
-        
-        # Add customs notes if international
-        is_international = request.origin_country != request.destination_country
-        notes = None
-        if is_international:
-            customs_fee_text = f"${quote_data.get('customs_fee', 50):.2f}"
-            if quote_data.get("currency") != "CAD":
-                customs_fee_text += f" ({quote_data.get('currency', 'USD')})"
-            notes = (
-                f"International shipment - customs clearance required. "
-                f"Estimated clearance: 24-48 hours. Customs fee: {customs_fee_text} included in quote."
-            )
-        
-        # Build response
-        response = QuoteCalculateResponse(
-            currency=currency,
-            origin_postal=request.origin_postal,
-            destination_postal=request.destination_postal,
-            origin_country=request.origin_country,
-            destination_country=request.destination_country,
-            origin_region=quote_data.get("origin_region"),
-            destination_region=quote_data.get("destination_region"),
-            distance_km=request.distance_km or 500,
+        origin_country = request.origin_country.upper()
+        dest_country = request.destination_country.upper()
+
+        quote_data = GlobalPricingService.calculate_global_quote(
+            origin_country=origin_country,
+            destination_country=dest_country,
             weight_kg=request.weight_kg,
+            distance_km=request.distance_km or 500.0,
+            service_type=request.service_type.value,
+            item_type=request.item_type.value
+        )
+
+        insurance_charge = 0.0
+        if request.insurance_value_cad and request.insurance_value_cad > 0:
+            insurance_charge = round(request.insurance_value_cad * 0.05, 2)
+            quote_data["subtotal"] = round(quote_data["subtotal"] + insurance_charge, 2)
+            tax_addition = insurance_charge * (quote_data["tax_rate"] / 100.0)
+            quote_data["tax_amount"] = round(quote_data["tax_amount"] + tax_addition, 2)
+            quote_data["total_price"] = round(quote_data["subtotal"] + quote_data["tax_amount"], 2)
+
+        import uuid
+        quote_id = f"QTE-{datetime.utcnow().strftime('%Y%m%d')}-{str(uuid.uuid4())[:8].upper()}"
+
+        return QuoteCalculateResponse(
+            quote_id=quote_id,
+            timestamp=datetime.utcnow(),
+            valid_until=datetime.fromtimestamp(datetime.utcnow().timestamp() + 86400),
+            origin_country=origin_country,
+            origin_region=quote_data["origin_region"],
+            origin_postal=request.origin_postal,
+            destination_country=dest_country,
+            destination_region=quote_data["destination_region"],
+            destination_postal=request.destination_postal,
+            distance_km=quote_data["distance_km"],
+            weight_kg=request.weight_kg,
+            service_type=request.service_type.value,
+            item_type=request.item_type.value,
             zone=quote_data["zone"],
-            service_type=request.service_type,
-            is_international=is_international,
-            origin_timezone=origin_timezone,
-            destination_timezone=destination_timezone,
-            tax_jurisdiction=quote_data.get("tax_jurisdiction", "Global"),
-            tax_rate=quote_data.get("tax_rate", quote_data.get("tax_amount", 0) / quote_data.get("subtotal", 1) * 100),
+            delivery_time=quote_data["delivery_time"],
+            currency=quote_data["currency"],
             base_fare=quote_data["base_fare"],
             distance_charge=quote_data["distance_charge"],
             weight_charge=quote_data["weight_charge"],
             customs_fee=quote_data["customs_fee"],
             fuel_surcharge=quote_data["fuel_surcharge"],
+            insurance_charge=insurance_charge,
             subtotal=quote_data["subtotal"],
+            tax_rate=quote_data["tax_rate"],
             tax_amount=quote_data["tax_amount"],
-            total_price=total_price,
-            total_usd=quote_data.get("total_usd"),
-            exchange_rate=quote_data.get("exchange_rate"),
-            breakdown=PriceBreakdown(**quote_data["breakdown"]),
-            service_display=service_display,
-            estimated_delivery_days=est_days,
-            delivery_time=quote_data.get("delivery_time"),
-            hubs=quote_data.get("hubs"),
-            notes=notes
-        )
-        
-        # Log quote calculation
-        logger.info(
-            f"Quote calculated: {request.origin_country} → {request.destination_country}, "
-            f"Weight: {request.weight_kg}kg, Total: {total_price} {currency}"
-        )
-        
-        return response
-        
-    except HTTPException:
-        raise
-    except KeyError as e:
-        logger.error(f"Quote calculation error - missing field: {str(e)}")
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Quote calculation error: {str(e)}"
-        )
-    except Exception as e:
-        logger.error(f"Quote calculation failed: {str(e)}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to calculate quote: {str(e)}"
-        )
-        
-        return response
-        
-    except ValueError as e:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Invalid quote parameters: {str(e)}"
+            total_price=quote_data["total_price"],
+            total_usd=quote_data["total_usd"],
+            exchange_rate=quote_data["exchange_rate"],
+            breakdown=quote_data["breakdown"],
+            hubs=quote_data["hubs"]
         )
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error calculating quote: {str(e)}"
         )
+
+
+@router.get("/zones")
+async def get_shipping_zones():
+    """Get information about all shipping zones and base pricing"""
+    zones_info = {}
+    for zone in ShippingZone:
+        min_days, max_days = CanadianPricingService.estimate_delivery_time(zone, "standard")
+        zones_info[zone.value] = {
+            "name": zone.name,
+            "base_rate_cad": CanadianPricingService.BASE_RATES[zone],
+            "distance_rate_per_km": CanadianPricingService.DISTANCE_RATES[zone],
+            "weight_rate_per_kg": CanadianPricingService.WEIGHT_RATES[zone],
+            "estimated_days": f"{min_days}-{max_days}",
+        }
+    return {
+        "currency": "CAD",
+        "zones": zones_info,
+        "customs_handling_fee": CanadianPricingService.CUSTOMS_HANDLING_FEE,
+        "fuel_surcharge_rate": f"{CanadianPricingService.FUEL_SURCHARGE_RATE * 100}%",
+        "insurance_rate": "5% of declared value",
+    }
+
+
+@router.get("/taxes")
+async def get_tax_rates():
+    """Get Canadian provincial tax rates"""
+    taxes = {}
+    for jurisdiction in CanadianTaxJurisdiction:
+        rate = CanadianPricingService.TAX_RATES[jurisdiction]
+        taxes[jurisdiction.value] = {
+            "rate": f"{rate * 100:.2f}%",
+            "decimal": rate,
+        }
+    return {"country": "CA", "provinces": taxes}
+
+
+@router.get("/regions")
+async def get_supported_regions():
+    """Get all supported global regions, countries, currencies, and hubs"""
+    regions_info = {}
+    for region in GlobalRegion:
+        countries = GlobalPricingService.REGION_COUNTRIES[region]
+        currencies = list(set(GlobalPricingService.get_currency(c) for c in countries))
+        hubs = GlobalPricingService.REGIONAL_HUBS[region]
+        regions_info[region.value] = {
+            "name": region.name.replace("_", " "),
+            "countries": countries,
+            "currencies": currencies,
+            "hubs": hubs,
+            "rate_multiplier": GlobalPricingService.REGIONAL_RATE_MULTIPLIERS[region],
+            "customs_fee": GlobalPricingService.REGIONAL_CUSTOMS_FEES[region]
+        }
+    return {
+        "total_regions": len(GlobalRegion),
+        "total_countries": sum(len(c) for c in GlobalPricingService.REGION_COUNTRIES.values()),
+        "regions": regions_info
+    }
+
+
+@router.get("/currencies")
+async def get_supported_currencies():
+    """Get all supported currencies with current exchange rates (to USD)"""
+    currencies = {}
+    for currency, rate in GlobalPricingService.CURRENCY_RATES.items():
+        currencies[currency.value] = {
+            "code": currency.value,
+            "to_usd": rate,
+            "from_usd": round(1 / rate, 4) if rate > 0 else 0
+        }
+    return {
+        "base_currency": "USD",
+        "supported_currencies": len(currencies),
+        "currencies": currencies
+    }
+
+
+@router.get("/estimate-distance")
+async def estimate_distance(
+    origin_postal: str = Query(...),
+    destination_postal: str = Query(...)
+):
+    """Estimate shipping distance and zone from Canadian postal codes"""
+    origin_clean = origin_postal.replace(" ", "").upper()
+    dest_clean = destination_postal.replace(" ", "").upper()
+
+    origin_prov = CanadianPricingService.detect_province_from_postal(origin_clean)
+    dest_prov = CanadianPricingService.detect_province_from_postal(dest_clean)
+
+    if origin_clean[:3] == dest_clean[:3]:
+        estimated_km = 10
+        zone = ShippingZone.ZONE_1_INTRACITY
+    elif origin_prov == dest_prov:
+        estimated_km = 200
+        zone = ShippingZone.ZONE_2_REGIONAL
+    else:
+        estimated_km = 1500
+        zone = ShippingZone.ZONE_3_CONTINENTAL
+
+    min_days, max_days = CanadianPricingService.estimate_delivery_time(zone, "standard")
+    return {
+        "origin_postal": origin_postal,
+        "origin_province": origin_prov.value,
+        "destination_postal": destination_postal,
+        "destination_province": dest_prov.value,
+        "estimated_distance_km": estimated_km,
+        "zone": zone.value,
+        "estimated_delivery_days": f"{min_days}-{max_days}",
+    }

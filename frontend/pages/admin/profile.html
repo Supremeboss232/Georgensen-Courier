@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Profile - Georgensen Courier</title>
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="stylesheet" href="/assets/lib/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/assets/lib/fontawesome/css/all.min.css">
+</head>
+<body class="bg-light">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark px-4">
+        <a class="navbar-brand fw-bold" href="/admin/dashboard.html">🚚 Georgensen Admin</a>
+        <div class="ms-auto d-flex gap-3 align-items-center">
+            <a class="text-light text-decoration-none" href="/admin/dashboard.html">Dashboard</a>
+            <a class="text-light text-decoration-none" href="/admin/orders.html">Orders</a>
+            <a class="text-light text-decoration-none" href="/admin/partners.html">Partners</a>
+            <a class="text-light text-decoration-none" href="/admin/disputes.html">Disputes</a>
+            <a class="text-light text-decoration-none" href="/admin/reports.html">Reports</a>
+            <a class="text-light text-decoration-none" href="/admin/settings.html">Settings</a>
+            <a class="text-light text-decoration-none" href="/admin/logs.html">System Logs</a>
+            <button class="btn btn-sm btn-outline-light" onclick="logout()">Logout</button>
+        </div>
+    </nav>
+
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-md-7">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-white py-3">
+                        <h4 class="mb-0">Administrator Profile</h4>
+                    </div>
+                    <div class="card-body p-4">
+                        <form id="adminProfileForm">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Full Name</label>
+                                <input type="text" class="form-control" id="adminName" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Email Address</label>
+                                <input type="email" class="form-control" id="adminEmail" readonly>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Role</label>
+                                <input type="text" class="form-control" id="adminRole" readonly>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Phone</label>
+                                <input type="tel" class="form-control" id="adminPhone">
+                            </div>
+                            <button type="submit" class="btn btn-primary">Save Changes</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/core/api.js"></script>
+    <script src="/js/core/auth.js"></script>
+    <script src="/js/core/guards.js"></script>
+    <script src="/js/main.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            if (!requireAdmin()) return;
+            try {
+                const me = await getWithAuth('/auth/me');
+                document.getElementById('adminName').value = me.full_name || '';
+                document.getElementById('adminEmail').value = me.email || '';
+                document.getElementById('adminRole').value = me.role || 'admin';
+                document.getElementById('adminPhone').value = me.phone || '';
+            } catch (e) {
+                console.error(e);
+            }
+
+            document.getElementById('adminProfileForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                try {
+                    const updated = await putWithAuth('/auth/me', {
+                        full_name: document.getElementById('adminName').value,
+                        phone: document.getElementById('adminPhone').value
+                    });
+                    setUser(updated);
+                    showNotification('Administrator profile updated!', 'success');
+                } catch (err) {
+                    showNotification(err.message || 'Update failed', 'error');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

@@ -9,7 +9,7 @@ class POD(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     shipment_id = Column(Integer, ForeignKey("shipments.id"), nullable=False)
-    tracking_id = Column(Integer, ForeignKey("tracking.id"), nullable=False)
+    tracking_id = Column(Integer, ForeignKey("tracking.id"), nullable=True)
     recipient_name = Column(String, nullable=False)
     recipient_email = Column(String, nullable=True)
     signature_url = Column(String, nullable=True)

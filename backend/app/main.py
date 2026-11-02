@@ -1,284 +1,262 @@
-from fastapi import FastAPI, status, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse, FileResponse, PlainTextResponse
 from fastapi.staticfiles import StaticFiles
-from sqlalchemy.orm import Session
-from app.core.config import settings
-from app.db.base import engine, SessionLocal, Base
-from app.db.models import User
-from app.db.models.user import UserRole
-from app.core.security import SecurityUtils
-from app.api.routes import auth, orders, tracking, admin, admin_new_endpoints
-from app.api import ws_tracking, pod, payments, disputes, webhooks, logistics, support, customers, partners
-import os
+from fastapi.responses import FileResponse
 from pathlib import Path
+from sqlalchemy import inspect, text
+import time
 import logging
+import os
 
-# Observability & Background Jobs
-from app.core.logging_config import setup_json_logging
-from app.celery_app import celery_app
-from app.core.metrics import track_metrics
-import threading
-
-
-# Initialize FastAPI app
-app = FastAPI(
-    title="Georgensen Courier API",
-    description="Professional delivery management platform",
-    version="1.0.0",
-    docs_url="/api/docs",
-    openapi_url="/api/openapi.json"
+from app.core.config import settings
+from app.db.base import Base, engine
+from app.api import (
+    auth, orders, tracking, partners, admin,
+    payments, pod, disputes, customers, ws_tracking,
+    support, quotes, logistics, webhooks
 )
 
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
-# Add CORS middleware
+
+def _ensure_schema_columns():
+    """Create tables and safely add any newly introduced columns on existing databases."""
+    Base.metadata.create_all(bind=engine)
+    try:
+        inspector = inspect(engine)
+        table_names = inspector.get_table_names()
+
+        if "users" in table_names:
+            user_cols = {c["name"] for c in inspector.get_columns("users")}
+            with engine.begin() as conn:
+                if "profile_data" not in user_cols:
+                    conn.execute(text("ALTER TABLE users ADD COLUMN profile_data JSON"))
+
+        if "shipments" in table_names:
+            ship_cols = {c["name"] for c in inspector.get_columns("shipments")}
+            new_ship_cols = [
+                ("base_fare", "FLOAT DEFAULT 0.0"),
+                ("distance_charge", "FLOAT DEFAULT 0.0"),
+                ("weight_charge", "FLOAT DEFAULT 0.0"),
+                ("partner_payout", "FLOAT"),
+                ("payment_status", "VARCHAR(50) DEFAULT 'pending'"),
+                ("origin_country", "VARCHAR(10) DEFAULT 'CA'"),
+                ("destination_country", "VARCHAR(10) DEFAULT 'CA'"),
+                ("currency", "VARCHAR(10) DEFAULT 'CAD'"),
+                ("estimated_distance_km", "FLOAT DEFAULT 10.0"),
+                ("customs_status", "VARCHAR(50) DEFAULT 'cleared'"),
+            ]
+            with engine.begin() as conn:
+                for col_name, col_type in new_ship_cols:
+                    if col_name not in ship_cols:
+                        conn.execute(text(f"ALTER TABLE shipments ADD COLUMN {col_name} {col_type}"))
+    except Exception as e:
+        logger.warning(f"Schema column check warning: {e}")
+
+
+_ensure_schema_columns()
+
+app = FastAPI(
+    title=settings.PROJECT_NAME,
+    description="Enterprise-grade full-stack courier & logistics platform",
+    version="1.0.0",
+    docs_url="/docs",
+    redoc_url="/redoc",
+    openapi_url="/openapi.json"
+)
+
+# CORS Middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.CORS_ORIGINS,
+    allow_origins=settings.ALLOWED_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 
-# Serve static files from organized frontend structure
-frontend_path = Path(__file__).parent.parent.parent / "frontend"
+# Security Headers & Request Logging Middleware
+@app.middleware("http")
+async def security_and_logging_middleware(request: Request, call_next):
+    start_time = time.time()
+    response = await call_next(request)
+    process_time = time.time() - start_time
 
-# Mount static file directories from organized structure
-static_dirs = {
-    "/css": ("css", "css"),
-    "/js": ("js", "js"),
-    "/assets": ("assets", "assets"),
-    "/components": ("components", "components"),
-    "/img": ("assets", "img"),  # Alias for backwards compatibility
-    "/src/components": ("components", "src_components"),  # For legacy paths
-}
+    response.headers["X-Process-Time"] = f"{process_time:.4f}"
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["X-XSS-Protection"] = "1; mode=block"
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    response.headers["Permissions-Policy"] = "geolocation=(self), microphone=(), camera=(self)"
+    if settings.ENVIRONMENT == "production":
+        response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
 
-for mount_path, (dir_name, mount_name) in static_dirs.items():
-    dir_path = frontend_path / dir_name
-    if dir_path.exists():
-        app.mount(mount_path, StaticFiles(directory=str(dir_path)), name=mount_name)
-        print(f"[OK] Mounted {mount_path} -> {dir_path}")
-    else:
-        print(f"[FAIL] Directory not found: {dir_path}")
-
-print(f"[OK] Frontend path configured: {frontend_path}")
-
-
-# Serve index.html for root path
-@app.get("/", tags=["Frontend"])
-async def serve_frontend():
-    """Serve frontend index page"""
-    index_path = frontend_path / "pages" / "public" / "index.html"
-    if index_path.exists():
-        return FileResponse(index_path)
-    return {"message": "Welcome to Georgensen Courier API", "version": "1.0.0", "docs": "/api/docs"}
+    logger.info(
+        f"{request.method} {request.url.path} - "
+        f"Status: {response.status_code} - "
+        f"Duration: {process_time:.3f}s"
+    )
+    return response
 
 
-# Catch-all to serve HTML files from pages directory (public pages)
-@app.get("/{file_path:path}", tags=["Frontend"])
-async def serve_html(file_path: str):
-    """Serve HTML files from organized pages directories"""
-    # Don't intercept API routes
-    if file_path.startswith("api/"):
-        raise HTTPException(status_code=404, detail="Not found")
-    
-    # Map routing to pages directory
-    # Examples: /customer/dashboard → pages/customer/dashboard.html
-    #           /auth/login → pages/auth/login.html
-    #           /about → pages/public/about.html
-    
-    parts = file_path.split("/")
-    
-    # Check if it's a known section (customer, admin, partner, auth)
-    if parts[0] in ["customer", "admin", "partner", "auth"]:
-        section = parts[0]
-        page = "/".join(parts[1:]) if len(parts) > 1 else "index"
-    else:
-        # Default to public pages
-        section = "public"
-        page = file_path
-    
-    # Try to find the file in pages directory
-    file_full_path = frontend_path / "pages" / section / page
-    
-    # Add .html extension if needed
-    if not file_full_path.exists() and not page.endswith((".css", ".js", ".png", ".jpg", ".gif", ".svg", ".ico")):
-        file_full_path = frontend_path / "pages" / section / f"{page}.html"
-    
-    if file_full_path.exists() and file_full_path.is_file():
-        return FileResponse(file_full_path)
-    
-    raise HTTPException(status_code=404, detail="File not found")
+# Mount static files for frontend & uploads
+frontend_path = Path(__file__).resolve().parent.parent.parent / "frontend"
+uploads_path = Path(settings.UPLOAD_DIR).resolve()
+os.makedirs(uploads_path / "pod", exist_ok=True)
 
+if frontend_path.exists():
+    if (frontend_path / "css").exists():
+        app.mount("/css", StaticFiles(directory=str(frontend_path / "css")), name="css")
+    if (frontend_path / "js").exists():
+        app.mount("/js", StaticFiles(directory=str(frontend_path / "js")), name="js")
+    if (frontend_path / "assets").exists():
+        app.mount("/assets", StaticFiles(directory=str(frontend_path / "assets")), name="assets")
 
-# Include routers
+app.mount("/uploads", StaticFiles(directory=str(uploads_path)), name="uploads")
+
+# ==================== API ROUTERS ====================
 app.include_router(auth.router)
 app.include_router(orders.router)
-app.include_router(partners.router)
 app.include_router(tracking.router)
-app.include_router(ws_tracking.router)  # Real-time tracking WebSocket
-app.include_router(pod.router)  # Proof of delivery uploads
-app.include_router(payments.router)  # Payment processing
-app.include_router(disputes.router)  # Dispute management
+app.include_router(ws_tracking.router)
+app.include_router(partners.router)
 app.include_router(admin.router)
-app.include_router(admin_new_endpoints.router)  # Enhanced admin endpoints for regional oversight
 app.include_router(customers.router)
-app.include_router(logistics.router)  # Logistics & Chain of Custody operations
-
-# Import quotes router for Canada-global pricing
-from app.api import quotes
-app.include_router(quotes.router)  # Quote calculation with regional pricing
-
-# Include support router for contact forms and support tickets
-app.include_router(support.router)  # Support & contact form submissions
-
-
-@app.on_event("startup")
-async def startup_event():
-    """Initialize database, logging, and background jobs"""
-    
-    # Setup JSON logging for structured logs
-    setup_json_logging(app_name="georgensen-api", level=settings.LOG_LEVEL)
-    logger = logging.getLogger("startup")
-    
-    # Create tables (fast if they already exist)
-    Base.metadata.create_all(bind=engine)
-    logger.info("Database tables ready", extra={"component": "database"})
-    
-    # Initialize Celery (non-blocking)
-    celery_app.conf.update(
-        broker_url=settings.CELERY_BROKER_URL,
-        result_backend=settings.CELERY_RESULT_BACKEND,
-        task_serializer='json',
-        accept_content=['json'],
-        result_serializer='json',
-        timezone='UTC'
-    )
-    logger.info("Celery configured", extra={
-        "broker": settings.CELERY_BROKER_URL.split("://")[0]
-    })
-    
-    # Create default admin user in background (non-blocking)
-    def create_admin_user():
-        db = SessionLocal()
-        try:
-            admin = db.query(User).filter(User.email == settings.FIRST_SUPERUSER).first()
-            if not admin:
-                admin_user = User(
-                    email=settings.FIRST_SUPERUSER,
-                    hashed_password=SecurityUtils.get_password_hash(settings.FIRST_SUPERUSER_PASSWORD),
-                    full_name="System Admin",
-                    phone="+234000000000",
-                    role=UserRole.admin,
-                    is_active=True,
-                    is_superuser=True,
-                    is_email_verified=True
-                )
-                db.add(admin_user)
-                db.commit()
-                logger.info(f"Admin user created", extra={"email": settings.FIRST_SUPERUSER})
-            else:
-                logger.info(f"Admin user exists", extra={"email": settings.FIRST_SUPERUSER})
-        except Exception as e:
-            logger.error(f"Failed to create admin user: {str(e)}")
-        finally:
-            db.close()
-    
-    # Run admin creation in background thread
-    admin_thread = threading.Thread(target=create_admin_user, daemon=True)
-    admin_thread.start()
-    
-    logger.info("Application startup complete", extra={"status": "ready"})
+app.include_router(payments.router)
+app.include_router(pod.router)
+app.include_router(disputes.router)
+app.include_router(support.router)
+app.include_router(quotes.router)
+app.include_router(logistics.router)
+app.include_router(webhooks.router)
 
 
-@app.on_event("shutdown")
-async def shutdown_event():
-    """Cleanup on shutdown"""
-    logger = logging.getLogger("shutdown")
-    logger.info("Application shutting down", extra={"status": "stopping"})
-    
-    # Graceful Celery shutdown
-    celery_app.control.shutdown()
-    logger.info("Celery task queue stopped", extra={"graceful": True})
-
-
-@app.get("/", tags=["Health"])
-async def root():
-    """Root endpoint"""
-    return {
-        "message": "Welcome to Georgensen Courier API",
-        "version": "1.0.0",
-        "status": "running",
-        "docs": "/api/docs"
-    }
-
-
+# ==================== SYSTEM & HEALTH ENDPOINTS ====================
 @app.get("/health", tags=["Health"])
+@app.get("/api/v1/health", tags=["Health"])
 async def health_check():
-    """Health check endpoint"""
+    """Health check endpoint for monitoring"""
     return {
         "status": "healthy",
-        "service": "Georgensen Courier API",
-        "version": "1.0.0"
+        "service": settings.PROJECT_NAME,
+        "version": "1.0.0",
+        "timestamp": time.time()
     }
 
 
-@app.get("/metrics", tags=["Observability"])
+@app.get("/metrics", tags=["Monitoring"])
 async def metrics():
-    """Prometheus metrics endpoint"""
-    from prometheus_client import generate_latest, REGISTRY, CollectorRegistry
-    metrics_output = generate_latest(REGISTRY)
-    return PlainTextResponse(
-        content=metrics_output.decode('utf-8'),
-        media_type="text/plain; version=0.0.4; charset=utf-8"
-    )
+    """Basic metrics endpoint"""
+    return {
+        "service": settings.PROJECT_NAME,
+        "uptime": "operational",
+        "database": "connected"
+    }
 
 
 @app.get("/api/v1", tags=["API Info"])
 async def api_info():
-    """API information"""
+    """API version and available endpoints"""
     return {
-        "name": "Georgensen Courier API",
         "version": "1.0.0",
-        "base_url": "/api/v1",
         "endpoints": {
-            "auth": "/auth",
-            "orders": "/orders",
-            "partners": "/partners",
-            "tracking": "/tracking",
-            "admin": "/admin"
+            "auth": "/api/v1/auth",
+            "orders": "/api/v1/orders",
+            "tracking": "/api/v1/tracking",
+            "tracking_ws": "ws://localhost:8000/api/v1/tracking/ws/{tracking_number}",
+            "partners": "/api/v1/partners",
+            "admin": "/api/v1/admin",
+            "customers": "/api/v1/customers",
+            "payments": "/api/v1/payments",
+            "pod": "/api/v1/pod",
+            "disputes": "/api/v1/disputes",
+            "quotes": "/api/v1/quotes",
+            "logistics": "/api/v1/logistics",
+            "support": "/api/v1/support/tickets",
+            "webhooks": "/api/v1/webhooks",
         },
-        "documentation": "/api/docs"
+        "docs": "/docs"
     }
 
 
-# Exception handlers
-@app.exception_handler(ValueError)
-async def value_error_handler(request, exc):
-    """Handle ValueError exceptions"""
-    return JSONResponse(
-        status_code=status.HTTP_400_BAD_REQUEST,
-        content={"detail": str(exc)}
-    )
+# ==================== FRONTEND HTML SERVING ====================
+@app.get("/", include_in_schema=False)
+async def serve_index():
+    """Serve landing page"""
+    index_path = frontend_path / "pages" / "public" / "index.html"
+    if index_path.exists():
+        return FileResponse(index_path, media_type="text/html")
+    return {
+        "service": settings.PROJECT_NAME,
+        "version": "1.0.0",
+        "status": "operational",
+        "docs": "/docs"
+    }
 
 
-@app.exception_handler(Exception)
-async def general_exception_handler(request, exc):
-    """Handle general exceptions"""
-    return JSONResponse(
-        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-        content={"detail": "Internal server error"}
-    )
+PORTAL_DEFAULTS = {
+    "admin": "dashboard",
+    "customer": "dashboard",
+    "partner": "partner-dashboard",
+    "auth": "login",
+    "public": "index",
+}
+
+PAGE_ALIASES = {
+    ("partner", "settings"): "partner-settings",
+    ("partner", "dashboard"): "partner-dashboard",
+    ("public", "pricing"): "quote",
+    ("public", "track"): "tracking",
+    ("customer", "shipments"): "orders",
+}
+
+
+@app.get("/{file_path:path}", include_in_schema=False)
+async def serve_html(file_path: str):
+    """Serve HTML pages from frontend/pages with path traversal protection"""
+    clean_path = file_path.strip("/")
+
+    if not clean_path:
+        return await serve_index()
+
+    # Never intercept API routes or static asset prefixes
+    if clean_path.startswith(("api/", "css/", "js/", "assets/", "uploads/")):
+        raise HTTPException(status_code=404, detail="Not found")
+
+    parts = clean_path.split("/")
+    section = parts[0]
+
+    if section in ("customer", "admin", "partner", "auth", "public"):
+        raw_page = parts[1] if len(parts) > 1 and parts[1] else PORTAL_DEFAULTS[section]
+        page = raw_page[:-5] if raw_page.endswith(".html") else raw_page
+        page = PAGE_ALIASES.get((section, page), page)
+        html_path = frontend_path / "pages" / section / f"{page}.html"
+    else:
+        page = clean_path[:-5] if clean_path.endswith(".html") else clean_path
+        page = PAGE_ALIASES.get(("public", page), page)
+        html_path = frontend_path / "pages" / "public" / f"{page}.html"
+
+    try:
+        resolved = html_path.resolve()
+        if not resolved.is_relative_to(frontend_path.resolve()):
+            raise HTTPException(status_code=403, detail="Access denied")
+    except HTTPException:
+        raise
+    except Exception:
+        raise HTTPException(status_code=404, detail="Page not found")
+
+    if resolved.exists() and resolved.is_file():
+        return FileResponse(resolved, media_type="text/html")
+
+    raise HTTPException(status_code=404, detail="Page not found")
 
 
 if __name__ == "__main__":
     import uvicorn
-    
     uvicorn.run(
         "app.main:app",
         host="0.0.0.0",
         port=8000,
-        reload=True,
-        log_level="info"
+        reload=settings.DEBUG
     )

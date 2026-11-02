@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Security & Compliance - Georgensen Courier</title>
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="stylesheet" href="/assets/lib/bootstrap/css/bootstrap.min.css">
+</head>
+<body>
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark px-4">
+    <a class="navbar-brand fw-bold" href="/">🚚 Georgensen Courier</a>
+    <div class="ms-auto d-flex gap-3 align-items-center">
+      <a class="text-light text-decoration-none" href="/privacy.html">Privacy</a>
+      <a class="text-light text-decoration-none" href="/terms.html">Terms</a>
+      <a class="text-light text-decoration-none fw-bold" href="/security.html">Security</a>
+      <a class="text-light text-decoration-none" href="/dpa.html">DPA</a>
+      <a class="btn btn-sm btn-primary" href="/auth/login">Sign In</a>
+    </div>
+  </nav>
+
+  <main class="container py-5">
+    <h1 class="fw-bold mb-3">Platform Security & Chain-of-Custody Compliance</h1>
+    <p class="lead text-muted mb-4">Enterprise-grade application security, cryptographic authentication, and physical shipment chain-of-custody verification.</p>
+
+    <div class="row g-4">
+      <div class="col-md-4">
+        <div class="card h-100 shadow-sm p-4">
+          <h4>Argon2id & JWT Security</h4>
+          <p class="text-muted">Passwords hashed with Argon2id, short-lived access tokens with revocable JTI refresh tokens, and automatic brute-force IP/account rate limiting.</p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card h-100 shadow-sm p-4">
+          <h4>Role-Based Access Control (RBAC)</h4>
+          <p class="text-muted">Strict separation between Customer, Partner/Driver, Warehouse Handler, Hub Manager, and System Administrator permissions with object-level ownership checks.</p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card h-100 shadow-sm p-4">
+          <h4>Immutable Chain of Custody</h4>
+          <p class="text-muted">Every barcode scan, hub transfer, GPS update, and Proof-of-Delivery signature is logged to an immutable audit trail with state locking upon delivery.</p>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="bg-dark text-light py-4 mt-5 text-center">
+    <small>&copy; 2026 Georgensen Courier Inc. | <a href="/privacy.html" class="text-light">Privacy</a> | <a href="/terms.html" class="text-light">Terms</a></small>
+  </footer>
+  <script src="/js/main.js"></script>
+</body>
+</html>

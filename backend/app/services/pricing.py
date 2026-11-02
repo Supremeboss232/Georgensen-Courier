@@ -1,6 +1,7 @@
-from typing import Dict, Tuple
-from enum import Enum
+from typing import Dict
 import re
+import secrets
+
 
 class PricingService:
     """Service for quote calculation and pricing"""
@@ -26,7 +27,8 @@ class PricingService:
     SPEED_MULTIPLIERS = {
         "economy": 0.8,      # 20% discount
         "standard": 1.0,     # base rate
-        "express": 1.5       # 50% premium
+        "express": 1.5,      # 50% premium
+        "overnight": 2.0     # 100% premium
     }
     
     INSURANCE_RATE = 0.05   # 5% of package value
@@ -34,7 +36,7 @@ class PricingService:
     @classmethod
     def calculate_quote(
         cls,
-        service_type: str,
+        service_type: str = "local",
         distance: float = 10,
         weight: float = 1,
         speed: str = "standard",
@@ -44,21 +46,17 @@ class PricingService:
         
         config = cls.PRICING_CONFIG.get(service_type, cls.PRICING_CONFIG["local"])
         
-        # Calculate components
         base_fare = config["base_fare"]
         distance_charge = distance * config["distance_rate"]
         weight_charge = weight * config["weight_rate"]
         
-        # Apply speed multiplier
         speed_multiplier = cls.SPEED_MULTIPLIERS.get(speed, 1.0)
         subtotal = (base_fare + distance_charge + weight_charge) * speed_multiplier
         
-        # Calculate insurance
-        insurance_charge = 0
+        insurance_charge = 0.0
         if package_value > 0:
             insurance_charge = package_value * cls.INSURANCE_RATE
         
-        # Total price
         total_price = subtotal + insurance_charge
         
         return {
@@ -70,64 +68,39 @@ class PricingService:
             "subtotal": round(subtotal, 2),
             "total_price": round(total_price, 2),
             "breakdown": {
-                "base": base_fare,
-                "distance": distance_charge,
-                "weight": weight_charge,
+                "base": round(base_fare, 2),
+                "distance": round(distance_charge, 2),
+                "weight": round(weight_charge, 2),
                 "speed": f"{speed}x{speed_multiplier}",
-                "insurance": insurance_charge
+                "insurance": round(insurance_charge, 2)
             }
         }
     
     @classmethod
     def generate_tracking_number(cls, year_suffix: int = 26) -> str:
         """Generate tracking number in format GEO-YY-XXXXXX"""
-        import secrets
         random_part = secrets.token_hex(3).upper()
-        return f"GEO-{year_suffix}-{random_part}"    
+        return f"GEO-{year_suffix}-{random_part}"
+
     @classmethod
     def estimate_distance(cls, pickup_address: str, delivery_address: str, service_type: str = "local") -> float:
-        """
-        Estimate distance between addresses.
-        
-        For MVP: Uses simple estimation based on address length and service type.
-        In production: Integrate with Google Maps Distance Matrix API or similar.
-        
-        Args:
-            pickup_address: Pickup address string
-            delivery_address: Delivery address string
-            service_type: local, intercity, international
-        
-        Returns:
-            Estimated distance in kilometers
-        """
-        # For MVP, use simple heuristics
-        # In production, integrate with Google Maps, Mapbox, etc.
-        
+        """Estimate distance between addresses in kilometers."""
         if service_type == "international":
-            # Default for international (placeholder until API integrated)
             return 5000.0
         elif service_type == "intercity":
-            # Estimate for inter-city (typically 100-500 km)
-            # This would be replaced with real geocoding API
             return 150.0
         else:
-            # Local delivery estimation
-            # Simple heuristic: different zip codes = longer distance
-            pickup_zip = cls._extract_zip(pickup_address)
-            delivery_zip = cls._extract_zip(delivery_address)
-            
+            pickup_zip = cls._extract_zip(pickup_address or "")
+            delivery_zip = cls._extract_zip(delivery_address or "")
             if pickup_zip and delivery_zip:
-                # If different zips, estimate longer distance
-                distance = 5.0 if pickup_zip == delivery_zip else 15.0
-            else:
-                # Default local distance
-                distance = 10.0
-            
-            return distance
+                return 5.0 if pickup_zip == delivery_zip else 15.0
+            return 10.0
     
     @staticmethod
     def _extract_zip(address: str) -> str:
-        """Extract ZIP code from address string"""
-        # Look for 5-digit pattern (US ZIP)
-        match = re.search(r'\b\d{5}\b', address)
+        """Extract ZIP or postal code from address string"""
+        match = re.search(r'\b\d{5}\b', address or "")
         return match.group(0) if match else None
+
+
+PricingCalculator = PricingService
